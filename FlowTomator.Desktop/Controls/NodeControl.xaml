@@ -1,0 +1,111 @@
+﻿<UserControl x:Class="FlowTomator.Desktop.NodeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FlowTomator.Desktop"
+             mc:Ignorable="d" 
+             HorizontalAlignment="Left"
+             SnapsToDevicePixels="True"
+             Loaded="NodeControl_Loaded">
+
+    <UserControl.Resources>
+        <local:ValueTemplateSelector x:Key="ValueTemplateSelector" />
+    </UserControl.Resources>
+    
+    <StackPanel x:Name="Root" Width="128">
+        <Border Visibility="{Binding Path=InputSlotVisibility, FallbackValue=Visible}"
+                Width="12" Height="6" Background="White" CornerRadius="6,6,0,0" BorderBrush="Gray" BorderThickness="1,1,1,0" Cursor="Hand">
+            <local:Anchor Margin="0,5,0,0" Binder="{Binding NodeInfo.NodeAnchorBinder}" />
+        </Border>
+
+        <Border BorderBrush="Gray" BorderThickness="1">
+            <StackPanel>
+
+                <Border Background="White">
+                    <TextBlock Text="{Binding NodeInfo.Type.Name, FallbackValue=NodeType}" ToolTip="{Binding NodeInfo.Attribute.Description}"
+                               FontSize="14" TextAlignment="Center" Padding="3" Cursor="SizeAll"
+                               MouseLeftButtonDown="TextBlock_MouseLeftButtonDown">
+                        <TextBlock.Background>
+                            <SolidColorBrush Color="{Binding NodeInfo.TypeInfo.Color}" Opacity="0.7" />
+                        </TextBlock.Background>
+                        <TextBlock.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Remove this node" Click="RemoveNodeItem_Click" />
+                            </ContextMenu>
+                        </TextBlock.ContextMenu>
+                    </TextBlock>
+                </Border>
+
+                <StackPanel Visibility="{Binding Path=InputsVisibility}">
+                    <TextBlock FontFamily="Consolas" FontSize="9" Background="DarkGray" Foreground="White" Padding="2,1,0,0">INPUTS</TextBlock>
+                    <ItemsControl MinHeight="4" ItemsSource="{Binding NodeInfo.Inputs}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Background="White" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,1">
+
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" FontSize="11" Foreground="Gray" HorizontalAlignment="Stretch"
+                                               Text="{Binding Variable.Name}" ToolTip="{Binding Variable.Description}" />
+
+                                    <TextBlock Grid.Column="1" FontSize="11" TextAlignment="Right" HorizontalAlignment="Stretch"
+                                               Text="{Binding Value}" Visibility="{Binding DisplayVisibility}"
+                                               MouseLeftButtonDown="VariableValue_MouseLeftButtonDown" />
+                                    <ContentControl Grid.Column="1" HorizontalAlignment="Stretch"
+                                                    Visibility="{Binding EditorVisibility}" Content="{Binding}" ContentTemplateSelector="{StaticResource ValueTemplateSelector}" />
+
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <StackPanel MinHeight="4" Visibility="{Binding OutputsVisibility}">
+                    <TextBlock FontFamily="Consolas" FontSize="9" Background="DarkGray" Foreground="White" Padding="2,1,0,0">OUTPUTS</TextBlock>
+                    <ItemsControl MinHeight="4" ItemsSource="{Binding NodeInfo.Node.Outputs}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Background="White" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="4,1">
+                                    <TextBlock FontSize="11" Foreground="Gray" Text="{Binding Name}" ToolTip="{Binding Description}" />
+                                    <TextBlock FontSize="11" DockPanel.Dock="Right" TextAlignment="Right" Text="{Binding Value}" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+
+        <ItemsControl x:Name="Slots" ItemsSource="{Binding NodeInfo.Slots}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Width="12" Height="6" Background="White" CornerRadius="0,0,6,6" BorderBrush="Gray" BorderThickness="1,0,1,1" Margin="6,0"
+                            ToolTip="{Binding Slot.Name}" Cursor="Hand"
+                            MouseDown="Slot_MouseDown">
+                        <local:Anchor Margin="0,0,0,5" Binder="{Binding SlotAnchorBinder}" Tag="{Binding}" />
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

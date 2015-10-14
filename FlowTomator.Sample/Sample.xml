@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Flow>
+  <Nodes>
+    <Origin Id="0" />
+    <TimedEvent Id="1" Second="*/5" />
+    <Sleep Id="2" Duration="1000" />
+    <Message Id="3" Text="Plop :)" Title="FlowTomator" Buttons="OK" Icon="Asterisk" />
+  </Nodes>
+  <Slots>
+    <Slot Id="0">
+      <Node Id="1" />
+    </Slot>
+    <Slot Id="1">
+      <Node Id="2" />
+    </Slot>
+    <Slot Id="2">
+      <Node Id="3" />
+    </Slot>
+  </Slots>
+  <Edition>
+    <Node Id="0" X="88" Y="36" />
+    <Node Id="1" X="148" Y="96" />
+    <Node Id="2" X="228" Y="272" />
+    <Node Id="3" X="312" Y="376" />
+  </Edition>
+</Flow>

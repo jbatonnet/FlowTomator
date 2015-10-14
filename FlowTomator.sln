@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowTomator.Common", "FlowTomator.Common\FlowTomator.Common.csproj", "{6C68AE0D-AE83-442B-9AB9-42A0CDE65F02}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{396672B0-EA14-498B-8C80-B3EBC2FF2239}"
+	ProjectSection(SolutionItems) = preProject
+		FlowTomator.Sample\Sample.xml = FlowTomator.Sample\Sample.xml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowTomator.Desktop", "FlowTomator.Desktop\FlowTomator.Desktop.csproj", "{513C6EF6-D8AA-4395-9092-0771B7004200}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowTomator.Engine", "FlowTomator.Engine\FlowTomator.Engine.csproj", "{E5F21C34-4808-418E-8E20-706893643B28}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6C68AE0D-AE83-442B-9AB9-42A0CDE65F02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C68AE0D-AE83-442B-9AB9-42A0CDE65F02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C68AE0D-AE83-442B-9AB9-42A0CDE65F02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C68AE0D-AE83-442B-9AB9-42A0CDE65F02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{513C6EF6-D8AA-4395-9092-0771B7004200}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{513C6EF6-D8AA-4395-9092-0771B7004200}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{513C6EF6-D8AA-4395-9092-0771B7004200}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{513C6EF6-D8AA-4395-9092-0771B7004200}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5F21C34-4808-418E-8E20-706893643B28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5F21C34-4808-418E-8E20-706893643B28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5F21C34-4808-418E-8E20-706893643B28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5F21C34-4808-418E-8E20-706893643B28}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
