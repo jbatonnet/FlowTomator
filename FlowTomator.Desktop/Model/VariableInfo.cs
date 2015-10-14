@@ -36,6 +36,18 @@ namespace FlowTomator.Desktop
                     PropertyChanged(this, new PropertyChangedEventArgs(nameof(Value)));
             }
         }
+        public string Text
+        {
+            get
+            {
+                if (Variable.Linked != null)
+                    return "$" + Variable.Linked.Name;
+                else if (Variable.Value == null)
+                    return "null";
+                else
+                    return Variable.Value.ToString();
+            }
+        }
 
         public bool Selected
         {

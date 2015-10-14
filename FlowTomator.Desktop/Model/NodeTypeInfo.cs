@@ -12,7 +12,7 @@ namespace FlowTomator.Desktop
     {
         private static Dictionary<Type, NodeTypeInfo> typeInfos = new Dictionary<Type, NodeTypeInfo>();
 
-        private static Color[] colors = new[] { Colors.DeepSkyBlue, Colors.Tomato, Colors.MediumSeaGreen, Colors.SandyBrown };
+        private static Color[] colors = new[] { Colors.DeepSkyBlue, Colors.Tomato, Colors.MediumSeaGreen, Colors.SandyBrown, Colors.LightSeaGreen };
         private static int colorIndex = 0;
 
         private static Dictionary<string, Color> categoryColors = new Dictionary<string, Color>();

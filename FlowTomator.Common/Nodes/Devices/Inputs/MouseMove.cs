@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FlowTomator.Common
 {
-    [Node("Mouse move event", "Devices", "")]
+    [Node("Mouse move", "Devices", "")]
     public class MouseMoveEvent : Event
     {
         public override NodeResult Check()

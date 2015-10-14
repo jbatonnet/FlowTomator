@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -22,6 +23,8 @@ namespace FlowTomator.Desktop
                 dataTemplate.VisualTree = new FrameworkElementFactory(typeof(EnumEditor));
             else if (variableInfo.Type == typeof(bool))
                 dataTemplate.VisualTree = new FrameworkElementFactory(typeof(BoolEditor));
+            else if (variableInfo.Type == typeof(FileInfo))
+                dataTemplate.VisualTree = new FrameworkElementFactory(typeof(FileInfoEditor));
             else
                 dataTemplate.VisualTree = new FrameworkElementFactory(typeof(TextEditor));
 

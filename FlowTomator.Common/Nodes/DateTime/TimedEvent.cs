@@ -17,7 +17,15 @@ namespace FlowTomator.Common.Nodes
         {
             get
             {
-                return new[] { year, month, day, hour, minute, second };
+                foreach (Variable variable in base.Inputs)
+                    yield return variable;
+
+                yield return year;
+                yield return month;
+                yield return day;
+                yield return hour;
+                yield return minute;
+                yield return second;
             }
         }
 
@@ -37,10 +45,10 @@ namespace FlowTomator.Common.Nodes
             nextUpdate = DateTime.Now;
             nextUpdate = nextUpdate.AddMilliseconds(1000 - nextUpdate.Millisecond);
 
-            if (Timeout == TimeSpan.MaxValue)
+            if (timeout.Value == TimeSpan.MaxValue)
                 end = DateTime.MaxValue;
             else
-                end = DateTime.Now + Timeout;
+                end = DateTime.Now + timeout.Value;
 
             while (true)
             {

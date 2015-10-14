@@ -43,7 +43,6 @@ namespace FlowTomator.Desktop
         {
             Root.DataContext = this;
         }
-
         private static void NodeControl_NodeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             NodeControl me = d as NodeControl;
@@ -55,7 +54,6 @@ namespace FlowTomator.Desktop
             if (HeaderMouseDown != null)
                 HeaderMouseDown(this, e);
         }
-
         private void VariableValue_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             TextBlock textBlock = sender as TextBlock;
@@ -67,7 +65,6 @@ namespace FlowTomator.Desktop
 
             variableInfo.Selected = true;
         }
-
         private void Slot_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Border border = sender as Border;
@@ -81,6 +78,14 @@ namespace FlowTomator.Desktop
         private void RemoveNodeItem_Click(object sender, RoutedEventArgs e)
         {
             NodeInfo.FlowInfo.History.Do(new DeleteNodeAction(NodeInfo));
+        }
+        private void ResetDefaultValueItem_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem menuItem = sender as MenuItem;
+            VariableInfo variableInfo = menuItem.Tag as VariableInfo;
+
+            variableInfo.Variable.Link(null);
+            variableInfo.Value = variableInfo.Variable.DefaultValue;
         }
     }
 }

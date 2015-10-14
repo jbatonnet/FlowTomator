@@ -12,7 +12,7 @@ namespace FlowTomator.Common
         public string Category { get; private set; }
         public string Description { get; private set; }
 
-        public NodeAttribute(string name, string category, string description)
+        public NodeAttribute(string name, string category = null, string description = null)
         {
             Name = name;
             Category = category;

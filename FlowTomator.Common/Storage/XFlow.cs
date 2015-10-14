@@ -14,6 +14,7 @@ namespace FlowTomator.Common
         public static XFlow Load(XDocument document)
         {
             Dictionary<int, Node> nodes = new Dictionary<int, Node>();
+            List<Variable> variables = new List<Variable>();
 
             try
             {
@@ -41,6 +42,9 @@ namespace FlowTomator.Common
                                              .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(Node)))
                                              .ToArray();
 
+                // Create variables
+                XElement variableElements = document.Root.Element("Variables");
+
                 // Create nodes
                 XElement nodeElements = document.Root.Element("Nodes");
                 foreach (XElement nodeElement in nodeElements.Elements())
@@ -50,6 +54,7 @@ namespace FlowTomator.Common
 
                     Node node = Activator.CreateInstance(nodeType) as Node;
                     Variable[] nodeInputs = node.Inputs.ToArray();
+                    Variable[] nodeOutputs = node.Outputs.ToArray();
 
                     foreach (XAttribute nodeAttribute in nodeElement.Attributes())
                     {
@@ -63,14 +68,59 @@ namespace FlowTomator.Common
                             continue;
                         }
 
-                        Variable variable = nodeInputs.FirstOrDefault(v => v.Name == variableName);
-                        if (variable == null)
-                            throw new KeyNotFoundException("Could not find input " + variableName + " in task " + nodeType.Name);
+                        Variable inputVariable = nodeInputs.FirstOrDefault(v => v.Name == variableName);
+                        Variable outputVariable = nodeOutputs.FirstOrDefault(v => v.Name == variableName);
 
-                        TypeConverter converter = TypeDescriptor.GetConverter(variable.Type);
-                        object value = converter.ConvertFromString(nodeAttribute.Value);
+                        if (inputVariable != null)
+                        {
+                            if (nodeAttribute.Value.StartsWith("$"))
+                            {
+                                variableName = nodeAttribute.Value.Substring(1);
 
-                        variable.Value = value;
+                                Variable boundVariable = variables.FirstOrDefault(v => v.Name == variableName);
+                                if (boundVariable == null)
+                                    variables.Add(boundVariable = new Variable(variableName, inputVariable.Type));
+
+                                inputVariable.Link(boundVariable);
+                            }
+                            else if (inputVariable.Type != typeof(object))
+                            {
+                                object value = nodeAttribute.Value;
+
+                                try
+                                {
+                                    TypeConverter converter = TypeDescriptor.GetConverter(inputVariable.Type);
+                                    value = converter.ConvertFromString(nodeAttribute.Value);
+                                }
+                                catch
+                                {
+                                    try
+                                    {
+                                        value = Activator.CreateInstance(inputVariable.Type, nodeAttribute.Value);
+                                    }
+                                    catch { }
+                                }
+
+                                inputVariable.Value = value;
+                            }
+                            else
+                                inputVariable.Value = nodeAttribute.Value;
+                        }
+                        else if (outputVariable != null)
+                        {
+                            if (nodeAttribute.Value.StartsWith("$"))
+                            {
+                                variableName = nodeAttribute.Value.Substring(1);
+
+                                Variable boundVariable = variables.FirstOrDefault(v => v.Name == variableName);
+                                if (boundVariable == null)
+                                    variables.Add(boundVariable = new Variable(variableName, outputVariable.Type));
+
+                                outputVariable.Link(boundVariable);
+                            }
+                        }
+                        else
+                            throw new KeyNotFoundException("Could not find variable " + variableName + " in task " + nodeType.Name);
                     }
 
                     nodes.Add(nodeId, node);
@@ -174,8 +224,18 @@ namespace FlowTomator.Common
                 );
 
                 foreach (Variable input in node.Inputs)
-                    if (input.Value != input.DefaultValue)
+                {
+                    if (input.Linked != null)
+                        nodeElement.Add(new XAttribute(input.Name, "$" + input.Linked.Name));
+                    else if (input.Value != input.DefaultValue)
                         nodeElement.Add(new XAttribute(input.Name, input.Value));
+                }
+
+                foreach (Variable output in node.Outputs)
+                {
+                    if (output.Linked != null)
+                        nodeElement.Add(new XAttribute(output.Name, "$" + output.Linked.Name));
+                }
 
                 nodesElement.Add(nodeElement);
 

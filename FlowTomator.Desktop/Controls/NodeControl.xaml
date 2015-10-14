@@ -23,7 +23,7 @@
             <StackPanel>
 
                 <Border Background="White">
-                    <TextBlock Text="{Binding NodeInfo.Type.Name, FallbackValue=NodeType}" ToolTip="{Binding NodeInfo.Attribute.Description}"
+                    <TextBlock Text="{Binding NodeInfo.TypeInfo.Name, FallbackValue=NodeType}" ToolTip="{Binding NodeInfo.Attribute.Description}"
                                FontSize="14" TextAlignment="Center" Padding="3" Cursor="SizeAll"
                                MouseLeftButtonDown="TextBlock_MouseLeftButtonDown">
                         <TextBlock.Background>
@@ -55,10 +55,17 @@
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Grid.Column="0" FontSize="11" Foreground="Gray" HorizontalAlignment="Stretch"
-                                               Text="{Binding Variable.Name}" ToolTip="{Binding Variable.Description}" />
+                                               Text="{Binding Variable.Name}" ToolTip="{Binding Variable.Description}">
+                                        <TextBlock.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Reset to default value" Tag="{Binding}" Click="ResetDefaultValueItem_Click" />
+                                                <MenuItem Header="Assign a variable" />
+                                            </ContextMenu>
+                                        </TextBlock.ContextMenu>
+                                    </TextBlock>
 
                                     <TextBlock Grid.Column="1" FontSize="11" TextAlignment="Right" HorizontalAlignment="Stretch"
-                                               Text="{Binding Value}" Visibility="{Binding DisplayVisibility}"
+                                               Text="{Binding Text}" Visibility="{Binding DisplayVisibility}"
                                                MouseLeftButtonDown="VariableValue_MouseLeftButtonDown" />
                                     <ContentControl Grid.Column="1" HorizontalAlignment="Stretch"
                                                     Visibility="{Binding EditorVisibility}" Content="{Binding}" ContentTemplateSelector="{StaticResource ValueTemplateSelector}" />
@@ -81,7 +88,7 @@
                             <DataTemplate>
                                 <DockPanel Margin="4,1">
                                     <TextBlock FontSize="11" Foreground="Gray" Text="{Binding Name}" ToolTip="{Binding Description}" />
-                                    <TextBlock FontSize="11" DockPanel.Dock="Right" TextAlignment="Right" Text="{Binding Value}" />
+                                    <TextBlock FontSize="11" DockPanel.Dock="Right" TextAlignment="Right" Text="{Binding Text}" />
                                 </DockPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

@@ -288,12 +288,12 @@ namespace FlowTomator.Desktop
                                                          ni.Result = nodeStep.Result;
 
                                                          if (ni.Result == NodeResult.Stop || ni.Result == NodeResult.Fail)
+                                                         {
                                                              DebuggerPaused = true;
-
-                                                         if (ni.Result == NodeResult.Fail)
                                                              return Enumerable.Empty<NodeInfo>();
+                                                         }
 
-                                                         List<NodeInfo> nodeInfos = nodeStep.Slot.Nodes.Select(n => NodeInfo.From(flowInfo, n)).ToList();
+                                                         NodeInfo[] nodeInfos = nodeStep.Slot == null ? new NodeInfo[0] : nodeStep.Slot.Nodes.Select(n => NodeInfo.From(flowInfo, n)).ToArray();
                                                          foreach (NodeInfo nodeInfo in nodeInfos)
                                                              nodeInfo.Status = NodeStatus.Paused;
 

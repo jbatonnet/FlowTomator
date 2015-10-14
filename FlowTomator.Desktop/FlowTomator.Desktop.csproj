@@ -68,6 +68,9 @@
     <Compile Include="Actions\EditVariable.cs" />
     <Compile Include="Actions\History.cs" />
     <Compile Include="Actions\MoveNode.cs" />
+    <Compile Include="Controls\Values\FileInfoEditor.xaml.cs">
+      <DependentUpon>FileInfoEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Values\EnumEditor.xaml.cs">
       <DependentUpon>EnumEditor.xaml</DependentUpon>
     </Compile>
@@ -78,6 +81,7 @@
     <Compile Include="Controls\Values\TextEditor.xaml.cs">
       <DependentUpon>TextEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Debugger.cs" />
     <Compile Include="Editors\EditorAttribute.cs" />
     <Compile Include="Editors\XFlow\XFlowEditor.xaml.cs">
       <DependentUpon>XFlowEditor.xaml</DependentUpon>
@@ -85,6 +89,10 @@
     <Page Include="Controls\LinkControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Values\FileInfoEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\Values\EnumEditor.xaml">
       <Generator>MSBuild:Compile</Generator>

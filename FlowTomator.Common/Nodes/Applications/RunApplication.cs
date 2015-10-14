@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 
 namespace FlowTomator.Common.Nodes
 {
-    public class LaunchApplication : Task
+    [Node("RunApp", "Applications")]
+    public class RunApplication : Task
     {
         public override IEnumerable<Variable> Inputs
         {
@@ -35,7 +36,8 @@ namespace FlowTomator.Common.Nodes
         }
     }
 
-    public class ApplicationRunning : BinaryChoice
+    [Node("IsAppRunning", "Applications")]
+    public class IsApplicationRunning : BinaryChoice
     {
         public override IEnumerable<Variable> Inputs
         {
@@ -74,7 +76,8 @@ namespace FlowTomator.Common.Nodes
         }
     }
 
-    public class ApplicationLaunch : Event
+    [Node("AppRunEvent", "Applications")]
+    public class ApplicationRunEvent : Event
     {
         public override IEnumerable<Variable> Inputs
         {
@@ -92,10 +95,10 @@ namespace FlowTomator.Common.Nodes
         {
             DateTime end;
 
-            if (Timeout == TimeSpan.MaxValue)
+            if (timeout.Value == TimeSpan.MaxValue)
                 end = DateTime.MaxValue;
             else
-                end = DateTime.Now + Timeout;
+                end = DateTime.Now + timeout.Value;
 
             while (true)
             {

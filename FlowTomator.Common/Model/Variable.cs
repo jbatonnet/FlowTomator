@@ -29,13 +29,17 @@ namespace FlowTomator.Common
             {
                 if (linked == null)
                 {
-                    if (type != value.GetType())
+                    if (value != null)
                     {
-                        TypeConverter converter = TypeDescriptor.GetConverter(type);
-                        if (!converter.CanConvertFrom(value.GetType()))
-                            throw new Exception("Unable to set the specified value to this variable");
+                        Type valueType = value.GetType();
+                        if (valueType != type && !valueType.IsSubclassOf(type))
+                        {
+                            TypeConverter converter = TypeDescriptor.GetConverter(type);
+                            if (!converter.CanConvertFrom(valueType))
+                                throw new Exception("Unable to set the specified value to this variable");
 
-                        value = converter.ConvertFrom(value);
+                            value = converter.ConvertFrom(value);
+                        }
                     }
 
                     this.value = value;
@@ -49,6 +53,13 @@ namespace FlowTomator.Common
             get
             {
                 return defaultValue;
+            }
+        }
+        public Variable Linked
+        {
+            get
+            {
+                return linked;
             }
         }
 
@@ -83,7 +94,7 @@ namespace FlowTomator.Common
 
         public void Link(Variable other)
         {
-            if (type != other.Type)
+            if (other != null && other.Type != type && !other.Type.IsSubclassOf(type))
                 throw new Exception("Unable to link to the specified variable");
 
             linked = other;
