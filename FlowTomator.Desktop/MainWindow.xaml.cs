@@ -139,7 +139,10 @@ namespace FlowTomator.Desktop
             {
                 System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show("There are unsaved changed to open flows. Do you want to save your modifications before exiting ?", "FlowTomator", System.Windows.Forms.MessageBoxButtons.YesNoCancel, System.Windows.Forms.MessageBoxIcon.Warning);
                 if (result == System.Windows.Forms.DialogResult.Cancel)
+                {
+                    e.Cancel = true;
                     return;
+                }
 
                 if (result == System.Windows.Forms.DialogResult.Yes)
                 {

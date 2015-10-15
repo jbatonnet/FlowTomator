@@ -71,7 +71,6 @@ namespace FlowTomator.Desktop
                 Anchor_PropertyChanged(this, new PropertyChangedEventArgs(nameof(Anchor)));
             }
         }
-
         private Anchor anchor;
 
         public event PropertyChangedEventHandler PropertyChanged;

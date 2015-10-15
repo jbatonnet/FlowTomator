@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -46,8 +47,6 @@ namespace FlowTomator.Desktop
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
         private NodeControl movingNodeControl;
         private Point movingNodeOrigin;
         private Point movingNodeControlOffset;
@@ -58,6 +57,7 @@ namespace FlowTomator.Desktop
 
         public XFlowEditor()
         {
+            Tag = new DependencyManager(this, (s, e) => PropertyChanged(s, e));
             InitializeComponent();
         }
 
@@ -86,10 +86,11 @@ namespace FlowTomator.Desktop
 
             creatingNewLink = true;
 
+
             if (PropertyChanged != null)
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(SourceAnchorBinder)));
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(DestinationAnchorBinder)));
+                //PropertyChanged(this, new PropertyChangedEventArgs(nameof(SourceAnchorBinder)));
+                //PropertyChanged(this, new PropertyChangedEventArgs(nameof(DestinationAnchorBinder)));
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(NewLinkVisibility)));
             }
         }
@@ -204,6 +205,13 @@ namespace FlowTomator.Desktop
             LinkInfo linkInfo = menuItem.Tag as LinkInfo;
 
             FlowInfo.History.Do(new DeleteLinkAction(linkInfo));
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void NotifyPropertyChanged([CallerMemberName]string property = null)
+        {
+            if (property != null && PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(property));
         }
     }
 }

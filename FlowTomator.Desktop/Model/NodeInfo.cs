@@ -17,7 +17,7 @@ namespace FlowTomator.Desktop
         Paused
     }
 
-    public class NodeInfo : INotifyPropertyChanged
+    public class NodeInfo : DependencyModel
     {
         private static Dictionary<Node, NodeInfo> nodeInfos = new Dictionary<Node, NodeInfo>();
 
@@ -34,12 +34,7 @@ namespace FlowTomator.Desktop
             set
             {
                 status = value;
-
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs(nameof(Status)));
-                    PropertyChanged(this, new PropertyChangedEventArgs(nameof(StatusColor)));
-                }
+                NotifyPropertyChanged();
             }
         }
         public NodeResult? Result
@@ -51,14 +46,11 @@ namespace FlowTomator.Desktop
             set
             {
                 result = value;
-
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs(nameof(Result)));
-                    PropertyChanged(this, new PropertyChangedEventArgs(nameof(StatusColor)));
-                }
+                NotifyPropertyChanged();
             }
         }
+
+        [DependsOn(nameof(Status), nameof(Result))]
         public Color StatusColor
         {
             get
@@ -141,6 +133,8 @@ namespace FlowTomator.Desktop
                     Node.Metadata["Position.X"] = value;
                 else
                     Node.Metadata.Add("Position.X", value);
+
+                NotifyPropertyChanged();
             }
         }
         public double Y
@@ -162,10 +156,10 @@ namespace FlowTomator.Desktop
                     Node.Metadata["Position.Y"] = value;
                 else
                     Node.Metadata.Add("Position.Y", value);
+
+                NotifyPropertyChanged();
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         private NodeStatus status;
         private NodeResult? result;
@@ -179,8 +173,7 @@ namespace FlowTomator.Desktop
 
         private void NodeAnchorBinder_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(NodeAnchorBinder)));
+            NotifyPropertyChanged(nameof(NodeAnchorBinder));
         }
 
         public static NodeInfo From(FlowInfo flowInfo, Node node)
