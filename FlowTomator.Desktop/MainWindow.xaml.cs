@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -92,10 +93,14 @@ namespace FlowTomator.Desktop
         }
         private void BrowseAssembly(Assembly assembly)
         {
-            IEnumerable<Type> nodeTypes = assembly.GetTypes()
-                                                  .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(Node)) && t != typeof(Flow) && !t.IsSubclassOf(typeof(Flow)))
-                                                  .Where(t => t.GetConstructor(Type.EmptyTypes) != null);
+            IEnumerable<Type> nodeTypes = Enumerable.Empty<Type>();
 
+            //nodeTypes = assembly.GetModules().SelectMany(m => m.GetTypes());
+            nodeTypes = assembly.GetTypes();
+
+            nodeTypes = nodeTypes.Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(Node)) && t != typeof(Flow) && !t.IsSubclassOf(typeof(Flow)))
+                                 .Where(t => t.GetConstructor(Type.EmptyTypes) != null);
+            
             foreach (Type type in nodeTypes)
             {
                 NodeTypeInfo nodeType = NodeTypeInfo.From(type);
@@ -169,9 +174,13 @@ namespace FlowTomator.Desktop
                     case ".xml": flowInfo = new FlowInfo(XFlow.Load(XDocument.Load(fileInfo.FullName)), fileInfo.FullName); break;
                 }
             }
-            catch { }
+            catch
+            {
+                if (Debugger.IsAttached)
+                    Debugger.Break();
+            }
 
-            if (flowInfo == null)
+            if (flowInfo.Flow == null)
             {
                 MessageBox.Show("Could not open specified file " + path, "FlowTomator", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -279,7 +288,13 @@ namespace FlowTomator.Desktop
                                                      .SelectMany(ni =>
                                                      {
                                                          ni.Status = NodeStatus.Running;
-                                                         NodeStep nodeStep = ni.Node.Evaluate();
+
+                                                         NodeStep nodeStep = new NodeStep(NodeResult.Fail, null);
+                                                         try
+                                                         {
+                                                             nodeStep = ni.Node.Evaluate();
+                                                         }
+                                                         catch { }
 
                                                          if (DebuggedFlow == null)
                                                              return Enumerable.Empty<NodeInfo>();

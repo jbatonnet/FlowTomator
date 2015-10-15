@@ -33,7 +33,10 @@ namespace FlowTomator.Desktop
                 Variable.Value = value;
 
                 if (PropertyChanged != null)
+                {
                     PropertyChanged(this, new PropertyChangedEventArgs(nameof(Value)));
+                    PropertyChanged(this, new PropertyChangedEventArgs(nameof(Text)));
+                }
             }
         }
         public string Text

@@ -1,13 +1,13 @@
-﻿<Application x:Class="FlowTomator.Desktop.WPF.App"
+﻿<Application x:Class="FlowTomator.Desktop.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:FlowTomator.Desktop.WPF"
+             xmlns:local="clr-namespace:FlowTomator.Desktop"
              StartupUri="MainWindow.xaml">
-    <Application.Resources>
+    <!--<Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/PresentationFramework.Aero;component/themes/Aero.NormalColor.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </Application.Resources>
+    </Application.Resources>-->
 </Application>

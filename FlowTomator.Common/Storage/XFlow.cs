@@ -27,7 +27,8 @@ namespace FlowTomator.Common
                         switch (referenceElement.Name.LocalName)
                         {
                             case "Assembly":
-                                Assembly assembly = Assembly.LoadFile(referenceElement.Attribute("Path").Value);
+                                string path = referenceElement.Attribute("Path").Value;
+                                Assembly assembly = Assembly.LoadFile(path);
                                 break;
 
                             case "Script":
@@ -205,7 +206,7 @@ namespace FlowTomator.Common
         }
         public static XDocument Save(XFlow flow)
         {
-            XElement nodesElement, slotsElement, editionElement;
+            XElement referencesElement, nodesElement, slotsElement, editionElement;
 
             XDocument document = new XDocument(
                 new XElement("Flow",
@@ -214,7 +215,21 @@ namespace FlowTomator.Common
                     editionElement = new XElement("Edition")
                 )
             );
-            
+
+            Assembly[] assemblies = flow.Nodes.Select(n => Assembly.GetAssembly(n.GetType()))
+                                              .Except(new [] { Assembly.GetAssembly(typeof(Flow)) })
+                                              .Distinct()
+                                              .ToArray();
+
+            if (assemblies.Length > 0)
+            {
+                referencesElement = new XElement("References");
+                nodesElement.AddBeforeSelf(referencesElement);
+
+                foreach (Assembly assembly in assemblies)
+                    referencesElement.Add(new XElement("Assembly", new XAttribute("Path", assembly.Location)));
+            }
+
             for (int i = 0; i < flow.Nodes.Count; i++)
             {
                 Node node = flow.Nodes[i];
