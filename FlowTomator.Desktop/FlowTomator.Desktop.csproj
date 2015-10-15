@@ -65,7 +65,7 @@
     <Compile Include="Actions\DeleteLink.cs" />
     <Compile Include="Actions\DeleteNode.cs" />
     <Compile Include="Actions\EditVariable.cs" />
-    <Compile Include="Actions\History.cs" />
+    <Compile Include="Actions\HistoryInfo.cs" />
     <Compile Include="Actions\MoveNode.cs" />
     <Compile Include="Controls\Values\FileInfoEditor.xaml.cs">
       <DependentUpon>FileInfoEditor.xaml</DependentUpon>
@@ -81,10 +81,15 @@
       <DependentUpon>TextEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Debugger.cs" />
+    <Compile Include="_WPF_\DependencyManager.cs" />
+    <Compile Include="_WPF_\DependencyModel.cs" />
+    <Compile Include="_WPF_\DependsOnAttribute.cs" />
     <Compile Include="Editors\EditorAttribute.cs" />
     <Compile Include="Editors\XFlow\XFlowEditor.xaml.cs">
       <DependentUpon>XFlowEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="_WPF_\DelegateCommand.cs" />
+    <Compile Include="_WPF_\IPropertyUpdatable.cs" />
     <Page Include="Controls\LinkControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -196,6 +201,10 @@
     <Resource Include="Resources\Run.png" />
     <Resource Include="Resources\Step.png" />
     <Resource Include="Resources\Stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Redo.png" />
+    <Resource Include="Resources\Undo.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

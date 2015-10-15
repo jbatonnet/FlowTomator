@@ -10,12 +10,12 @@ using FlowTomator.Common;
 
 namespace FlowTomator.Desktop
 {
-    public class FlowInfo : INotifyPropertyChanged
+    public class FlowInfo : DependencyModel
     {
         private static Dictionary<Flow, FlowInfo> flowInfos = new Dictionary<Flow, FlowInfo>();
 
         public EditableFlow Flow { get; private set; }
-        public History History { get; } = new History();
+        public HistoryInfo History { get; } = new HistoryInfo();
 
         public string Path { get; private set; }
         public string Name
@@ -52,8 +52,6 @@ namespace FlowTomator.Desktop
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public FlowInfo(EditableFlow flow, string path)
         {
             Flow = flow;
@@ -62,11 +60,7 @@ namespace FlowTomator.Desktop
 
         public void Update()
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(Nodes)));
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(Links)));
-            }
+            NotifyPropertyChanged(nameof(Nodes), nameof(Links));
         }
     }
 }

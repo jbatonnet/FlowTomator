@@ -3,65 +3,69 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Xml.Linq;
 
-using FlowTomator.Common;
-using FlowTomator.Common.Nodes;
 using Microsoft.Win32;
+
+using FlowTomator.Common;
+using System.Runtime.CompilerServices;
 
 namespace FlowTomator.Desktop
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        public ObservableCollection<NodeCategoryInfo> NodeCategories { get; } = new ObservableCollection<NodeCategoryInfo>();
         public ObservableCollection<FlowInfo> Flows { get; } = new ObservableCollection<FlowInfo>();
+        public ObservableCollection<NodeCategoryInfo> NodeCategories { get; } = new ObservableCollection<NodeCategoryInfo>();
 
-        public bool RunButtonEnabled
-        {
-            get
-            {
-                return !DebuggerStepping && (DebuggerPaused || DebuggedFlow == null);
-            }
-        }
-        public bool StepButtonEnabled
-        {
-            get
-            {
-                return !DebuggerStepping && (DebuggerPaused || DebuggedFlow == null);
-            }
-        }
-        public bool PauseButtonEnabled
-        {
-            get
-            {
-                return !DebuggerPaused && DebuggedFlow != null;
-            }
-        }
-        public bool StopButtonEnabled
-        {
-            get
-            {
-                return DebuggedFlow != null;
-            }
-        }
+        public DelegateCommand NewFlowCommand { get; private set; }
+        public DelegateCommand OpenFlowCommand { get; private set; }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        [DependsOn(nameof(CurrentHistory))]
+        public DelegateCommand SaveFlowCommand { get; private set; }
+        [DependsOn(nameof(Flows), nameof(CurrentHistory))]
+        public DelegateCommand SaveAllFlowsCommand { get; private set; }
+
+        [DependsOn(nameof(CurrentHistory))]
+        public DelegateCommand UndoCommand { get; private set; }
+        [DependsOn(nameof(CurrentHistory))]
+        public DelegateCommand RedoCommand { get; private set; }
+        
+        public DelegateCommand RunFlowCommand { get; private set; }
+        public DelegateCommand StepFlowCommand { get; private set; }
+        public DelegateCommand BreakFlowCommand { get; private set; }
+        public DelegateCommand StopFlowCommand { get; private set; }
+
+        [DependsOn(nameof(Flows))]
+        public FlowInfo CurrentFlow
+        {
+            get
+            {
+                return currentFlow;
+            }
+            set
+            {
+                currentFlow = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private FlowInfo currentFlow;
+
+        [DependsOn(nameof(CurrentFlow))]
+        public HistoryInfo CurrentHistory
+        {
+            get
+            {
+                return CurrentFlow?.History;
+            }
+        }
 
         private FlowInfo DebuggedFlow;
         private List<NodeInfo> DebuggedNodes = new List<NodeInfo>();
@@ -71,12 +75,25 @@ namespace FlowTomator.Desktop
 
         public MainWindow()
         {
+            Tag = new DependencyManager(this, (s, e) => PropertyChanged(s, e));
             System.Windows.Forms.Application.EnableVisualStyles();
 
-            // Load assemblies
-            AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
+            // Create commands
+            NewFlowCommand = new DelegateCommand(NewFlowCommandCallback);
+            OpenFlowCommand = new DelegateCommand(OpenFlowCommandCallback);
+            SaveFlowCommand = new DelegateCommand(SaveFlowCommandCallback, p => CurrentHistory?.Actions?.Any() == true);
+            SaveAllFlowsCommand = new DelegateCommand(SaveAllFlowsCommandCallback, p => Flows.Any(f => f.History.Actions.Any()));
+            UndoCommand = new DelegateCommand(UndoCommandCallback, p => CurrentHistory?.CanUndo == true);
+            RedoCommand = new DelegateCommand(RedoCommandCallback, p => CurrentHistory?.CanRedo == true);
+            RunFlowCommand = new DelegateCommand(RunFlowCommandCallback, p => !DebuggerStepping && (DebuggerPaused || DebuggedFlow == null));
+            StepFlowCommand = new DelegateCommand(StepFlowCommandCallback, p => !DebuggerStepping && (DebuggerPaused || DebuggedFlow == null));
+            BreakFlowCommand = new DelegateCommand(BreakFlowCommandCallback, p => !DebuggerPaused && DebuggedFlow != null);
+            StopFlowCommand = new DelegateCommand(StopFlowCommandCallback, p => DebuggedFlow != null);
+
+            // Analyze loaded assemblies
+            AppDomain.CurrentDomain.AssemblyLoad += (s, a) => AnalyzeAssembly(a.LoadedAssembly);
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-                BrowseAssembly(assembly);
+                AnalyzeAssembly(assembly);
 
             DataContext = this;
             InitializeComponent();
@@ -84,14 +101,10 @@ namespace FlowTomator.Desktop
             // Load specified arguments
             string[] args = Environment.GetCommandLineArgs();
             foreach (string arg in args.Skip(1))
-                TryOpen(arg);
+                Open(arg);
         }
 
-        private void CurrentDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs args)
-        {
-            BrowseAssembly(args.LoadedAssembly);
-        }
-        private void BrowseAssembly(Assembly assembly)
+        private void AnalyzeAssembly(Assembly assembly)
         {
             IEnumerable<Type> nodeTypes = Enumerable.Empty<Type>();
 
@@ -131,15 +144,18 @@ namespace FlowTomator.Desktop
                 if (result == System.Windows.Forms.DialogResult.Yes)
                 {
                     foreach (FlowInfo flowInfo in unsavedFlows)
-                        TrySave(flowInfo);
+                        Save(flowInfo);
                 }
             }
 
-            if (StopButtonEnabled)
-                StopButton_Click(sender, new RoutedEventArgs());
+            StopFlowCommand.Execute(null);
         }
 
-        private void OpenButton_Click(object sender, RoutedEventArgs e)
+        private void NewFlowCommandCallback(object parameter)
+        {
+            throw new NotImplementedException();
+        }
+        private void OpenFlowCommandCallback(object parameter)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "XFlow files (*.xml)|*.xml";
@@ -148,15 +164,31 @@ namespace FlowTomator.Desktop
             if (openFileDialog.ShowDialog() != true)
                 return;
 
-            TryOpen(openFileDialog.FileName);
+            Open(openFileDialog.FileName);
         }
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        private void SaveFlowCommandCallback(object parameter)
         {
-            FlowInfo flowInfo = Tabs.SelectedItem as FlowInfo;
-            TrySave(flowInfo);
+            if (CurrentFlow != null)
+                Save(CurrentFlow);
+        }
+        private void SaveAllFlowsCommandCallback(object parameter)
+        {
+            foreach (FlowInfo flowInfo in Flows)
+                if (flowInfo.History.Actions.Any())
+                    Save(flowInfo);
+        }
+        private void UndoCommandCallback(object parameter)
+        {
+            if (CurrentHistory != null)
+                CurrentHistory.Undo();
+        }
+        private void RedoCommandCallback(object parameter)
+        {
+            if (CurrentHistory != null)
+                CurrentHistory.Redo();
         }
 
-        public void TryOpen(string path)
+        public void Open(string path)
         {
             FileInfo fileInfo = new FileInfo(path);
             if (!fileInfo.Exists)
@@ -187,8 +219,9 @@ namespace FlowTomator.Desktop
             }
 
             Flows.Add(flowInfo);
+            NotifyPropertyChanged(nameof(Flows));
         }
-        public void TrySave(FlowInfo flowInfo)
+        public void Save(FlowInfo flowInfo)
         {
             Type flowType = flowInfo.Flow.GetType();
 
@@ -202,29 +235,7 @@ namespace FlowTomator.Desktop
             catch { }
         }
 
-        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-
-        }
-        private void Grid_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.LeftButton != MouseButtonState.Pressed)
-                return;
-
-            Grid grid = sender as Grid;
-            ContentPresenter contentPresenter = VisualTreeHelper.GetParent(grid) as ContentPresenter;
-
-            DependencyObject itemsControl = contentPresenter;
-            while (!(itemsControl is ItemsControl))
-                itemsControl = VisualTreeHelper.GetParent(itemsControl);
-
-            NodeTypeInfo nodeTypeInfo = (itemsControl as ItemsControl).ItemContainerGenerator.ItemFromContainer(contentPresenter) as NodeTypeInfo;
-
-            DataObject dragData = new DataObject("FlowTomator.Node", nodeTypeInfo.Type);
-            DragDrop.DoDragDrop(grid, dragData, DragDropEffects.Move);
-        }
-
-        private void RunButton_Click(object sender, RoutedEventArgs e)
+        private void RunFlowCommandCallback(object parameter)
         {
             FlowInfo flowInfo = Tabs.SelectedItem as FlowInfo;
 
@@ -241,14 +252,9 @@ namespace FlowTomator.Desktop
             DebuggerPaused = false;
             RefreshDebuggerUI();
 
-            StepButton_Click(sender, e);
+            StepFlowCommandCallback(parameter);
         }
-        private void PauseButton_Click(object sender, RoutedEventArgs e)
-        {
-            DebuggerPaused = true;
-            RefreshDebuggerUI();
-        }
-        private void StepButton_Click(object sender, RoutedEventArgs e)
+        private void StepFlowCommandCallback(object parameter)
         {
             FlowInfo flowInfo = null;
             Dispatcher.Invoke(() => flowInfo = Tabs.SelectedItem as FlowInfo);
@@ -332,12 +338,17 @@ namespace FlowTomator.Desktop
                 }
 
                 if (!DebuggerPaused)
-                    StepButton_Click(sender, e);
+                    StepFlowCommandCallback(parameter);
             });
 
             DebuggerThread.Start();
         }
-        private void StopButton_Click(object sender, RoutedEventArgs e)
+        private void BreakFlowCommandCallback(object parameter)
+        {
+            DebuggerPaused = true;
+            RefreshDebuggerUI();
+        }
+        private void StopFlowCommandCallback(object parameter)
         {
             FlowInfo flowInfo = Tabs.SelectedItem as FlowInfo;
 
@@ -360,11 +371,40 @@ namespace FlowTomator.Desktop
         {
             if (PropertyChanged != null)
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(RunButtonEnabled)));
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(StepButtonEnabled)));
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(PauseButtonEnabled)));
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(StopButtonEnabled)));
+                RunFlowCommand.PropertyUpdate();
+                StepFlowCommand.PropertyUpdate();
+                BreakFlowCommand.PropertyUpdate();
+                StopFlowCommand.PropertyUpdate();
             }
+        }
+
+        private void NodeList_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+
+        }
+        private void NodeList_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            Grid grid = sender as Grid;
+            ContentPresenter contentPresenter = VisualTreeHelper.GetParent(grid) as ContentPresenter;
+
+            DependencyObject itemsControl = contentPresenter;
+            while (!(itemsControl is ItemsControl))
+                itemsControl = VisualTreeHelper.GetParent(itemsControl);
+
+            NodeTypeInfo nodeTypeInfo = (itemsControl as ItemsControl).ItemContainerGenerator.ItemFromContainer(contentPresenter) as NodeTypeInfo;
+
+            DataObject dragData = new DataObject("FlowTomator.Node", nodeTypeInfo.Type);
+            DragDrop.DoDragDrop(grid, dragData, DragDropEffects.Move);
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void NotifyPropertyChanged([CallerMemberName]string property = null)
+        {
+            if (property != null && PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(property));
         }
     }
 }
