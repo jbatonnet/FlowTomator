@@ -10,7 +10,7 @@
              Loaded="NodeControl_Loaded">
 
     <UserControl.Resources>
-        <local:ValueTemplateSelector x:Key="ValueTemplateSelector" />
+        <local:VariableEditorTemplateSelector x:Key="ValueTemplateSelector" />
     </UserControl.Resources>
     
     <StackPanel x:Name="Root" Width="128">

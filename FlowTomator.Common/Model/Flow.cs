@@ -11,6 +11,13 @@ namespace FlowTomator.Common
     {
         public virtual IEnumerable<Origin> Origins { get; } = new List<Origin>();
 
+        public override void Reset()
+        {
+            base.Reset();
+
+            foreach (Node node in GetAllNodes())
+                node.Reset();
+        }
         public override NodeResult Run()
         {
             if (!Origins.Any())

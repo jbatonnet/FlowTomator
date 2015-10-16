@@ -11,7 +11,7 @@
         Loaded="Window_Loaded" Closing="Window_Closing">
 
     <Window.Resources>
-        <local:EditorTemplateSelector x:Key="EditorTemplateSelector" />
+        <local:FlowEditorTemplateSelector x:Key="EditorTemplateSelector" />
 
         <Style x:Key="ImageEnabled" TargetType="Image">
             <Style.Triggers>

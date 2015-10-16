@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowTomator.Common", "FlowT
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{396672B0-EA14-498B-8C80-B3EBC2FF2239}"
 	ProjectSection(SolutionItems) = preProject
-		FlowTomator.Sample\Sample.xml = FlowTomator.Sample\Sample.xml
+		Samples\Sample.xml = Samples\Sample.xml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowTomator.Desktop", "FlowTomator.Desktop\FlowTomator.Desktop.csproj", "{513C6EF6-D8AA-4395-9092-0771B7004200}"

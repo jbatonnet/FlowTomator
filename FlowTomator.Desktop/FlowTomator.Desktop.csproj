@@ -67,50 +67,47 @@
     <Compile Include="Actions\EditVariable.cs" />
     <Compile Include="Actions\HistoryInfo.cs" />
     <Compile Include="Actions\MoveNode.cs" />
-    <Compile Include="Controls\Values\FileInfoEditor.xaml.cs">
-      <DependentUpon>FileInfoEditor.xaml</DependentUpon>
+    <Compile Include="Editors\VariableEditorAttribute.cs" />
+    <Compile Include="Editors\Variables\FileInfoVariableEditor.xaml.cs">
+      <DependentUpon>FileInfoVariableEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Values\EnumEditor.xaml.cs">
-      <DependentUpon>EnumEditor.xaml</DependentUpon>
+    <Compile Include="Editors\Variables\EnumerableVariableEditor.xaml.cs">
+      <DependentUpon>EnumerableVariableEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Values\BoolEditor.xaml.cs">
-      <DependentUpon>BoolEditor.xaml</DependentUpon>
+    <Compile Include="Editors\Variables\BooleanVariableEditor.xaml.cs">
+      <DependentUpon>BooleanVariableEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Values\ValueTemplateSelector.cs" />
-    <Compile Include="Controls\Values\TextEditor.xaml.cs">
-      <DependentUpon>TextEditor.xaml</DependentUpon>
+    <Compile Include="Editors\VariableEditorTemplateSelector.cs" />
+    <Compile Include="Editors\Variables\TextVariableEditor.xaml.cs">
+      <DependentUpon>TextVariableEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Debugger.cs" />
+    <Compile Include="Model\FlowDebugger.cs" />
     <Compile Include="_WPF_\DependencyManager.cs" />
     <Compile Include="_WPF_\DependencyModel.cs" />
     <Compile Include="_WPF_\DependsOnAttribute.cs" />
-    <Compile Include="Editors\EditorAttribute.cs" />
-    <Compile Include="Editors\XFlow\XFlowEditor.xaml.cs">
+    <Compile Include="Editors\FlowEditorAttribute.cs" />
+    <Compile Include="Editors\Flows\XFlowEditor.xaml.cs">
       <DependentUpon>XFlowEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="_WPF_\DelegateCommand.cs" />
     <Compile Include="_WPF_\IPropertyUpdatable.cs" />
-    <Page Include="Controls\LinkControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\Values\FileInfoEditor.xaml">
+    <Page Include="Editors\Variables\FileInfoVariableEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Controls\Values\EnumEditor.xaml">
+    <Page Include="Editors\Variables\EnumerableVariableEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Controls\Values\BoolEditor.xaml">
+    <Page Include="Editors\Variables\BooleanVariableEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Controls\Values\TextEditor.xaml">
+    <Page Include="Editors\Variables\TextVariableEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Editors\XFlow\XFlowEditor.xaml">
+    <Page Include="Editors\Flows\XFlowEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -127,13 +124,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controls\Anchor.cs" />
-    <Compile Include="Controls\LinkControl.xaml.cs">
-      <DependentUpon>LinkControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\NodeControl.xaml.cs">
       <DependentUpon>NodeControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Editors\EditorTemplateSelector.cs" />
+    <Compile Include="Editors\FlowEditorTemplateSelector.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -169,9 +163,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FlowTomator.Common\FlowTomator.Common.csproj">

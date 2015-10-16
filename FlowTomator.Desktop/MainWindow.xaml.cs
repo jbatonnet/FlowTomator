@@ -38,9 +38,13 @@ namespace FlowTomator.Desktop
         [DependsOn(nameof(CurrentHistory))]
         public DelegateCommand RedoCommand { get; private set; }
         
+        [DependsOn(nameof(Debugger))]
         public DelegateCommand RunFlowCommand { get; private set; }
+        [DependsOn(nameof(Debugger))]
         public DelegateCommand StepFlowCommand { get; private set; }
+        [DependsOn(nameof(Debugger))]
         public DelegateCommand BreakFlowCommand { get; private set; }
+        [DependsOn(nameof(Debugger))]
         public DelegateCommand StopFlowCommand { get; private set; }
 
         [DependsOn(nameof(Flows))]
@@ -67,11 +71,19 @@ namespace FlowTomator.Desktop
             }
         }
 
-        private FlowInfo DebuggedFlow;
-        private List<NodeInfo> DebuggedNodes = new List<NodeInfo>();
-        private bool DebuggerPaused = false;
-        private bool DebuggerStepping = false;
-        private Thread DebuggerThread = null;
+        public FlowDebugger Debugger
+        {
+            get
+            {
+                return debugger;
+            }
+            set
+            {
+                debugger = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private FlowDebugger debugger;
 
         public MainWindow()
         {
@@ -85,10 +97,10 @@ namespace FlowTomator.Desktop
             SaveAllFlowsCommand = new DelegateCommand(SaveAllFlowsCommandCallback, p => Flows.Any(f => f.History.Actions.Any()));
             UndoCommand = new DelegateCommand(UndoCommandCallback, p => CurrentHistory?.CanUndo == true);
             RedoCommand = new DelegateCommand(RedoCommandCallback, p => CurrentHistory?.CanRedo == true);
-            RunFlowCommand = new DelegateCommand(RunFlowCommandCallback, p => !DebuggerStepping && (DebuggerPaused || DebuggedFlow == null));
-            StepFlowCommand = new DelegateCommand(StepFlowCommandCallback, p => !DebuggerStepping && (DebuggerPaused || DebuggedFlow == null));
-            BreakFlowCommand = new DelegateCommand(BreakFlowCommandCallback, p => !DebuggerPaused && DebuggedFlow != null);
-            StopFlowCommand = new DelegateCommand(StopFlowCommandCallback, p => DebuggedFlow != null);
+            RunFlowCommand = new DelegateCommand(RunFlowCommandCallback, p => Debugger?.State != DebuggerState.Running);
+            StepFlowCommand = new DelegateCommand(StepFlowCommandCallback, p => Debugger?.State != DebuggerState.Running);
+            BreakFlowCommand = new DelegateCommand(BreakFlowCommandCallback, p => Debugger?.State == DebuggerState.Running);
+            StopFlowCommand = new DelegateCommand(StopFlowCommandCallback, p => (Debugger?.State ?? DebuggerState.Idle) != DebuggerState.Idle);
 
             // Analyze loaded assemblies
             AppDomain.CurrentDomain.AssemblyLoad += (s, a) => AnalyzeAssembly(a.LoadedAssembly);
@@ -211,7 +223,7 @@ namespace FlowTomator.Desktop
             }
             catch
             {
-                if (Debugger.IsAttached)
+                if (System.Diagnostics.Debugger.IsAttached)
                     Debugger.Break();
             }
 
@@ -240,144 +252,36 @@ namespace FlowTomator.Desktop
 
         private void RunFlowCommandCallback(object parameter)
         {
-            FlowInfo flowInfo = Tabs.SelectedItem as FlowInfo;
+            if (Debugger == null)
+                Debugger = new FlowDebugger(CurrentFlow);
 
-            DebuggedFlow = flowInfo;
-            DebuggedNodes = flowInfo.Flow.Origins.OfType<Node>()
-                                                 .Select(n => NodeInfo.From(flowInfo, n))
-                                                 .ToList();
-
-            foreach (NodeInfo nodeInfo in flowInfo.Nodes)
-                nodeInfo.Result = NodeResult.Success;
-            foreach (NodeInfo nodeInfo in DebuggedNodes)
-                nodeInfo.Status = NodeStatus.Paused;
-
-            DebuggerPaused = false;
-            RefreshDebuggerUI();
-
-            StepFlowCommandCallback(parameter);
+            Debugger.Run();
         }
         private void StepFlowCommandCallback(object parameter)
         {
-            FlowInfo flowInfo = null;
-            Dispatcher.Invoke(() => flowInfo = Tabs.SelectedItem as FlowInfo);
+            if (Debugger == null)
+                Debugger = new FlowDebugger(CurrentFlow);
 
-            if (DebuggedFlow == null)
-            {
-                DebuggedFlow = flowInfo;
-                DebuggedNodes = flowInfo.Flow.Origins.OfType<Node>()
-                                                     .Select(n => NodeInfo.From(flowInfo, n))
-                                                     .ToList();
-
-                foreach (NodeInfo nodeInfo in DebuggedNodes)
-                    nodeInfo.Status = NodeStatus.Paused;
-
-                DebuggerPaused = true;
-            }
-
-            DebuggerThread = new Thread(() =>
-            {
-                lock (DebuggedNodes)
-                {
-                    if (DebuggedNodes.Count == 0)
-                    {
-                        DebuggedFlow = null;
-                        DebuggerPaused = true;
-
-                        RefreshDebuggerUI();
-                        return;
-                    }
-
-                    DebuggerStepping = true;
-                    RefreshDebuggerUI();
-
-                    try
-                    {
-                        DebuggedNodes = DebuggedNodes.AsParallel()
-                                                     .SelectMany(ni =>
-                                                     {
-                                                         ni.Status = NodeStatus.Running;
-
-                                                         NodeStep nodeStep = new NodeStep(NodeResult.Fail, null);
-                                                         try
-                                                         {
-                                                             nodeStep = ni.Node.Evaluate();
-                                                         }
-                                                         catch { }
-
-                                                         if (DebuggedFlow == null)
-                                                             return Enumerable.Empty<NodeInfo>();
-
-                                                         ni.Status = NodeStatus.Idle;
-                                                         ni.Result = nodeStep.Result;
-
-                                                         if (ni.Result == NodeResult.Stop || ni.Result == NodeResult.Fail)
-                                                         {
-                                                             DebuggerPaused = true;
-                                                             return Enumerable.Empty<NodeInfo>();
-                                                         }
-
-                                                         NodeInfo[] nodeInfos = nodeStep.Slot == null ? new NodeInfo[0] : nodeStep.Slot.Nodes.Select(n => NodeInfo.From(flowInfo, n)).ToArray();
-                                                         foreach (NodeInfo nodeInfo in nodeInfos)
-                                                             nodeInfo.Status = NodeStatus.Paused;
-
-                                                         return nodeInfos;
-                                                     })
-                                                     .ToList();
-                    }
-                    catch { }
-
-                    DebuggerStepping = false;
-                    RefreshDebuggerUI();
-                }
-
-                if (DebuggedNodes.Count == 0)
-                {
-                    DebuggedFlow = null;
-                    DebuggerPaused = true;
-
-                    RefreshDebuggerUI();
-                    return;
-                }
-
-                if (!DebuggerPaused)
-                    StepFlowCommandCallback(parameter);
-            });
-
-            DebuggerThread.Start();
+            Debugger.Step();
         }
         private void BreakFlowCommandCallback(object parameter)
         {
-            DebuggerPaused = true;
-            RefreshDebuggerUI();
+            if (Debugger == null)
+                return;
+
+            Debugger.Break();
         }
         private void StopFlowCommandCallback(object parameter)
         {
-            FlowInfo flowInfo = Tabs.SelectedItem as FlowInfo;
+            if (Debugger == null)
+                return;
 
-            DebuggedFlow = null;
-            DebuggerPaused = true;
-            DebuggerStepping = false;
+            Debugger.Stop();
 
-            if (DebuggerThread != null)
+            foreach (NodeInfo nodeInfo in CurrentFlow.Nodes)
             {
-                DebuggerThread.Abort();
-                DebuggerThread = null;
-            }
-
-            foreach (NodeInfo nodeInfo in flowInfo.Nodes)
                 nodeInfo.Status = NodeStatus.Idle;
-
-            RefreshDebuggerUI();
-        }
-        private void RefreshDebuggerUI()
-        {
-            if (PropertyChanged != null)
-            {
-                RunFlowCommand.PropertyUpdate();
-                StepFlowCommand.PropertyUpdate();
-                BreakFlowCommand.PropertyUpdate();
-                StopFlowCommand.PropertyUpdate();
+                nodeInfo.Result = NodeResult.Success;
             }
         }
 

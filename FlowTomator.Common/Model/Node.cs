@@ -33,6 +33,7 @@ namespace FlowTomator.Common
 
         public virtual Dictionary<string, object> Metadata { get; } = new Dictionary<string, object>();
 
+        public virtual void Reset() { }
         public abstract NodeStep Evaluate();
     }
 }

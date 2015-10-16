@@ -51,6 +51,7 @@
     <Compile Include="Model\Node.cs" />
     <Compile Include="Nodes\Devices\Inputs\MouseMove.cs" />
     <Compile Include="Nodes\Devices\Network\NetworkSpeed.cs" />
+    <Compile Include="Nodes\General\Wait.cs" />
     <Compile Include="Nodes\General\Debug.cs" />
     <Compile Include="Nodes\General\Sleep.cs" />
     <Compile Include="Nodes\General\Nope.cs" />
