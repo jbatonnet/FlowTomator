@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -53,7 +54,7 @@ namespace FlowTomator.Engine
             {
                 switch (flowInfo.Extension)
                 {
-                    case ".xml": flow = XFlow.Load(XDocument.Load(flowInfo.FullName)); break;
+                    case ".xflow": flow = XFlow.Load(XDocument.Load(flowInfo.FullName)); break;
                 }
             }
             catch { }
@@ -69,6 +70,8 @@ namespace FlowTomator.Engine
             flow.Reset();
             NodeStep nodeStep = flow.Evaluate();
 
+            if (Debugger.IsAttached)
+                Console.ReadKey(true);
             Environment.Exit((int)nodeStep.Result);
         }
     }

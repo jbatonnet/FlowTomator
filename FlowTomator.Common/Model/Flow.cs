@@ -32,7 +32,12 @@ namespace FlowTomator.Common
         {
             NodeStep step = node.Evaluate();
 
-            if (step.Result == NodeResult.Fail || step.Result == NodeResult.Stop || step.Slot.Nodes.Count == 0)
+            if (step.Result == NodeResult.Fail)
+            {
+                Log.Error("Node {0} failed", node.GetType().Name);
+                return NodeResult.Fail;
+            }
+            if (step.Result == NodeResult.Skip || step.Slot.Nodes.Count == 0)
                 return step.Result;
 
             return step.Slot.Nodes.AsParallel()

@@ -8,9 +8,24 @@ namespace FlowTomator.Common
 {
     public enum NodeResult
     {
+        /// <summary>
+        /// Return value if the node evaluation has succeeded
+        /// </summary>
         Success,
+
+        /// <summary>
+        /// Return value if the runtime should skip further thread evaluation
+        /// </summary>
         Skip,
+
+        /// <summary>
+        /// Return value if the flow should stop its evaluation
+        /// </summary>
         Stop,
+
+        /// <summary>
+        /// Return value if the node evaluation has failed
+        /// </summary>
         Fail
     }
     public class NodeStep

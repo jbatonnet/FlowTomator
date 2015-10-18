@@ -21,7 +21,12 @@ namespace FlowTomator.Common
         public abstract NodeResult Run();
         public sealed override NodeStep Evaluate()
         {
-            return new NodeStep(Run(), slot);
+            Log.Trace("Entering task {0}", GetType().Name);
+
+            NodeStep step = new NodeStep(Run(), slot);
+
+            Log.Trace("Exiting task {0} with result {1}", GetType().Name, step.Result);
+            return step;
         }
     }
 }

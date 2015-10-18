@@ -25,44 +25,61 @@ namespace FlowTomator.Common
     {
         public static LogVerbosity Verbosity { get; set; } = LogVerbosity.Info;
 
+        private static object mutex = new object();
+
         public static void Trace(string format, params object[] args)
         {
             if (Verbosity <= LogVerbosity.Trace)
             {
-                WritePrefix(ConsoleColor.DarkGray, "[T] ");
-                Console.WriteLine(format, args);
+                lock (mutex)
+                {
+                    WritePrefix(ConsoleColor.DarkGray, "[T] ");
+                    Console.WriteLine(format, args);
+                }
             }
         }
         public static void Debug(string format, params object[] args)
         {
             if (Verbosity <= LogVerbosity.Debug)
             {
-                WritePrefix(ConsoleColor.Gray, "[D] ");
-                Console.WriteLine(format, args);
+                lock (mutex)
+                {
+                    WritePrefix(ConsoleColor.Gray, "[D] ");
+                    Console.WriteLine(format, args);
+                }
             }
         }
         public static void Info(string format, params object[] args)
         {
             if (Verbosity <= LogVerbosity.Info)
             {
-                WritePrefix(ConsoleColor.White, "[I] ");
-                Console.WriteLine(format, args);
+                lock (mutex)
+                {
+                    WritePrefix(ConsoleColor.White, "[I] ");
+                    Console.WriteLine(format, args);
+                }
             }
         }
         public static void Warning(string format, params object[] args)
         {
             if (Verbosity <= LogVerbosity.Warning)
             {
-                WritePrefix(ConsoleColor.DarkYellow, "[W] ");
-                Console.WriteLine(format, args);
+                lock (mutex)
+                {
+                    WritePrefix(ConsoleColor.DarkYellow, "[W] ");
+                    Console.WriteLine(format, args);
+                }
             }
         }
         public static void Error(string format, params object[] args)
         {
             if (Verbosity <= LogVerbosity.Error)
             {
-                WritePrefix(ConsoleColor.DarkRed, "[E] ");
-                Console.WriteLine(format, args);
+                lock (mutex)
+                {
+                    WritePrefix(ConsoleColor.DarkRed, "[E] ");
+                    Console.WriteLine(format, args);
+                }
             }
         }
 

@@ -68,7 +68,16 @@ namespace FlowTomator.Desktop
         }
         public void Stop()
         {
+            if (State == DebuggerState.Idle)
+                return;
+
             State = DebuggerState.Idle;
+
+            nodes.Clear();
+            tasks.Clear();
+
+            foreach (NodeInfo nodeInfo in FlowInfo.Flow.GetAllNodes().Select(n => NodeInfo.From(FlowInfo, n)))
+                nodeInfo.Status = NodeStatus.Idle;
         }
 
         private void Reset()
@@ -141,10 +150,12 @@ namespace FlowTomator.Desktop
             nodeInfo.Status = NodeStatus.Idle;
             nodeInfo.Result = nodeStep.Result;
 
-            if (nodeStep.Result == NodeResult.Fail)
-                Break();
-            if (nodeStep.Result == NodeResult.Stop || nodeStep.Result == NodeResult.Fail)
-                return;
+            switch (nodeStep.Result)
+            {
+                case NodeResult.Skip: return;
+                case NodeResult.Fail: Break(); return;
+                case NodeResult.Stop: Stop(); return;
+            }
 
             NodeInfo[] nodeInfos = nodeStep.Slot.Nodes.Select(n => NodeInfo.From(FlowInfo, n)).ToArray();
 

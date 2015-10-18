@@ -101,11 +101,16 @@ namespace FlowTomator.Desktop
             Visual visual = values[1] as Visual;
 
             if (anchorBinder == null || anchorBinder.Anchor == null)
-                return null;
+                return new Point(0, 0);
             if (visual == null)
                 throw new NotSupportedException();
 
-            try
+            // Check if the anchor is part of the specified visual
+            DependencyObject commonAncestor = anchorBinder.Anchor.FindCommonVisualAncestor(visual);
+            if (commonAncestor == null)
+                return new Point(0, 0);
+
+            //try
             {
                 GeneralTransform transform = anchorBinder.Anchor.TransformToVisual(visual);
                 Point translation = transform.Transform(new Point(0, 0));
@@ -118,10 +123,10 @@ namespace FlowTomator.Desktop
 
                 return translation;
             }
-            catch
-            {
-                return null;
-            }
+            //catch
+            //{
+            //    return new Point(0, 0);
+            //}
         }
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {

@@ -168,12 +168,16 @@ namespace FlowTomator.Desktop
 
         private void NewFlowCommandCallback(object parameter)
         {
-            throw new NotImplementedException();
+            XFlow flow = new XFlow();
+            FlowInfo flowInfo = new FlowInfo(flow, null);
+
+            Flows.Add(flowInfo);
+            CurrentFlow = flowInfo;
         }
         private void OpenFlowCommandCallback(object parameter)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "XFlow files (*.xml)|*.xml";
+            openFileDialog.Filter = "XFlow files (*.xflow)|*.xflow";
             openFileDialog.FilterIndex = 1;
 
             if (openFileDialog.ShowDialog() != true)
@@ -218,7 +222,7 @@ namespace FlowTomator.Desktop
             {
                 switch (fileInfo.Extension)
                 {
-                    case ".xml": flowInfo = new FlowInfo(XFlow.Load(XDocument.Load(fileInfo.FullName)), fileInfo.FullName); break;
+                    case ".xflow": flowInfo = new FlowInfo(XFlow.Load(XDocument.Load(fileInfo.FullName)), fileInfo.FullName); break;
                 }
             }
             catch
@@ -243,7 +247,18 @@ namespace FlowTomator.Desktop
             try
             {
                 if (flowType == typeof(XFlow))
-                    XFlow.Save(flowInfo.Flow as XFlow).Save(flowInfo.Path);
+                {
+                    XDocument document = XFlow.Save(flowInfo.Flow as XFlow);
+
+                    /*if (string.IsNullOrEmpty(flowInfo.Path) || !File.Exists(flowInfo.Path))
+                    {
+                        SaveFileDialog saveFileDialog = new SaveFileDialog();
+
+                        saveFileDialog
+                    }*/
+
+                    document.Save(flowInfo.Path);
+                }
 
                 flowInfo.History.Clear();
             }

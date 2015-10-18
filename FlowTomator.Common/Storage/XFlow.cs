@@ -91,15 +91,15 @@ namespace FlowTomator.Common
                                 try
                                 {
                                     TypeConverter converter = TypeDescriptor.GetConverter(inputVariable.Type);
-                                    value = converter.ConvertFromString(nodeAttribute.Value);
+
+                                    if (converter.IsValid(nodeAttribute.Value))
+                                        value = converter.ConvertFromString(nodeAttribute.Value);
+                                    else
+                                        value = Activator.CreateInstance(inputVariable.Type, nodeAttribute.Value);
                                 }
                                 catch
                                 {
-                                    try
-                                    {
-                                        value = Activator.CreateInstance(inputVariable.Type, nodeAttribute.Value);
-                                    }
-                                    catch { }
+                                    throw new KeyNotFoundException("Could not convert the specified object into the variable " + variableName + " in task " + nodeType.Name);
                                 }
 
                                 inputVariable.Value = value;

@@ -35,7 +35,7 @@ namespace FlowTomator.Common
                 actualCount++;
 
                 if (actualCount < count.Value)
-                    return NodeResult.Stop;
+                    return NodeResult.Skip;
 
                 actualCount = 0;
                 return NodeResult.Success;

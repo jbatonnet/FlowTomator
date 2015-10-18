@@ -6,13 +6,12 @@
         xmlns:local="clr-namespace:FlowTomator.Desktop"
         mc:Ignorable="d"
         Title="FlowTomator" SnapsToDevicePixels="True"
-        Width="1024" Height="600"
+        Width="1024" Height="600" MinWidth="640" MinHeight="480"
         Icon="..\Icon.ico"
         Loaded="Window_Loaded" Closing="Window_Closing">
 
     <Window.Resources>
         <local:FlowEditorTemplateSelector x:Key="EditorTemplateSelector" />
-        <local:VisualSnapshotConverter x:Key="VisualSnapshotConverter" MaxWidth="72" />
 
         <Style x:Key="ImageEnabled" TargetType="Image">
             <Style.Triggers>
@@ -30,6 +29,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <!-- Main toolbar -->
         <ToolBarTray Grid.Row="0">
             <ToolBar ToolBarTray.IsLocked="True" >
                 <Button Command="{Binding NewFlowCommand}" ToolTip="Create an new flow">
@@ -68,19 +68,30 @@
             </ToolBar>
         </ToolBarTray>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Background="WhiteSmoke">
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="192" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-            <Border Grid.Column="0"
-                Background="WhiteSmoke" BorderThickness="0,0,1,0" BorderBrush="Gray">
-                <StackPanel>
-                    
-                    <TextBlock Margin="4">Nodes</TextBlock>
-                    <Border Margin="4" Background="White" BorderBrush="DarkGray" BorderThickness="1">
+            <!-- Available nodes list -->
+            <Border Grid.Column="0" Grid.Row="0" Margin="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" BorderBrush="DarkGray" BorderThickness="0,0,0,1" Margin="0,0,0,4" Padding="0,0,0,2">
+                        <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Nodes</TextBlock>
+                    </Border>
+
+                    <ScrollViewer Grid.Row="1" Background="White" VerticalScrollBarVisibility="Auto">
                         <ItemsControl ItemsSource="{Binding NodeCategories}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -90,8 +101,17 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel>
-                                        
-                                        <TextBlock Text="{Binding Category}" FontFamily="Consolas" FontSize="9" Background="DarkGray" Foreground="White" Padding="2,1,0,0" />
+
+                                        <StackPanel Background="WhiteSmoke" Orientation="Horizontal">
+                                            <!--<Path Width="8" Height="5" Stretch="Fill" Fill="Gray" Margin="4">
+                                                <Path.Data>
+                                                    <Geometry>M0,0 L1,0 0.5,1Z</Geometry>
+                                                </Path.Data>
+                                            </Path>-->
+
+                                            <TextBlock Foreground="Gray" Text="{Binding Category}" Margin="2,2,0,3" />
+                                        </StackPanel>
+
                                         <ItemsControl ItemsSource="{Binding Nodes}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
@@ -122,55 +142,47 @@
                                                             </Border.Background>
                                                         </Border>
 
-                                                        <TextBlock Grid.Column="1" Margin="2" Text="{Binding Name}" />
-                                                        <TextBlock Grid.Column="2" Margin="3,2" DockPanel.Dock="Right" Text="{Binding Model}" Foreground="Gray" />
+                                                        <TextBlock Grid.Column="1" Margin="2,2" Text="{Binding Name}" />
+                                                        <TextBlock Grid.Column="2" Margin="3,2" Text="{Binding Model}" Foreground="Gray" />
                                                     </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
-                                        
+
                                     </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+            
+            <!-- Global variables list -->
+            <Border Grid.Column="0" Grid.Row="1" Margin="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" BorderBrush="DarkGray" BorderThickness="0,0,0,1" Margin="0,0,0,4" Padding="0,0,0,2">
+                        <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Variables</TextBlock>
                     </Border>
 
-                    <TextBlock Margin="4">Variables</TextBlock>
-                    <ListView Margin="4"></ListView>
+                    <ScrollViewer Grid.Row="1" Background="White" VerticalScrollBarVisibility="Auto">
 
-                </StackPanel>
+                    </ScrollViewer>
+                </Grid>
             </Border>
 
-            <Border Grid.Column="1" Padding="2">
-                <TabControl x:Name="Tabs" ItemsSource="{Binding Flows}" SelectedItem="{Binding CurrentFlow}">
+            <!-- Flow editors -->
+            <Border Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Padding="0,4,4,4">
+                <TabControl x:Name="Tabs" ItemsSource="{Binding Flows}" ContentTemplateSelector="{StaticResource EditorTemplateSelector}" SelectedItem="{Binding CurrentFlow}">
                     <TabControl.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Name}" ToolTip="{Binding Path}" />
                         </DataTemplate>
                     </TabControl.ItemTemplate>
-                    <TabControl.ContentTemplate>
-                        <DataTemplate>
-                            <Canvas>
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
-                                              Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Canvas}}}"
-                                              Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Canvas}}}">
-                                    
-                                    <ScrollViewer.RenderTransform>
-                                        <ScaleTransform ScaleX="1" ScaleY="1" />
-                                    </ScrollViewer.RenderTransform>
-                                    <ScrollViewer.Background>
-                                        <ImageBrush ImageSource="..\..\Resources\Icon-256.png" Opacity="0.25" Stretch="None" Viewport="0,0,2,2" Viewbox="0,0,1.3,1.3" />
-                                    </ScrollViewer.Background>
-
-                                    <ContentPresenter x:Name="FlowEditor" ContentSource="{Binding}" ContentTemplateSelector="{StaticResource EditorTemplateSelector}" />
-
-                                </ScrollViewer>
-                                <Border Canvas.Bottom="8" Canvas.Right="8" Width="72" MinHeight="16" BorderBrush="AliceBlue" BorderThickness="1">
-                                    <!--<Image Source="{Binding ElementName=FlowEditor, Converter={StaticResource VisualSnapshotConverter}}" />-->
-                                </Border>
-                            </Canvas>
-                        </DataTemplate>
-                    </TabControl.ContentTemplate>
                 </TabControl>
             </Border>
         </Grid>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -22,6 +23,8 @@ namespace FlowTomator.Desktop
     [FlowEditor(typeof(XFlow))]
     public partial class XFlowEditor : UserControl, INotifyPropertyChanged
     {
+        public ObservableCollection<NodeInfo> SelectedNodes { get; } = new ObservableCollection<NodeInfo>();
+
         public AnchorBinder SourceAnchorBinder { get; } = new AnchorBinder();
         public AnchorBinder DestinationAnchorBinder { get; } = new AnchorBinder();
         public Visibility NewLinkVisibility
@@ -59,6 +62,17 @@ namespace FlowTomator.Desktop
         {
             Tag = new DependencyManager(this, (s, e) => PropertyChanged(s, e));
             InitializeComponent();
+
+            DataContextChanged += XFlowEditor_DataContextChanged;
+        }
+
+        private void XFlowEditor_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            FlowInfo.PropertyChanged += FlowInfo_PropertyChanged;
+        }
+        private void FlowInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            //EditorThumbnail.GetBindingExpression(Image.SourceProperty).UpdateSource();
         }
 
         private void NodeControl_HeaderMouseDown(object sender, MouseButtonEventArgs e)
@@ -86,13 +100,9 @@ namespace FlowTomator.Desktop
 
             creatingNewLink = true;
 
-
-            if (PropertyChanged != null)
-            {
-                //PropertyChanged(this, new PropertyChangedEventArgs(nameof(SourceAnchorBinder)));
-                //PropertyChanged(this, new PropertyChangedEventArgs(nameof(DestinationAnchorBinder)));
-                PropertyChanged(this, new PropertyChangedEventArgs(nameof(NewLinkVisibility)));
-            }
+            NotifyPropertyChanged(nameof(SourceAnchorBinder));
+            NotifyPropertyChanged(nameof(DestinationAnchorBinder));
+            NotifyPropertyChanged(nameof(NewLinkVisibility));
         }
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)

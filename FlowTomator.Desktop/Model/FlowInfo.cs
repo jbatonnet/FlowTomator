@@ -22,7 +22,7 @@ namespace FlowTomator.Desktop
         {
             get
             {
-                return System.IO.Path.GetFileName(Path);
+                return Path == null ? "New flow" : System.IO.Path.GetFileName(Path);
             }
         }
 

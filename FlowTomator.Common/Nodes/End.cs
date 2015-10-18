@@ -6,22 +6,12 @@ using System.Threading.Tasks;
 
 namespace FlowTomator.Common
 {
-    [Node("End", "General", "Exits this flow with the specified result")]
+    [Node("End", "General", "Exits this flow")]
     public class End : Node
     {
-        public override IEnumerable<Variable> Inputs
-        {
-            get
-            {
-                yield return result;
-            }
-        }
-
-        private Variable<NodeResult> result = new Variable<NodeResult>("Result", NodeResult.Success, "The result to return");
-
         public override NodeStep Evaluate()
         {
-            return new NodeStep(result.Value, null);
+            return new NodeStep(NodeResult.Stop, null);
         }
     }
 }

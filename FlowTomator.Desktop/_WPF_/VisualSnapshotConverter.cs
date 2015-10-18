@@ -44,7 +44,7 @@ namespace FlowTomator.Desktop
                 targetSize = elementSize;
 
             // Create bitmap
-            RenderTargetBitmap renderTarget = new RenderTargetBitmap((int)targetSize.Width, (int)targetSize.Height, 96, 96, PixelFormats.Default);
+            RenderTargetBitmap renderTarget = new RenderTargetBitmap(Math.Max(1, (int)targetSize.Width), Math.Max(1, (int)targetSize.Height), 96, 96, PixelFormats.Default);
             renderTarget.Render(element);
 
             return renderTarget;
