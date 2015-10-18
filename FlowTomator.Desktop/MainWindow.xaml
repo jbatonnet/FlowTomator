@@ -12,6 +12,7 @@
 
     <Window.Resources>
         <local:FlowEditorTemplateSelector x:Key="EditorTemplateSelector" />
+        <local:VisualSnapshotConverter x:Key="VisualSnapshotConverter" MaxWidth="72" />
 
         <Style x:Key="ImageEnabled" TargetType="Image">
             <Style.Triggers>
@@ -141,12 +142,35 @@
             </Border>
 
             <Border Grid.Column="1" Padding="2">
-                <TabControl x:Name="Tabs" ItemsSource="{Binding Flows}" ContentTemplateSelector="{StaticResource EditorTemplateSelector}" SelectedItem="{Binding CurrentFlow}">
+                <TabControl x:Name="Tabs" ItemsSource="{Binding Flows}" SelectedItem="{Binding CurrentFlow}">
                     <TabControl.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Name}" ToolTip="{Binding Path}" />
                         </DataTemplate>
                     </TabControl.ItemTemplate>
+                    <TabControl.ContentTemplate>
+                        <DataTemplate>
+                            <Canvas>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                              Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Canvas}}}"
+                                              Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Canvas}}}">
+                                    
+                                    <ScrollViewer.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                    </ScrollViewer.RenderTransform>
+                                    <ScrollViewer.Background>
+                                        <ImageBrush ImageSource="..\..\Resources\Icon-256.png" Opacity="0.25" Stretch="None" Viewport="0,0,2,2" Viewbox="0,0,1.3,1.3" />
+                                    </ScrollViewer.Background>
+
+                                    <ContentPresenter x:Name="FlowEditor" ContentSource="{Binding}" ContentTemplateSelector="{StaticResource EditorTemplateSelector}" />
+
+                                </ScrollViewer>
+                                <Border Canvas.Bottom="8" Canvas.Right="8" Width="72" MinHeight="16" BorderBrush="AliceBlue" BorderThickness="1">
+                                    <!--<Image Source="{Binding ElementName=FlowEditor, Converter={StaticResource VisualSnapshotConverter}}" />-->
+                                </Border>
+                            </Canvas>
+                        </DataTemplate>
+                    </TabControl.ContentTemplate>
                 </TabControl>
             </Border>
         </Grid>

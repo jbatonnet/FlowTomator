@@ -91,6 +91,7 @@
     </Compile>
     <Compile Include="_WPF_\DelegateCommand.cs" />
     <Compile Include="_WPF_\IPropertyUpdatable.cs" />
+    <Compile Include="_WPF_\VisualSnapshotConverter.cs" />
     <Page Include="Editors\Variables\FileInfoVariableEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
