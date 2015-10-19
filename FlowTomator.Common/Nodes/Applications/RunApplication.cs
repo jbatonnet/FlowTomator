@@ -67,7 +67,7 @@ namespace FlowTomator.Common.Nodes
             if (path.Value != null)
                 processes = processes.Where(p => p.StartInfo.FileName.ToLower() == path.Value.ToLower());
             if (file.Value != null)
-                processes = processes.Where(p => p.ProcessName.ToLower() == file.Value.ToLower());
+                processes = processes.Where(p => p.ProcessName.ToLower().StartsWith(file.Value.ToLower()));
 
             if (processes.Any())
                 return new NodeStep(NodeResult.Success, TrueSlot);
