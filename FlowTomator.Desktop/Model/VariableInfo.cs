@@ -47,6 +47,10 @@ namespace FlowTomator.Desktop
                     return "$" + Variable.Linked.Name;
                 else if (Variable.Value == null)
                     return "null";
+                else if (Variable.Value is TimeSpan)
+                    return (TimeSpan)Variable.Value == TimeSpan.MinValue ? "MinValue" : (TimeSpan)Variable.Value == TimeSpan.MaxValue ? "MaxValue" : Variable.Value.ToString();
+                else if (Variable.Value is DateTime)
+                    return (DateTime)Variable.Value == DateTime.MinValue ? "MinValue" : (DateTime)Variable.Value == DateTime.MaxValue ? "MaxValue" : Variable.Value.ToString();
                 else
                     return Variable.Value.ToString();
             }

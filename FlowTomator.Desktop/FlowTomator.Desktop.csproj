@@ -78,6 +78,12 @@
       <DependentUpon>BooleanVariableEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Editors\VariableEditorTemplateSelector.cs" />
+    <Compile Include="Editors\Variables\DateTimeVariableEditor.xaml.cs">
+      <DependentUpon>DateTimeVariableEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Editors\Variables\TimeSpanVariableEditor.xaml.cs">
+      <DependentUpon>TimeSpanVariableEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Editors\Variables\TextVariableEditor.xaml.cs">
       <DependentUpon>TextVariableEditor.xaml</DependentUpon>
     </Compile>
@@ -101,6 +107,14 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Editors\Variables\BooleanVariableEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Editors\Variables\DateTimeVariableEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Editors\Variables\TimeSpanVariableEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
