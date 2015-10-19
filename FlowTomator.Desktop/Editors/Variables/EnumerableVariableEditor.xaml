@@ -5,9 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FlowTomator.Desktop"
              mc:Ignorable="d" 
-             d:DesignWidth="128" d:DesignHeight="24">
+             d:DesignWidth="128" d:DesignHeight="14">
 
-    <ComboBox x:Name="ComboBox" FontSize="11"
+    <ComboBox x:Name="ComboBox" FontSize="11" Height="14" BorderThickness="0" Padding="0"
               SelectedItem="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type local:EnumerableVariableEditor}}}"
               ItemsSource="{Binding Values, RelativeSource={RelativeSource AncestorType={x:Type local:EnumerableVariableEditor}}}" />
 

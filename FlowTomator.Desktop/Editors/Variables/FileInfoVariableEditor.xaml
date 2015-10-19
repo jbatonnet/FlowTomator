@@ -13,9 +13,9 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-    
-        <TextBlock Grid.Column="0" FontSize="11" Text="{Binding Value}" TextAlignment="Right" />
-        <Button Grid.Column="1" FontSize="11" Height="14" Content="..." Click="Button_Click" />
+
+        <TextBlock Grid.Column="0" FontSize="11" Margin="0,0,2,0" Text="{Binding Value, FallbackValue=C:\\Windows\\System32\\drivers\\etc\\hosts}" HorizontalAlignment="Right" />
+        <Button Grid.Column="1" FontSize="8" Width="14" Height="14" Content="..." Click="Button_Click" />
         
     </Grid>
     

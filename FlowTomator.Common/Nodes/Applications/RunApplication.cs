@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -21,13 +22,16 @@ namespace FlowTomator.Common.Nodes
             }
         }
 
-        private Variable<string> path = new Variable<string>("Path", "", "The path of the application to launch");
-        private Variable<string> arguments = new Variable<string>("Arguments", "", "The arguments to pass to the application");
+        private Variable<FileInfo> path = new Variable<FileInfo>("Path", null, "The path of the application to launch");
+        private Variable<string> arguments = new Variable<string>("Args", null, "The arguments to pass to the application");
         private Variable<bool> wait = new Variable<bool>("Wait", false, "Choose wether to wait for the application to exit or not");
 
         public override NodeResult Run()
         {
-            Process process = Process.Start(path.Value, arguments.Value);
+            if (path.Value == null || !path.Value.Exists)
+                return NodeResult.Fail;
+
+            Process process = Process.Start(path.Value.FullName, arguments.Value);
 
             if (wait.Value)
                 process.WaitForExit();

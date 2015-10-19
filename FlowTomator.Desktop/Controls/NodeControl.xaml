@@ -37,20 +37,20 @@
                     </TextBlock>
                 </Border>
 
-                <StackPanel Visibility="{Binding Path=InputsVisibility}">
-                    <TextBlock FontFamily="Consolas" FontSize="9" Background="DarkGray" Foreground="White" Padding="2,1,0,0">INPUTS</TextBlock>
+                <StackPanel Visibility="{Binding Path=InputsVisibility}" Background="White">
+                    <TextBlock FontFamily="Consolas" FontSize="9" Background="DarkGray" Foreground="White" Padding="2,1,0,0" Margin="0,0,0,1">INPUTS</TextBlock>
                     <ItemsControl MinHeight="4" ItemsSource="{Binding NodeInfo.Inputs}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Background="White" />
+                                <StackPanel HorizontalAlignment="Stretch" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Grid Margin="4,1">
+                                <Grid Margin="2,0,1,1">
 
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="46" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
 
@@ -64,9 +64,14 @@
                                         </TextBlock.ContextMenu>
                                     </TextBlock>
 
-                                    <TextBlock Grid.Column="1" FontSize="11" TextAlignment="Right" HorizontalAlignment="Stretch"
-                                               Text="{Binding Text}" Visibility="{Binding DisplayVisibility}"
-                                               MouseLeftButtonDown="VariableValue_MouseLeftButtonDown" />
+                                    <TextBlock Grid.Column="1" FontSize="11" HorizontalAlignment="Stretch" Padding="0,0,2,0" TextAlignment="Right"
+                                               Text="{Binding Text}" Visibility="{Binding DisplayVisibility}" ToolTip="{Binding Text}" Cursor="IBeam"
+                                               MouseLeftButtonDown="VariableValue_MouseLeftButtonDown">
+                                        <TextBlock.Foreground>
+                                            <SolidColorBrush Color="{Binding EditorColor}" />
+                                        </TextBlock.Foreground>
+                                    </TextBlock>
+
                                     <ContentControl Grid.Column="1" HorizontalAlignment="Stretch"
                                                     Visibility="{Binding EditorVisibility}" Content="{Binding}" ContentTemplateSelector="{StaticResource ValueTemplateSelector}" />
 
@@ -78,7 +83,7 @@
 
                 <StackPanel MinHeight="4" Visibility="{Binding OutputsVisibility}">
                     <TextBlock FontFamily="Consolas" FontSize="9" Background="DarkGray" Foreground="White" Padding="2,1,0,0">OUTPUTS</TextBlock>
-                    <ItemsControl MinHeight="4" ItemsSource="{Binding NodeInfo.Node.Outputs}">
+                    <ItemsControl MinHeight="4" ItemsSource="{Binding NodeInfo.Outputs}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Background="White" />
@@ -86,10 +91,20 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <DockPanel Margin="4,1">
-                                    <TextBlock FontSize="11" Foreground="Gray" Text="{Binding Name}" ToolTip="{Binding Description}" />
-                                    <TextBlock FontSize="11" DockPanel.Dock="Right" TextAlignment="Right" Text="{Binding Text}" />
-                                </DockPanel>
+                                <Grid Margin="2,0,1,1">
+
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="46" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" FontSize="11" Foreground="Gray" HorizontalAlignment="Stretch"
+                                               Text="{Binding Variable.Name}" ToolTip="{Binding Variable.Description}" />
+
+                                    <TextBlock Grid.Column="1" FontSize="11" HorizontalAlignment="Stretch" Padding="0,0,2,0" TextAlignment="Right"
+                                               Text="{Binding Text}" Visibility="{Binding DisplayVisibility}" ToolTip="{Binding Text}" />
+
+                                </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

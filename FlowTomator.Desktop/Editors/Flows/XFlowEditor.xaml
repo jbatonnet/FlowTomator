@@ -139,7 +139,7 @@
                 </Path>
 
                 <!-- Nodes -->
-                <ItemsControl ItemsSource="{Binding Nodes}"
+                <ItemsControl ItemsSource="{Binding Nodes}" x:Name="NodeList"
                       Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}"
                       Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Canvas}}">
 
@@ -156,9 +156,9 @@
                     </ItemsControl.ItemContainerStyle>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <local:NodeControl NodeInfo="{Binding}"
-                                       HeaderMouseDown="NodeControl_HeaderMouseDown"
-                                       SlotMouseDown="NodeControl_SlotMouseDown">
+                            <local:NodeControl NodeInfo="{Binding}" Opacity="{Binding Opacity}"
+                                               HeaderMouseDown="NodeControl_HeaderMouseDown"
+                                               SlotMouseDown="NodeControl_SlotMouseDown">
 
                                 <local:NodeControl.Effect>
                                     <DropShadowEffect ShadowDepth="0" BlurRadius="16" Color="{Binding StatusColor}" />

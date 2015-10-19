@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-
+using System.Windows.Media;
 using FlowTomator.Common;
 
 namespace FlowTomator.Desktop
 {
-    public class VariableInfo : INotifyPropertyChanged
+    public class VariableInfo : DependencyModel
     {
         private static Dictionary<Variable, VariableInfo> variableInfos = new Dictionary<Variable, VariableInfo>();
 
@@ -22,6 +22,8 @@ namespace FlowTomator.Desktop
                 return Variable.Type;
             }
         }
+
+        [DependsOn(nameof(Variable))]
         public object Value
         {
             get
@@ -31,14 +33,10 @@ namespace FlowTomator.Desktop
             set
             {
                 Variable.Value = value;
-
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs(nameof(Value)));
-                    PropertyChanged(this, new PropertyChangedEventArgs(nameof(Text)));
-                }
+                NotifyPropertyChanged();
             }
         }
+        [DependsOn(nameof(Value))]
         public string Text
         {
             get
@@ -65,14 +63,11 @@ namespace FlowTomator.Desktop
             set
             {
                 selected = value;
-
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs(nameof(DisplayVisibility)));
-                    PropertyChanged(this, new PropertyChangedEventArgs(nameof(EditorVisibility)));
-                }
+                NotifyPropertyChanged();
             }
         }
+
+        [DependsOn(nameof(Selected))]
         public Visibility DisplayVisibility
         {
             get
@@ -80,6 +75,7 @@ namespace FlowTomator.Desktop
                 return Selected ? Visibility.Collapsed : Visibility.Visible;
             }
         }
+        [DependsOn(nameof(Selected))]
         public Visibility EditorVisibility
         {
             get
@@ -87,8 +83,19 @@ namespace FlowTomator.Desktop
                 return Selected ? Visibility.Visible : Visibility.Collapsed;
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
+        [DependsOn(nameof(Value))]
+        public Color EditorColor
+        {
+            get
+            {
+                if (Variable.Linked != null)
+                    return Colors.Gray;
+                else if (Variable.Value == null)
+                    return Colors.Gray;
+                else
+                    return Colors.Black;
+            }
+        }
 
         private bool selected = false;
 

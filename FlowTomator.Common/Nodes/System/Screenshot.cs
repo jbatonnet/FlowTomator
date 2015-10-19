@@ -20,7 +20,7 @@ namespace FlowTomator.Common
             }
         }
 
-        private Variable<Bitmap> bitmap = new Variable<Bitmap>("Bitmap", null, "The neewly captured screenshot");
+        private Variable<Bitmap> bitmap = new Variable<Bitmap>("Bitmap", null, "The newly captured screenshot");
 
         public override NodeResult Run()
         {

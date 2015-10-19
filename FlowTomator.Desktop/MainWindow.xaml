@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:FlowTomator.Desktop"
         mc:Ignorable="d"
         Title="FlowTomator" SnapsToDevicePixels="True"
-        Width="1024" Height="600" MinWidth="640" MinHeight="480"
+        Width="1024" Height="768" MinWidth="640" MinHeight="480"
         Icon="..\Icon.ico"
         Loaded="Window_Loaded" Closing="Window_Closing">
 
@@ -69,122 +69,150 @@
         </ToolBarTray>
 
         <Grid Grid.Row="1" Background="WhiteSmoke">
-
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="192" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="2*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
 
-            <!-- Available nodes list -->
-            <Border Grid.Column="0" Grid.Row="0" Margin="4">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" BorderBrush="DarkGray" BorderThickness="0,0,0,1" Margin="0,0,0,4" Padding="0,0,0,2">
-                        <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Nodes</TextBlock>
-                    </Border>
+                <!-- Available nodes list -->
+                <Border Grid.Column="0" Grid.Row="0" Margin="4">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-                    <ScrollViewer Grid.Row="1" Background="White" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding NodeCategories}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel>
+                        <Border Grid.Row="0" BorderBrush="DarkGray" BorderThickness="0,0,0,1" Margin="0,0,0,4" Padding="0,0,0,2">
+                            <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Nodes</TextBlock>
+                        </Border>
 
-                                        <StackPanel Background="WhiteSmoke" Orientation="Horizontal">
-                                            <!--<Path Width="8" Height="5" Stretch="Fill" Fill="Gray" Margin="4">
+                        <ScrollViewer Grid.Row="1" Background="White" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding NodeCategories}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+
+                                            <StackPanel Background="WhiteSmoke" Orientation="Horizontal">
+                                                <!--<Path Width="8" Height="5" Stretch="Fill" Fill="Gray" Margin="4">
                                                 <Path.Data>
                                                     <Geometry>M0,0 L1,0 0.5,1Z</Geometry>
                                                 </Path.Data>
                                             </Path>-->
 
-                                            <TextBlock Foreground="Gray" Text="{Binding Category}" Margin="2,2,0,3" />
+                                                <TextBlock Foreground="Gray" Text="{Binding Category}" Margin="2,2,0,3" />
+                                            </StackPanel>
+
+                                            <ItemsControl ItemsSource="{Binding Nodes}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Margin="0,0,0,1" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="1,1,1,0" ToolTip="{Binding Description}" Cursor="Hand" PreviewMouseLeftButtonDown="NodeList_MouseDown" PreviewMouseMove="NodeList_MouseMove">
+                                                            <Grid.Style>
+                                                                <Style TargetType="Grid">
+                                                                    <Style.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter Property="Background" Value="AliceBlue" />
+                                                                        </Trigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Grid.Style>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="5" />
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <Border HorizontalAlignment="Left" Grid.Column="0" Width="3">
+                                                                <Border.Background>
+                                                                    <SolidColorBrush Color="{Binding Color}" />
+                                                                </Border.Background>
+                                                            </Border>
+
+                                                            <TextBlock Grid.Column="1" Margin="2,2" Text="{Binding Name}" />
+                                                            <TextBlock Grid.Column="2" Margin="3,2" Text="{Binding Model}" Foreground="Gray" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
                                         </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
 
-                                        <ItemsControl ItemsSource="{Binding Nodes}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Margin="0,0,0,1" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Grid Margin="1,1,1,0" ToolTip="{Binding Description}" Cursor="Hand" PreviewMouseLeftButtonDown="NodeList_MouseDown" PreviewMouseMove="NodeList_MouseMove">
-                                                        <Grid.Style>
-                                                            <Style TargetType="Grid">
-                                                                <Style.Triggers>
-                                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                                        <Setter Property="Background" Value="AliceBlue" />
-                                                                    </Trigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Grid.Style>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="5" />
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="Auto" />
-                                                        </Grid.ColumnDefinitions>
+                <!-- Global variables list -->
+                <Border Grid.Column="0" Grid.Row="1" Margin="4">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-                                                        <Border HorizontalAlignment="Left" Grid.Column="0" Width="3">
-                                                            <Border.Background>
-                                                                <SolidColorBrush Color="{Binding Color}" />
-                                                            </Border.Background>
-                                                        </Border>
+                        <Border Grid.Row="0" BorderBrush="DarkGray" BorderThickness="0,0,0,1" Margin="0,0,0,4" Padding="0,0,0,2">
+                            <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Variables</TextBlock>
+                        </Border>
 
-                                                        <TextBlock Grid.Column="1" Margin="2,2" Text="{Binding Name}" />
-                                                        <TextBlock Grid.Column="2" Margin="3,2" Text="{Binding Model}" Foreground="Gray" />
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
+                        <ScrollViewer Grid.Row="1" Background="White" VerticalScrollBarVisibility="Auto">
 
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </Border>
-            
-            <!-- Global variables list -->
-            <Border Grid.Column="0" Grid.Row="1" Margin="4">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
 
-                    <Border Grid.Row="0" BorderBrush="DarkGray" BorderThickness="0,0,0,1" Margin="0,0,0,4" Padding="0,0,0,2">
-                        <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Variables</TextBlock>
-                    </Border>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-                    <ScrollViewer Grid.Row="1" Background="White" VerticalScrollBarVisibility="Auto">
+                <!-- Flow editors -->
+                <Border Grid.Row="0" Padding="0,4,4,4">
+                    <TabControl x:Name="Tabs" ItemsSource="{Binding Flows}" ContentTemplateSelector="{StaticResource EditorTemplateSelector}" SelectedItem="{Binding CurrentFlow}">
+                        <TabControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" ToolTip="{Binding Path}" />
+                            </DataTemplate>
+                        </TabControl.ItemTemplate>
+                    </TabControl>
+                </Border>
 
-                    </ScrollViewer>
-                </Grid>
-            </Border>
+                <GridSplitter ResizeDirection="Rows" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
+                
+                <!-- Log output -->
+                <Border Grid.Column="0" Grid.Row="1" Margin="4">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-            <!-- Flow editors -->
-            <Border Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Padding="0,4,4,4">
-                <TabControl x:Name="Tabs" ItemsSource="{Binding Flows}" ContentTemplateSelector="{StaticResource EditorTemplateSelector}" SelectedItem="{Binding CurrentFlow}">
-                    <TabControl.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}" ToolTip="{Binding Path}" />
-                        </DataTemplate>
-                    </TabControl.ItemTemplate>
-                </TabControl>
-            </Border>
+                        <Border Grid.Row="0" BorderBrush="DarkGray" BorderThickness="0,0,0,1" Margin="0,0,0,4" Padding="0,0,0,2">
+                            <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Output</TextBlock>
+                        </Border>
+
+                        <TextBox x:Name="LogOutput" Grid.Row="1" Text="{Binding Output, FallbackValue=Output :)}" FontFamily="Consolas" FontSize="11" IsReadOnly="True" BorderThickness="0" Padding="2"
+                                 Height="128" Background="White" ScrollViewer.VerticalScrollBarVisibility="Visible" />
+                    </Grid>
+                </Border>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

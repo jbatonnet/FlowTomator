@@ -10,6 +10,7 @@
     <Wait Id="6" Count="2" />
     <Nope Id="7" />
     <Origin Id="8" />
+    <RunApplication Id="9" Wait="true" />
   </Nodes>
   <Slots>
     <Slot Id="0">
@@ -34,17 +35,19 @@
     </Slot>
     <Slot Id="8">
       <Node Id="7" />
+      <Node Id="9" />
     </Slot>
   </Slots>
   <Edition>
-    <Node Id="0" X="56" Y="244" />
-    <Node Id="1" X="100" Y="348" />
+    <Node Id="0" X="68" Y="268" />
+    <Node Id="1" X="112" Y="368" />
     <Node Id="2" X="388" Y="320" />
-    <Node Id="3" X="220" Y="132" />
+    <Node Id="3" X="240" Y="132" />
     <Node Id="4" X="388" Y="132" />
-    <Node Id="5" X="560" Y="132" />
+    <Node Id="5" X="532" Y="132" />
     <Node Id="6" X="388" Y="232" />
     <Node Id="7" X="388" Y="60" />
     <Node Id="8" X="100" Y="20" />
+    <Node Id="9" X="48" Y="128" />
   </Edition>
 </Flow>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -50,9 +51,9 @@ namespace FlowTomator.Desktop
             }
         }
 
-        private NodeControl movingNodeControl;
-        private Point movingNodeOrigin;
-        private Point movingNodeControlOffset;
+        private List<NodeControl> movingNodes = new List<NodeControl>();
+        private Dictionary<NodeControl, Point?> movingNodeOrigins = new Dictionary<NodeControl, Point?>();
+        private Dictionary<NodeControl, Point?> movingNodeOffsets = new Dictionary<NodeControl, Point?>();
         private int currentZIndex = 1;
 
         private bool creatingNewLink = false;
@@ -64,6 +65,7 @@ namespace FlowTomator.Desktop
             InitializeComponent();
 
             DataContextChanged += XFlowEditor_DataContextChanged;
+            SelectedNodes.CollectionChanged += SelectedNodes_CollectionChanged;
         }
 
         private void XFlowEditor_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -74,17 +76,48 @@ namespace FlowTomator.Desktop
         {
             //EditorThumbnail.GetBindingExpression(Image.SourceProperty).UpdateSource();
         }
+        private void SelectedNodes_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (SelectedNodes.Count == 0)
+            {
+                foreach (NodeInfo nodeInfo in FlowInfo.Nodes)
+                    nodeInfo.Opaque = true;
+            }
+            else
+            {
+                foreach (NodeInfo nodeInfo in FlowInfo.Nodes)
+                    nodeInfo.Opaque = false;
+
+                foreach (NodeInfo nodeInfo in SelectedNodes)
+                    nodeInfo.Opaque = true;
+            }
+
+            movingNodes = SelectedNodes.Select(n => VisualTreeHelper.GetChild(NodeList.ItemContainerGenerator.ContainerFromItem(n), 0) as NodeControl).ToList();
+            movingNodeOrigins = movingNodes.ToDictionary(n => n, n => movingNodeOrigins.ContainsKey(n) ? movingNodeOrigins[n] : null);
+            movingNodeOffsets = movingNodes.ToDictionary(n => n, n => movingNodeOffsets.ContainsKey(n) ? movingNodeOffsets[n] : null);
+        }
 
         private void NodeControl_HeaderMouseDown(object sender, MouseButtonEventArgs e)
         {
-            NodeControl nodeControl = movingNodeControl = sender as NodeControl;
+            NodeControl nodeControl = sender as NodeControl;
             ContentPresenter contentPresenter = VisualTreeHelper.GetParent(nodeControl) as ContentPresenter;
             Canvas canvas = VisualTreeHelper.GetParent(contentPresenter) as Canvas;
 
-            movingNodeOrigin = new Point(nodeControl.NodeInfo.X, nodeControl.NodeInfo.Y);
-            movingNodeControlOffset = e.GetPosition(nodeControl);
-
             contentPresenter.SetValue(Panel.ZIndexProperty, currentZIndex++);
+
+            if (!SelectedNodes.Contains(nodeControl.NodeInfo))
+            {
+                if (Keyboard.IsKeyUp(Key.LeftCtrl) && Keyboard.IsKeyUp(Key.RightCtrl) && Keyboard.IsKeyUp(Key.LeftShift) && Keyboard.IsKeyUp(Key.RightShift))
+                    SelectedNodes.Clear();
+
+                SelectedNodes.Add(nodeControl.NodeInfo);
+            }
+
+            foreach (NodeControl n in movingNodes)
+            {
+                movingNodeOrigins[n] = new Point(n.NodeInfo.X, n.NodeInfo.Y);
+                movingNodeOffsets[n] = e.GetPosition(n);
+            }
         }
         private void NodeControl_SlotMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -110,6 +143,8 @@ namespace FlowTomator.Desktop
             if (e.OriginalSource != sender)
                 return;
 
+            SelectedNodes.Clear();
+
             foreach (NodeInfo nodeInfo in FlowInfo.Nodes)
                 foreach (VariableInfo variable in nodeInfo.Inputs)
                     variable.Selected = false;
@@ -121,18 +156,21 @@ namespace FlowTomator.Desktop
 
             Canvas canvas = sender as Canvas;
 
-            if (movingNodeControl != null)
+            if (movingNodes.Count > 0)
             {
-                ContentPresenter contentPresenter = VisualTreeHelper.GetParent(movingNodeControl) as ContentPresenter;
-
                 Point mousePosition = e.GetPosition(canvas);
-                Point nodeControlPosition = new Point(mousePosition.X - movingNodeControlOffset.X, mousePosition.Y - movingNodeControlOffset.Y);
 
-                nodeControlPosition.X = Math.Round(nodeControlPosition.X / 4) * 4;
-                nodeControlPosition.Y = Math.Round(nodeControlPosition.Y / 4) * 4;
+                foreach (NodeControl nodeControl in movingNodes)
+                {
+                    ContentPresenter contentPresenter = VisualTreeHelper.GetParent(nodeControl) as ContentPresenter;
+                    Point nodeControlPosition = new Point(mousePosition.X - movingNodeOffsets[nodeControl].Value.X, mousePosition.Y - movingNodeOffsets[nodeControl].Value.Y);
 
-                contentPresenter.SetValue(Canvas.LeftProperty, nodeControlPosition.X);
-                contentPresenter.SetValue(Canvas.TopProperty, nodeControlPosition.Y);
+                    nodeControlPosition.X = Math.Round(nodeControlPosition.X / 4) * 4;
+                    nodeControlPosition.Y = Math.Round(nodeControlPosition.Y / 4) * 4;
+
+                    contentPresenter.SetValue(Canvas.LeftProperty, nodeControlPosition.X);
+                    contentPresenter.SetValue(Canvas.TopProperty, nodeControlPosition.Y);
+                }
             }
 
             if (creatingNewLink)
@@ -159,10 +197,15 @@ namespace FlowTomator.Desktop
         }
         private void Canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (movingNodeControl != null)
+            if (movingNodes.Count > 0)
             {
-                FlowInfo.History.Do(new MoveNodeAction(movingNodeControl.NodeInfo, movingNodeOrigin, new Point(movingNodeControl.NodeInfo.X, movingNodeControl.NodeInfo.Y)));
-                movingNodeControl = null;
+                foreach (NodeControl nodeControl in movingNodes)
+                {
+                    Point movingNodeOrigin = movingNodeOrigins[nodeControl].Value;
+
+                    if (movingNodeOrigin.X != nodeControl.NodeInfo.X || movingNodeOrigin.Y != nodeControl.NodeInfo.Y)
+                        FlowInfo.History.Do(new MoveNodeAction(nodeControl.NodeInfo, movingNodeOrigin, new Point(nodeControl.NodeInfo.X, nodeControl.NodeInfo.Y)));
+                }
             }
 
             if (creatingNewLink)

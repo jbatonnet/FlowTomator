@@ -49,6 +49,18 @@ namespace FlowTomator.Desktop
                 NotifyPropertyChanged();
             }
         }
+        public bool Opaque
+        {
+            get
+            {
+                return opaque;
+            }
+            set
+            {
+                opaque = value;
+                NotifyPropertyChanged();
+            }
+        }
 
         [DependsOn(nameof(Status), nameof(Result))]
         public Color StatusColor
@@ -63,10 +75,18 @@ namespace FlowTomator.Desktop
 
                 switch (result)
                 {
-                    case NodeResult.Fail: return Colors.Firebrick;
+                    case NodeResult.Fail: return Colors.Red;
                 }
 
                 return Colors.Transparent;
+            }
+        }
+        [DependsOn(nameof(Opaque))]
+        public double Opacity
+        {
+            get
+            {
+                return Opaque ? 1 : 0.3;
             }
         }
 
@@ -163,6 +183,7 @@ namespace FlowTomator.Desktop
 
         private NodeStatus status;
         private NodeResult? result;
+        private bool opaque = true;
 
         private NodeInfo(FlowInfo flowInfo, Node node)
         {

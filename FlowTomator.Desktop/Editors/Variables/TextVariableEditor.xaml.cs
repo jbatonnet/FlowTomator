@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,6 +21,12 @@ namespace FlowTomator.Desktop
         public TextVariableEditor()
         {
             InitializeComponent();
+        }
+
+        private void TextVariableEditor_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue)
+                FocusManager.SetFocusedElement(TextBox, TextBox);
         }
     }
 }

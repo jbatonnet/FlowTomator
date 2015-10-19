@@ -17,9 +17,31 @@ using Microsoft.Win32;
 
 using FlowTomator.Common;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Windows.Threading;
 
 namespace FlowTomator.Desktop
 {
+    public class LogTextWriter : TextWriter
+    {
+        public override Encoding Encoding
+        {
+            get
+            {
+                return Encoding.Default;
+            }
+        }
+        public event Action<string> Updated;
+
+        public override void Write(char[] buffer, int index, int count)
+        {
+            string text = new string(buffer, index, count);
+
+            if (Updated != null)
+                Updated(text);
+        }
+    }
+
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         public ObservableCollection<FlowInfo> Flows { get; } = new ObservableCollection<FlowInfo>();
@@ -85,6 +107,17 @@ namespace FlowTomator.Desktop
         }
         private FlowDebugger debugger;
 
+        public string Output
+        {
+            get
+            {
+                return outBuilder.ToString();
+            }
+            set { }
+        }
+        private LogTextWriter outRedirector = new LogTextWriter();
+        private StringBuilder outBuilder = new StringBuilder();
+
         public MainWindow()
         {
             Tag = new DependencyManager(this, (s, e) => PropertyChanged(s, e));
@@ -101,6 +134,11 @@ namespace FlowTomator.Desktop
             StepFlowCommand = new DelegateCommand(StepFlowCommandCallback, p => Debugger?.State != DebuggerState.Running);
             BreakFlowCommand = new DelegateCommand(BreakFlowCommandCallback, p => Debugger?.State == DebuggerState.Running);
             StopFlowCommand = new DelegateCommand(StopFlowCommandCallback, p => (Debugger?.State ?? DebuggerState.Idle) != DebuggerState.Idle);
+
+            // Redirect console output
+            Console.SetOut(outRedirector);
+            outRedirector.Updated += OutRedirector_Updated;
+            Log.Verbosity = LogVerbosity.Trace;
 
             // Analyze loaded assemblies
             AppDomain.CurrentDomain.AssemblyLoad += (s, a) => AnalyzeAssembly(a.LoadedAssembly);
@@ -136,6 +174,16 @@ namespace FlowTomator.Desktop
 
                 nodeCategory.Nodes.Add(nodeType);
             }
+        }
+        private void OutRedirector_Updated(string obj)
+        {
+            outBuilder.Append(obj);
+            NotifyPropertyChanged(nameof(Output));
+
+            Dispatcher.Invoke(() =>
+            {
+                LogOutput.ScrollToEnd();
+            }, DispatcherPriority.Background);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

@@ -29,6 +29,13 @@ namespace FlowTomator.Desktop
                 return DataContext as VariableInfo;
             }
         }
+        public Variable<FileInfo> Variable
+        {
+            get
+            {
+                return VariableInfo.Variable as Variable<FileInfo>;
+            }
+        }
 
         public FileInfoVariableEditor()
         {
@@ -40,6 +47,8 @@ namespace FlowTomator.Desktop
             OpenFileDialog fileDialog = new OpenFileDialog();
 
             fileDialog.CheckFileExists = false;
+            fileDialog.FileName = Variable.Value?.FullName;
+            fileDialog.Title = "Select a file";
 
             if (fileDialog.ShowDialog() != true)
                 return;
