@@ -10,8 +10,8 @@
     <UserControl.Resources>
         <local:VisualSnapshotConverter x:Key="VisualSnapshotConverter" MaxWidth="72" />
 
-        <!--<local:AnchorXConverter x:Key="AnchorX" />
-        <local:AnchorYConverter x:Key="AnchorY" />-->
+        <local:AnchorXConverter x:Key="AnchorX" />
+        <local:AnchorYConverter x:Key="AnchorY" />
         <local:AnchorPointConverter x:Key="AnchorPoint" />
         <Point x:Key="SlotOffset" X="0" Y="40" />
         <Point x:Key="NodeOffset" X="0" Y="-40" />
@@ -156,7 +156,7 @@
                     </ItemsControl.ItemContainerStyle>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <local:NodeControl NodeInfo="{Binding}" Opacity="{Binding Opacity}"
+                            <local:NodeControl NodeInfo="{Binding}" Opacity="{Binding Opacity}" BorderThickness="1"
                                                HeaderMouseDown="NodeControl_HeaderMouseDown"
                                                SlotMouseDown="NodeControl_SlotMouseDown">
 
@@ -170,13 +170,15 @@
                 </ItemsControl>
 
                 <!-- Selection -->
-                <Rectangle>
-                    <!--<Canvas.Left>
-                <MultiBinding Converter="{StaticResource AnchorPoint}">
-                    <Binding Path="SourceAnchorBinder" RelativeSource="{RelativeSource AncestorType={x:Type local:XFlowEditor}}" />
-                    <Binding RelativeSource="{RelativeSource AncestorType={x:Type Canvas}}" />
-                </MultiBinding>
-            </Canvas.Left>-->
+                <Rectangle Stroke="CornflowerBlue" StrokeDashArray="2,2" StrokeThickness="1.5"
+                           Canvas.Left="{Binding SelectionX, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                           Canvas.Top="{Binding SelectionY, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                           Width="{Binding SelectionWidth, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                           Height="{Binding SelectionHeight, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                           Visibility="{Binding SelectionVisibility, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}">
+                    <Rectangle.Fill>
+                        <SolidColorBrush Opacity="0.2" Color="CornflowerBlue" />
+                    </Rectangle.Fill>
                 </Rectangle>
 
                 <local:Anchor x:Name="SourceAnchor" />

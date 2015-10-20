@@ -49,24 +49,27 @@ namespace FlowTomator.Desktop
                 NotifyPropertyChanged();
             }
         }
-        public bool Opaque
+        public bool Selected
         {
             get
             {
-                return opaque;
+                return selected;
             }
             set
             {
-                opaque = value;
+                selected = value;
                 NotifyPropertyChanged();
             }
         }
 
-        [DependsOn(nameof(Status), nameof(Result))]
+        [DependsOn(nameof(Status), nameof(Result), nameof(Selected))]
         public Color StatusColor
         {
             get
             {
+                if (Selected)
+                    return Colors.DeepSkyBlue;
+
                 switch (Status)
                 {
                     case NodeStatus.Running: return Colors.LimeGreen;
@@ -79,14 +82,6 @@ namespace FlowTomator.Desktop
                 }
 
                 return Colors.Transparent;
-            }
-        }
-        [DependsOn(nameof(Opaque))]
-        public double Opacity
-        {
-            get
-            {
-                return Opaque ? 1 : 0.3;
             }
         }
 
@@ -183,7 +178,7 @@ namespace FlowTomator.Desktop
 
         private NodeStatus status;
         private NodeResult? result;
-        private bool opaque = true;
+        private bool selected;
 
         private NodeInfo(FlowInfo flowInfo, Node node)
         {

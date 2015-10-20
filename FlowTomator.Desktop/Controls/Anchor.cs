@@ -90,7 +90,7 @@ namespace FlowTomator.Desktop
 
     public class AnchorPointConverter : IMultiValueConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public virtual object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values.Length != 2)
                 throw new NotSupportedException();
@@ -128,9 +128,32 @@ namespace FlowTomator.Desktop
             //    return new Point(0, 0);
             //}
         }
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        public virtual object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotSupportedException();
+        }
+    }
+
+    public class AnchorXConverter : AnchorPointConverter
+    {
+        public override object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (targetType != typeof(double))
+                throw new NotSupportedException();
+
+            object point = base.Convert(values, typeof(Point), parameter, culture);
+            return (point as Point?)?.X;
+        }
+    }
+    public class AnchorYConverter : AnchorPointConverter
+    {
+        public override object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (targetType != typeof(double))
+                throw new NotSupportedException();
+
+            object point = base.Convert(values, typeof(Point), parameter, culture);
+            return (point as Point?)?.Y;
         }
     }
 }

@@ -118,6 +118,8 @@ namespace FlowTomator.Desktop
         private LogTextWriter outRedirector = new LogTextWriter();
         private StringBuilder outBuilder = new StringBuilder();
 
+        private bool draggingNode;
+
         public MainWindow()
         {
             Tag = new DependencyManager(this, (s, e) => PropertyChanged(s, e));
@@ -350,11 +352,11 @@ namespace FlowTomator.Desktop
 
         private void NodeList_MouseDown(object sender, MouseButtonEventArgs e)
         {
-
+            draggingNode = true;
         }
         private void NodeList_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton != MouseButtonState.Pressed)
+            if (!draggingNode || e.LeftButton != MouseButtonState.Pressed)
                 return;
 
             Grid grid = sender as Grid;
@@ -368,6 +370,8 @@ namespace FlowTomator.Desktop
 
             DataObject dragData = new DataObject("FlowTomator.Node", nodeTypeInfo.Type);
             DragDrop.DoDragDrop(grid, dragData, DragDropEffects.Move);
+
+            draggingNode = false;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

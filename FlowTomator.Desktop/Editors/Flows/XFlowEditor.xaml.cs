@@ -51,7 +51,85 @@ namespace FlowTomator.Desktop
             }
         }
 
-        private List<NodeControl> movingNodes = new List<NodeControl>();
+        public bool Selecting
+        {
+            get
+            {
+                return selecting;
+            }
+            set
+            {
+                selecting = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public Point SelectionStart
+        {
+            get
+            {
+                return selectionStart;
+            }
+            set
+            {
+                selectionStart = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public Point SelectionEnd
+        {
+            get
+            {
+                return selectionEnd;
+            }
+            set
+            {
+                selectionEnd = value;
+                NotifyPropertyChanged();
+            }
+        }
+        [DependsOn(nameof(SelectionStart), nameof(SelectionEnd))]
+        public double SelectionX
+        {
+            get
+            {
+                return Math.Min(selectionStart.X, selectionEnd.X);
+            }
+        }
+        [DependsOn(nameof(SelectionStart), nameof(SelectionEnd))]
+        public double SelectionY
+        {
+            get
+            {
+                return Math.Min(selectionStart.Y, selectionEnd.Y);
+            }
+        }
+        [DependsOn(nameof(SelectionStart), nameof(SelectionEnd))]
+        public double SelectionWidth
+        {
+            get
+            {
+                return Math.Max(selectionStart.X, selectionEnd.X) - SelectionX;
+            }
+        }
+        [DependsOn(nameof(SelectionStart), nameof(SelectionEnd))]
+        public double SelectionHeight
+        {
+            get
+            {
+                return Math.Max(selectionStart.Y, selectionEnd.Y) - SelectionY;
+            }
+        }
+        [DependsOn(nameof(Selecting))]
+        public Visibility SelectionVisibility
+        {
+            get
+            {
+                return selecting ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        private Dictionary<NodeInfo, NodeControl> nodeControls = new Dictionary<NodeInfo, NodeControl>();
+
         private Dictionary<NodeControl, Point?> movingNodeOrigins = new Dictionary<NodeControl, Point?>();
         private Dictionary<NodeControl, Point?> movingNodeOffsets = new Dictionary<NodeControl, Point?>();
         private int currentZIndex = 1;
@@ -59,12 +137,17 @@ namespace FlowTomator.Desktop
         private bool creatingNewLink = false;
         private SlotInfo newLinkSlot;
 
+        public bool selecting;
+        public Point selectionStart, selectionEnd;
+
         public XFlowEditor()
         {
             Tag = new DependencyManager(this, (s, e) => PropertyChanged(s, e));
             InitializeComponent();
 
             DataContextChanged += XFlowEditor_DataContextChanged;
+            Loaded += XFlowEditor_Loaded;
+
             SelectedNodes.CollectionChanged += SelectedNodes_CollectionChanged;
         }
 
@@ -72,29 +155,21 @@ namespace FlowTomator.Desktop
         {
             FlowInfo.PropertyChanged += FlowInfo_PropertyChanged;
         }
+        private void XFlowEditor_Loaded(object sender, RoutedEventArgs e)
+        {
+            nodeControls = FlowInfo.Nodes.ToDictionary(n => n, n => VisualTreeHelper.GetChild(NodeList.ItemContainerGenerator.ContainerFromItem(n), 0) as NodeControl);
+        }
         private void FlowInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             //EditorThumbnail.GetBindingExpression(Image.SourceProperty).UpdateSource();
         }
         private void SelectedNodes_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (SelectedNodes.Count == 0)
-            {
-                foreach (NodeInfo nodeInfo in FlowInfo.Nodes)
-                    nodeInfo.Opaque = true;
-            }
-            else
-            {
-                foreach (NodeInfo nodeInfo in FlowInfo.Nodes)
-                    nodeInfo.Opaque = false;
+            foreach (NodeInfo nodeInfo in FlowInfo.Nodes)
+                nodeInfo.Selected = false;
 
-                foreach (NodeInfo nodeInfo in SelectedNodes)
-                    nodeInfo.Opaque = true;
-            }
-
-            movingNodes = SelectedNodes.Select(n => VisualTreeHelper.GetChild(NodeList.ItemContainerGenerator.ContainerFromItem(n), 0) as NodeControl).ToList();
-            movingNodeOrigins = movingNodes.ToDictionary(n => n, n => movingNodeOrigins.ContainsKey(n) ? movingNodeOrigins[n] : null);
-            movingNodeOffsets = movingNodes.ToDictionary(n => n, n => movingNodeOffsets.ContainsKey(n) ? movingNodeOffsets[n] : null);
+            foreach (NodeInfo nodeInfo in SelectedNodes)
+                nodeInfo.Selected = true;
         }
 
         private void NodeControl_HeaderMouseDown(object sender, MouseButtonEventArgs e)
@@ -113,7 +188,10 @@ namespace FlowTomator.Desktop
                 SelectedNodes.Add(nodeControl.NodeInfo);
             }
 
-            foreach (NodeControl n in movingNodes)
+            movingNodeOrigins = SelectedNodes.Select(n => nodeControls[n]).ToDictionary(n => n, n => movingNodeOrigins.ContainsKey(n) ? movingNodeOrigins[n] : null);
+            movingNodeOffsets = SelectedNodes.Select(n => nodeControls[n]).ToDictionary(n => n, n => movingNodeOffsets.ContainsKey(n) ? movingNodeOffsets[n] : null);
+
+            foreach (NodeControl n in movingNodeOrigins.Keys.ToArray())
             {
                 movingNodeOrigins[n] = new Point(n.NodeInfo.X, n.NodeInfo.Y);
                 movingNodeOffsets[n] = e.GetPosition(n);
@@ -148,6 +226,9 @@ namespace FlowTomator.Desktop
             foreach (NodeInfo nodeInfo in FlowInfo.Nodes)
                 foreach (VariableInfo variable in nodeInfo.Inputs)
                     variable.Selected = false;
+
+            SelectionStart = SelectionEnd = e.GetPosition(sender as Canvas);
+            Selecting = true;
         }
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
@@ -156,11 +237,11 @@ namespace FlowTomator.Desktop
 
             Canvas canvas = sender as Canvas;
 
-            if (movingNodes.Count > 0)
+            if (movingNodeOrigins.Count > 0)
             {
                 Point mousePosition = e.GetPosition(canvas);
 
-                foreach (NodeControl nodeControl in movingNodes)
+                foreach (NodeControl nodeControl in movingNodeOrigins.Keys)
                 {
                     ContentPresenter contentPresenter = VisualTreeHelper.GetParent(nodeControl) as ContentPresenter;
                     Point nodeControlPosition = new Point(mousePosition.X - movingNodeOffsets[nodeControl].Value.X, mousePosition.Y - movingNodeOffsets[nodeControl].Value.Y);
@@ -194,18 +275,37 @@ namespace FlowTomator.Desktop
                 if (PropertyChanged != null)
                     PropertyChanged(this, new PropertyChangedEventArgs(nameof(DestinationAnchorBinder)));
             }
+
+            if (selecting)
+            {
+                SelectionEnd = e.GetPosition(sender as Canvas);
+                SelectedNodes.Clear();
+
+                Rect selectionRect = new Rect(SelectionStart, SelectionEnd);
+
+                foreach (var pair in nodeControls)
+                {
+                    Rect nodeRect = new Rect(pair.Key.X, pair.Key.Y, pair.Value.RenderSize.Width, pair.Value.RenderSize.Height);
+
+                    if (selectionRect.IntersectsWith(nodeRect))
+                        SelectedNodes.Add(pair.Key);
+                }
+            }
         }
         private void Canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (movingNodes.Count > 0)
+            if (movingNodeOrigins.Count > 0)
             {
-                foreach (NodeControl nodeControl in movingNodes)
+                foreach (NodeControl nodeControl in movingNodeOrigins.Keys)
                 {
                     Point movingNodeOrigin = movingNodeOrigins[nodeControl].Value;
 
                     if (movingNodeOrigin.X != nodeControl.NodeInfo.X || movingNodeOrigin.Y != nodeControl.NodeInfo.Y)
                         FlowInfo.History.Do(new MoveNodeAction(nodeControl.NodeInfo, movingNodeOrigin, new Point(nodeControl.NodeInfo.X, nodeControl.NodeInfo.Y)));
                 }
+
+                movingNodeOrigins.Clear();
+                movingNodeOffsets.Clear();
             }
 
             if (creatingNewLink)
@@ -231,6 +331,9 @@ namespace FlowTomator.Desktop
                 if (PropertyChanged != null)
                     PropertyChanged(this, new PropertyChangedEventArgs(nameof(NewLinkVisibility)));
             }
+
+            Selecting = false;
+            SelectedNodes_CollectionChanged(null, null);
         }
         private void Canvas_DragEnter(object sender, DragEventArgs e)
         {
