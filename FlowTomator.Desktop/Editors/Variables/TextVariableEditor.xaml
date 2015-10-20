@@ -15,7 +15,7 @@
             <!--<ColumnDefinition Width="14" />-->
         </Grid.ColumnDefinitions>
     
-        <TextBox x:Name="TextBox" Grid.Column="0" Text="{Binding Value, Mode=TwoWay}" FontSize="11" BorderThickness="0" Padding="0" TextAlignment="Right" />
+        <TextBox x:Name="TextBox" Grid.Column="0" Text="{Binding Value, Mode=TwoWay, FallbackValue=MyText}" FontSize="11" BorderThickness="0" Padding="0" TextAlignment="Right" />
         <!--<Button Grid.Column="1" Style="{x:Null}" Content="..." BorderThickness="0" Padding="0" Height="14" Background="Red" />-->
         
     </Grid>

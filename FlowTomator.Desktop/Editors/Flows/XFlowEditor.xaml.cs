@@ -161,7 +161,19 @@ namespace FlowTomator.Desktop
         }
         private void FlowInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            //EditorThumbnail.GetBindingExpression(Image.SourceProperty).UpdateSource();
+            UpdateLayout();
+
+            nodeControls = FlowInfo.Nodes.ToDictionary(n => n, n =>
+            {
+                DependencyObject container = NodeList.ItemContainerGenerator.ContainerFromItem(n);
+
+                if (container == null)
+                    return null;
+                if (VisualTreeHelper.GetChildrenCount(container) == 0)
+                    return null;
+
+                return VisualTreeHelper.GetChild(container, 0) as NodeControl;
+            }).Where(p => p.Value != null).ToDictionary(p => p.Key, p => p.Value);
         }
         private void SelectedNodes_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {

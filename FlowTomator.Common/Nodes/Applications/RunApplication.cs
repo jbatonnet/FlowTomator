@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FlowTomator.Common.Nodes
 {
-    [Node("RunApp", "Applications")]
+    [Node("RunApp", "Applications", "Run the specified application")]
     public class RunApplication : Task
     {
         public override IEnumerable<Variable> Inputs
@@ -40,15 +40,31 @@ namespace FlowTomator.Common.Nodes
         }
     }
 
-    [Node("IsAppRunning", "Applications")]
+    [Node("KillApp", "Applications", "Kill the specified application")]
+    public class KillApplication : Task
+    {
+        public override NodeResult Run()
+        {
+            return NodeResult.Fail;
+        }
+    }
+
+    public enum ApplicationPatternType
+    {
+        FullPath,
+        FileName,
+        WindowTitle
+    }
+
+    [Node("IsAppRunning", "Applications", "Check if the specified application is running")]
     public class IsApplicationRunning : BinaryChoice
     {
         public override IEnumerable<Variable> Inputs
         {
             get
             {
-                yield return path;
-                yield return file;
+                yield return type;
+                yield return pattern;
             }
         }
         public override IEnumerable<Variable> Outputs
@@ -59,28 +75,40 @@ namespace FlowTomator.Common.Nodes
             }
         }
 
-        private Variable<string> path = new Variable<string>("Path");
-        private Variable<string> file = new Variable<string>("File");
-
-        private Variable<Process> process = new Variable<Process>("Process");
+        private Variable<ApplicationPatternType> type = new Variable<ApplicationPatternType>("Type", ApplicationPatternType.FileName, "The application property to check");
+        private Variable<string> pattern = new Variable<string>("Pattern", null, "The pattern to check");
+        private Variable<Process> process = new Variable<Process>("Process", null, "The first process that matched the specified properties");
 
         public override NodeStep Evaluate()
         {
-            IEnumerable<Process> processes = Process.GetProcesses();
+            if (string.IsNullOrWhiteSpace(pattern.Value))
+                return new NodeStep(NodeResult.Fail, null);
 
-            if (path.Value != null)
-                processes = processes.Where(p => p.StartInfo.FileName.ToLower() == path.Value.ToLower());
-            if (file.Value != null)
-                processes = processes.Where(p => p.ProcessName.ToLower().StartsWith(file.Value.ToLower()));
+            Func<Process, bool> filter = null;
 
-            if (processes.Any())
+            switch (type.Value)
+            {
+                case ApplicationPatternType.FullPath: filter = p => p.StartInfo.FileName.ToLower() == pattern.Value.ToLower(); break;
+                case ApplicationPatternType.FileName: filter = p => p.ProcessName.ToLower().StartsWith(pattern.Value.ToLower()); break;
+                case ApplicationPatternType.WindowTitle: filter = p => p.MainWindowTitle.ToLower() == pattern.Value.ToLower(); break;
+            }
+
+            if (filter == null)
+                return new NodeStep(NodeResult.Fail, null);
+
+            Process[] processes = Process.GetProcesses().Where(filter).ToArray();
+
+            if (processes.Length > 0)
+            {
+                process.Value = processes[0];
                 return new NodeStep(NodeResult.Success, TrueSlot);
+            }
             else
                 return new NodeStep(NodeResult.Success, FalseSlot);
         }
     }
 
-    [Node("AppRunEvent", "Applications")]
+    [Node("AppRan", "Applications", "Triggers when the described application starts")]
     public class ApplicationRunEvent : Event
     {
         public override IEnumerable<Variable> Inputs

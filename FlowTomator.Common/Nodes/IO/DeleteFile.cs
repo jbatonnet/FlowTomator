@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace FlowTomator.Common
 {
-    [Node("CreateFile", "IO", "Create a file at the specified location")]
-    public class CreateFile : Task
+    [Node("DeleteFile", "IO", "Delete the specified file")]
+    public class DeleteFile : Task
     {
         public override IEnumerable<Variable> Inputs
         {
@@ -19,16 +19,16 @@ namespace FlowTomator.Common
             }
         }
 
-        private Variable<FileInfo> file = new Variable<FileInfo>("File", null, "The file to be created");
+        private Variable<FileInfo> file = new Variable<FileInfo>("File", null, "The file to be deleted");
 
         public override NodeResult Run()
         {
-            if (file.Value == null || file.Value.Exists)
+            if (file.Value == null || !file.Value.Exists)
                 return NodeResult.Skip;
 
             try
             {
-                File.Create(file.Value.FullName).Close();
+                File.Delete(file.Value.FullName);
             }
             catch
             {

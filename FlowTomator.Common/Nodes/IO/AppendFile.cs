@@ -8,27 +8,30 @@ using System.Threading.Tasks;
 
 namespace FlowTomator.Common
 {
-    [Node("CreateFile", "IO", "Create a file at the specified location")]
-    public class CreateFile : Task
+    [Node("AppendFile", "IO", "Appends the specified content in the specified file")]
+    public class AppendFile : Task
     {
         public override IEnumerable<Variable> Inputs
         {
             get
             {
                 yield return file;
+                yield return content;
             }
         }
 
-        private Variable<FileInfo> file = new Variable<FileInfo>("File", null, "The file to be created");
+        private Variable<FileInfo> file = new Variable<FileInfo>("File", null, "The file to be written");
+        private Variable content = new Variable("Content", typeof(object), null, "The content of the file to append");
 
         public override NodeResult Run()
         {
-            if (file.Value == null || file.Value.Exists)
+            if (file.Value == null || content.Value == null)
                 return NodeResult.Skip;
 
             try
             {
-                File.Create(file.Value.FullName).Close();
+                string text = content.Value.ToString();
+                File.AppendAllText(file.Value.FullName, text);
             }
             catch
             {

@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace FlowTomator.Common
 {
-    [Node("CreateFile", "IO", "Create a file at the specified location")]
-    public class CreateFile : Task
+    [Node("ReadFile", "IO", "Reads the content of the specified file")]
+    public class ReadFile : Task
     {
         public override IEnumerable<Variable> Inputs
         {
@@ -18,17 +18,25 @@ namespace FlowTomator.Common
                 yield return file;
             }
         }
+        public override IEnumerable<Variable> Outputs
+        {
+            get
+            {
+                yield return content;
+            }
+        }
 
-        private Variable<FileInfo> file = new Variable<FileInfo>("File", null, "The file to be created");
+        private Variable<FileInfo> file = new Variable<FileInfo>("File", null, "The file to be read");
+        private Variable content = new Variable("Content", typeof(object), null, "The content of the file to read");
 
         public override NodeResult Run()
         {
-            if (file.Value == null || file.Value.Exists)
+            if (file.Value == null)
                 return NodeResult.Skip;
 
             try
             {
-                File.Create(file.Value.FullName).Close();
+                content.Value = File.ReadAllText(file.Value.FullName);
             }
             catch
             {

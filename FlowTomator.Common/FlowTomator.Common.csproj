@@ -56,12 +56,15 @@
     <Compile Include="Nodes\General\Sleep.cs" />
     <Compile Include="Nodes\General\Nope.cs" />
     <Compile Include="Nodes\End.cs" />
+    <Compile Include="Nodes\IO\DeleteFile.cs" />
+    <Compile Include="Nodes\IO\ReadFile.cs" />
+    <Compile Include="Nodes\IO\AppendFile.cs" />
     <Compile Include="Nodes\Origin.cs" />
     <Compile Include="Nodes\DateTime\TimedEvent.cs" />
     <Compile Include="Model\Flow.cs" />
     <Compile Include="Nodes\System\Clipboard.cs" />
     <Compile Include="Nodes\System\Screenshot.cs" />
-    <Compile Include="Nodes\System\SessionLock.cs" />
+    <Compile Include="Nodes\System\Device.cs" />
     <Compile Include="NumberPattern.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Nodes\IO\CreateFile.cs" />

@@ -10,11 +10,11 @@
     <Wait Id="6" Count="2" />
     <Nope Id="7" />
     <Origin Id="8" />
-    <RunApplication Id="9" Wait="true" />
+    <SetClipboard Id="9" Content="$Screenshot" />
   </Nodes>
   <Slots>
     <Slot Id="0">
-      <Node Id="1" />
+      <Node Id="9" />
     </Slot>
     <Slot Id="3">
       <Node Id="6" />
@@ -34,20 +34,19 @@
       <Node Id="5" />
     </Slot>
     <Slot Id="8">
-      <Node Id="7" />
-      <Node Id="9" />
+      <Node Id="0" />
     </Slot>
   </Slots>
   <Edition>
-    <Node Id="0" X="68" Y="268" />
-    <Node Id="1" X="112" Y="368" />
-    <Node Id="2" X="384" Y="324" />
-    <Node Id="3" X="236" Y="136" />
-    <Node Id="4" X="384" Y="136" />
-    <Node Id="5" X="528" Y="136" />
-    <Node Id="6" X="384" Y="236" />
-    <Node Id="7" X="384" Y="68" />
-    <Node Id="8" X="100" Y="20" />
-    <Node Id="9" X="48" Y="128" />
+    <Node Id="0" X="64" Y="160" />
+    <Node Id="1" X="224" Y="340" />
+    <Node Id="2" X="448" Y="312" />
+    <Node Id="3" X="304" Y="124" />
+    <Node Id="4" X="448" Y="124" />
+    <Node Id="5" X="592" Y="124" />
+    <Node Id="6" X="448" Y="224" />
+    <Node Id="7" X="448" Y="56" />
+    <Node Id="8" X="64" Y="108" />
+    <Node Id="9" X="64" Y="244" />
   </Edition>
 </Flow>

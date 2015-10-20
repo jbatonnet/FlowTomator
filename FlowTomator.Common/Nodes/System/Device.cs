@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,12 +10,27 @@ using Microsoft.Win32;
 
 namespace FlowTomator.Common
 {
-    [Node("SessionLock", "System", "Triggers when the system session is locked")]
-    public class SessionLockEvent : Event
+    [Node("LockDevice", "System", "Lock the current device")]
+    public class LockDevice : Task
+    {
+        [DllImport("user32.dll")]
+        public static extern bool LockWorkStation();
+
+        public override NodeResult Run()
+        {
+            if (LockWorkStation())
+                return NodeResult.Success;
+            else
+                return NodeResult.Fail;
+        }
+    }
+
+    [Node("DeviceLock", "System", "Triggers when the system session is locked")]
+    public class DeviceLockEvent : Event
     {
         private AutoResetEvent sessionLockEvent = new AutoResetEvent(false);
 
-        public SessionLockEvent()
+        public DeviceLockEvent()
         {
             SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
         }
@@ -42,12 +58,12 @@ namespace FlowTomator.Common
         }
     }
 
-    [Node("SessionUnlock", "System", "Triggers when the system session is unlocked")]
-    public class SessionUnlockEvent : Event
+    [Node("DeviceUnlock", "System", "Triggers when the system session is unlocked")]
+    public class DeviceUnlockEvent : Event
     {
         private AutoResetEvent sessionUnlockEvent = new AutoResetEvent(false);
 
-        public SessionUnlockEvent()
+        public DeviceUnlockEvent()
         {
             SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
         }
@@ -75,12 +91,12 @@ namespace FlowTomator.Common
         }
     }
 
-    [Node("IsSessionLocked", "System", "Detects wether the system session is locked or unlocked")]
-    public class IsSessionLocked : BinaryChoice
+    [Node("IsDeviceLocked", "System", "Detects wether the system session is locked or unlocked")]
+    public class IsDeviceLocked : BinaryChoice
     {
         private bool sessionLocked = false;
 
-        public IsSessionLocked()
+        public IsDeviceLocked()
         {
             SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
         }
