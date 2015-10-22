@@ -23,7 +23,7 @@ namespace FlowTomator.Engine
             serviceProcessInstaller.Password = null;
 
             // Service information
-            serviceInstaller.DisplayName = "FlowTomator Service";
+            serviceInstaller.DisplayName = "FlowTomator";
             serviceInstaller.ServiceName = "FlowTomator";
             serviceInstaller.StartType = ServiceStartMode.Automatic;
 

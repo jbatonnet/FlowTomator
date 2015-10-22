@@ -5,7 +5,7 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FlowTomator.Engine
+namespace FlowTomator.Service
 {
     public class FlowTomatorService : ServiceBase
     {
@@ -13,10 +13,10 @@ namespace FlowTomator.Engine
         {
             ServiceName = "FlowTomator";
 
-            CanHandlePowerEvent = true;
-            CanHandleSessionChangeEvent = true;
-            CanPauseAndContinue = true;
-            CanShutdown = true;
+            //CanHandlePowerEvent = true;
+            //CanHandleSessionChangeEvent = true;
+            //CanPauseAndContinue = true;
+            //CanShutdown = true;
             CanStop = true;
         }
 
