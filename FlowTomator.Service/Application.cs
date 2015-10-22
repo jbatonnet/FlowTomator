@@ -1,8 +1,15 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Ipc;
+using System.Runtime.Serialization.Formatters;
+using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,49 +21,162 @@ namespace FlowTomator.Service
     {
         public NotifyIcon Icon { get; private set; }
         public ContextMenu Menu { get; private set; }
+        public FlowTomatorService Service { get; private set; }
 
-        private BackgroundWorker serviceStarter = new BackgroundWorker();
+        private IChannel channel;
+        private MenuItem startServiceButton, stopServiceButton;
 
         public FlowTomatorApplication()
         {
             InitializeComponent();
+            InitializeRemoting();
 
             // Start service if needed
             if (Program.Parameters.ContainsKey("start"))
-                Task.Run((Action)StartService);
+                Task.Run(() => StartService()).ContinueWith(t => ConnectToService(false));
+            else
+                Task.Run(() => ConnectToService(false));
         }
 
         private void InitializeComponent()
         {
-            Menu = new ContextMenu();
             Icon = new NotifyIcon();
-
-            Menu.Popup += Menu_Popup;
-            //Menu.MenuItems.Add("Show", new EventHandler((o, e) => Icon_MouseClick(o, new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0))));
-            //Menu.MenuItems.Add("Extend", new EventHandler(Extend_Click));
-            //Menu.MenuItems.Add("Exit", new EventHandler(Exit_Click));
+            Menu = new ContextMenu();
 
             Icon.Icon = Resources.Icon;
             Icon.Text = "FlowTomator";
             Icon.ContextMenu = Menu;
-            //Icon.MouseClick += Icon_MouseClick;
             Icon.Visible = true;
+
+            Menu.Popup += Menu_Popup;
+            startServiceButton = new MenuItem("Start", StartServiceButton_Click);
+            stopServiceButton = new MenuItem("Stop", StopServiceButton_Click);
+
+            startServiceButton.Enabled = true;
+            stopServiceButton.Enabled = false;
+        }
+        private void InitializeRemoting()
+        {
+            BinaryClientFormatterSinkProvider clientProvider = new BinaryClientFormatterSinkProvider();
+            BinaryServerFormatterSinkProvider serverProvider = new BinaryServerFormatterSinkProvider();
+            serverProvider.TypeFilterLevel = TypeFilterLevel.Full;
+
+            Hashtable properties = new Hashtable();
+            properties["name"] = "FlowTomator";
+            properties["portName"] = "FlowTomator.Monitor";
+
+            channel = new IpcChannel(properties, clientProvider, serverProvider);
+            ChannelServices.RegisterChannel(channel);
         }
 
         private void Menu_Popup(object sender, EventArgs e)
         {
-            
+            Menu.MenuItems.Clear();
+            Menu.MenuItems.AddRange(new[]
+            {
+                new MenuItem("Load flow ...", LoadFlowButton_Click),
+                new MenuItem("-"),
+                new MenuItem("Service", new[]
+                {
+                    startServiceButton,
+                    stopServiceButton
+                }),
+                new MenuItem("Exit", ExitButton_Click)
+            });
+        }
+
+        private void LoadFlowButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+
+            openFileDialog.Filter = "XFlow files (*.xflow)|*.xflow|All files (*.*)|*.*";
+            openFileDialog.FilterIndex = 1;
+
+            DialogResult result = openFileDialog.ShowDialog();
+            if (result != DialogResult.OK)
+                return;
+
+            try
+            {
+                FlowEnvironment flow = Service.Load(openFileDialog.FileName);
+                flow.Start();
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+        private void StartServiceButton_Click(object sender, EventArgs e)
+        {
+            if (Service != null)
+                return;
+
+            Task.Run(() => StartService())
+                .ContinueWith(t => ConnectToService());
+        }
+        private void StopServiceButton_Click(object sender, EventArgs e)
+        {
+            Task.Run(() => StopService())
+                .ContinueWith(t => Service = null);
+        }
+        private void ExitButton_Click(object sender, EventArgs e)
+        {
+            if (Program.Parameters.ContainsKey("start"))
+                StopService();
+
+            ExitThread();
         }
 
         private void StartService()
         {
-            if (!ServiceManager.ServiceIsInstalled(Program.ServiceName))
+            ServiceController service = ServiceController.GetServices().SingleOrDefault(s => s.ServiceName == Program.ServiceName);
+            if (service == null)
             {
-                MessageBox.Show("FlowTomator service is not installed yet. Please install it first", "FlowTomator", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Icon.ShowBalloonTip(5000, "FlowTomator", "Could not start FlowTomator service. It may not be installed", ToolTipIcon.Error);
                 return;
             }
 
-            ServiceManager.StartService(Program.ServiceName);
+            service.Start();
+            
+            startServiceButton.Enabled = false;
+            stopServiceButton.Enabled = true;
+
+            Thread.Sleep(2000);
+        }
+        private void StopService()
+        {
+            ServiceController service = ServiceController.GetServices().SingleOrDefault(s => s.ServiceName == Program.ServiceName);
+            if (service == null)
+            {
+                Icon.ShowBalloonTip(5000, "FlowTomator", "Could not start FlowTomator service. It may not be installed", ToolTipIcon.Error);
+                return;
+            }
+
+            service.Stop();
+
+            startServiceButton.Enabled = true;
+            stopServiceButton.Enabled = false;
+        }
+        private void ConnectToService(bool canThrow = true)
+        {
+            string uri = string.Format("ipc://{0}/{1}", "FlowTomator.Service", nameof(FlowTomatorService));
+
+            try
+            {
+                Service = (FlowTomatorService)Activator.GetObject(typeof(FlowTomatorService), uri);
+                Service.ToString();
+
+                Icon.ShowBalloonTip(5000, "FlowTomator", "Connected to FlowTomator service", ToolTipIcon.Info);
+            }
+            catch (Exception e)
+            {
+                Service = null;
+
+                if (canThrow && Debugger.IsAttached)
+                    Debugger.Break();
+                else
+                    Icon.ShowBalloonTip(5000, "FlowTomator", "Could not connect to FlowTomator service. " + e.Message, ToolTipIcon.Error);
+            }
         }
     }
 }

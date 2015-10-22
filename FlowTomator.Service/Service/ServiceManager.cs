@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 namespace FlowTomator.Service
 {
     using System;
+    using System.ComponentModel;
+    using System.Diagnostics;
     using System.Runtime.InteropServices;
 
     [Flags]
@@ -100,11 +102,11 @@ namespace FlowTomator.Service
             public int dwWaitHint = 0;
         }
 
-        [DllImport("advapi32.dll", EntryPoint = "OpenSCManagerA")]
+        [DllImport("advapi32.dll", EntryPoint = "OpenSCManagerA", SetLastError = true)]
         private static extern IntPtr OpenSCManager(string lpMachineName, string lpDatabaseName, ServiceManagerRights dwDesiredAccess);
         [DllImport("advapi32.dll", EntryPoint = "OpenServiceA", CharSet = CharSet.Ansi)]
         private static extern IntPtr OpenService(IntPtr hSCManager, string lpServiceName, ServiceRights dwDesiredAccess);
-        [DllImport("advapi32.dll", EntryPoint = "CreateServiceA")]
+        [DllImport("advapi32.dll", EntryPoint = "CreateServiceA", SetLastError = true)]
         private static extern IntPtr CreateService(IntPtr hSCManager, string lpServiceName, string lpDisplayName, ServiceRights dwDesiredAccess, int dwServiceType, ServiceBootFlag dwStartType, ServiceError dwErrorControl, string lpBinaryPathName, string lpLoadOrderGroup, IntPtr lpdwTagId, string lpDependencies, string lp, string lpPassword);
         [DllImport("advapi32.dll")]
         private static extern int CloseServiceHandle(IntPtr hSCObject);
@@ -120,6 +122,9 @@ namespace FlowTomator.Service
         public static bool ServiceIsInstalled(string serviceName)
         {
             IntPtr serviceManager = OpenSCManager(null, null, ServiceManagerRights.Connect);
+            if (serviceManager == IntPtr.Zero)
+                throw new Exception("Failed to open service manager", new Win32Exception(Marshal.GetLastWin32Error()));
+
             try
             {
                 IntPtr service = OpenService(serviceManager, serviceName, ServiceRights.QueryStatus);
@@ -135,9 +140,11 @@ namespace FlowTomator.Service
             }
         }
 
-        public static void InstallService(string serviceName, string displayName, string fileName)
+        public static void InstallService(string serviceName, string displayName, string fileName, string user = null, string password = null)
         {
             IntPtr serviceManager = OpenSCManager(null, null, ServiceManagerRights.Connect | ServiceManagerRights.CreateService);
+            if (serviceManager == IntPtr.Zero)
+                throw new Exception("Failed to open service manager", new Win32Exception(Marshal.GetLastWin32Error()));
 
             try
             {
@@ -148,9 +155,9 @@ namespace FlowTomator.Service
                     throw new Exception("The specified service already exists");
                 }
 
-                service = CreateService(serviceManager, serviceName, displayName, ServiceRights.QueryStatus | ServiceRights.Start, SERVICE_WIN32_OWN_PROCESS, ServiceBootFlag.AutoStart, ServiceError.Normal, fileName, null, IntPtr.Zero, null, null, null);
+                service = CreateService(serviceManager, serviceName, displayName, ServiceRights.QueryStatus | ServiceRights.Start, SERVICE_WIN32_OWN_PROCESS, ServiceBootFlag.AutoStart, ServiceError.Normal, fileName, null, IntPtr.Zero, null, user, password);
                 if (service == IntPtr.Zero)
-                    throw new Exception("Failed to create the specified service");
+                    throw new Exception("Failed to create the specified service", new Win32Exception(Marshal.GetLastWin32Error()));
 
                 CloseServiceHandle(service);
             }
@@ -163,6 +170,9 @@ namespace FlowTomator.Service
         public static void UninstallService(string serviceName)
         {
             IntPtr serviceManager = OpenSCManager(null, null, ServiceManagerRights.Connect);
+            if (serviceManager == IntPtr.Zero)
+                throw new Exception("Failed to open service manager", new Win32Exception(Marshal.GetLastWin32Error()));
+
             try
             {
                 IntPtr service = OpenService(serviceManager, serviceName, ServiceRights.StandardRightsRequired | ServiceRights.Stop | ServiceRights.QueryStatus);
@@ -194,6 +204,9 @@ namespace FlowTomator.Service
         public static void StartService(string serviceName)
         {
             IntPtr serviceManager = OpenSCManager(null, null, ServiceManagerRights.Connect);
+            if (serviceManager == IntPtr.Zero)
+                throw new Exception("Failed to open service manager", new Win32Exception(Marshal.GetLastWin32Error()));
+
             try
             {
                 IntPtr service = OpenService(serviceManager, serviceName, ServiceRights.QueryStatus | ServiceRights.Start);
@@ -218,6 +231,9 @@ namespace FlowTomator.Service
         public static void StopService(string serviceName)
         {
             IntPtr serviceManager = OpenSCManager(null, null, ServiceManagerRights.Connect);
+            if (serviceManager == IntPtr.Zero)
+                throw new Exception("Failed to open service manager", new Win32Exception(Marshal.GetLastWin32Error()));
+
             try
             {
                 IntPtr service = OpenService(serviceManager, serviceName, ServiceRights.QueryStatus | ServiceRights.Stop);
