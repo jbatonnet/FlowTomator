@@ -219,30 +219,30 @@ namespace FlowTomator.Common
         }
         public static XDocument Save(XFlow flow)
         {
-            XElement referencesElement, nodesElement, slotsElement, editionElement;
+            XElement propertiesElement, nodesElement;
 
             XDocument document = new XDocument(
                 new XElement("Flow",
-                    nodesElement = new XElement("Nodes"),
-                    slotsElement = new XElement("Slots"),
-                    editionElement = new XElement("Edition")
+                    propertiesElement = new XElement("Properties"),
+                    nodesElement = new XElement("Nodes")
                 )
             );
 
+            // Save references
             Assembly[] assemblies = flow.Nodes.Select(n => Assembly.GetAssembly(n.GetType()))
                                               .Except(new [] { Assembly.GetAssembly(typeof(Flow)) })
                                               .Distinct()
                                               .ToArray();
-
             if (assemblies.Length > 0)
             {
-                referencesElement = new XElement("References");
-                nodesElement.AddBeforeSelf(referencesElement);
+                XElement referencesElement = new XElement("References");
+                propertiesElement.Add(referencesElement);
 
                 foreach (Assembly assembly in assemblies)
                     referencesElement.Add(new XElement("Assembly", new XAttribute("Path", assembly.Location)));
             }
 
+            // Save nodes
             for (int i = 0; i < flow.Nodes.Count; i++)
             {
                 Node node = flow.Nodes[i];
@@ -251,6 +251,7 @@ namespace FlowTomator.Common
                     new XAttribute("Id", i)
                 );
 
+                // Inputs
                 foreach (Variable input in node.Inputs)
                 {
                     if (input.Linked != null)
@@ -259,23 +260,21 @@ namespace FlowTomator.Common
                         nodeElement.Add(new XAttribute(input.Name, input.Value));
                 }
 
+                // Outputs
                 foreach (Variable output in node.Outputs)
                 {
                     if (output.Linked != null)
                         nodeElement.Add(new XAttribute(output.Name, "$" + output.Linked.Name));
                 }
 
-                nodesElement.Add(nodeElement);
-
+                // Slots
                 Slot[] slots = node.Slots.ToArray();
                 for (int j = 0; j < slots.Length; j++)
                 {
                     if (slots[j].Nodes.Count == 0)
                         continue;
 
-                    XElement slotElement = new XElement("Slot",
-                        new XAttribute("Id", i)
-                    );
+                    XElement slotElement = new XElement("Slot");
 
                     if (slots.Length > 1)
                         slotElement.Add(new XAttribute("Index", j));
@@ -286,18 +285,10 @@ namespace FlowTomator.Common
                         slotElement.Add(new XElement("Node", new XAttribute("Id", id)));
                     }
 
-                    slotsElement.Add(slotElement);
+                    nodeElement.Add(slotElement);
                 }
-            }
 
-            for (int i = 0; i < flow.Nodes.Count; i++)
-            {
-                Node node = flow.Nodes[i];
-
-                XElement nodeElement = new XElement("Node",
-                    new XAttribute("Id", i)
-                );
-
+                // Metadata
                 object x, y;
                 node.Metadata.TryGetValue("Position.X", out x);
                 node.Metadata.TryGetValue("Position.Y", out y);
@@ -308,7 +299,7 @@ namespace FlowTomator.Common
                 nodeElement.Add(new XAttribute("X", x));
                 nodeElement.Add(new XAttribute("Y", y));
 
-                editionElement.Add(nodeElement);
+                nodesElement.Add(nodeElement);
             }
 
             return document;

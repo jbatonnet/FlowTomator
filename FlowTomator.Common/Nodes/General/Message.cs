@@ -93,11 +93,11 @@ namespace FlowTomator.Common.Nodes
             }
         }
 
-        private Variable<string> text = new Variable<string>("Text", "Text", "The text to display in this message box");
-        private Variable<string> title = new Variable<string>("Title", "Title", "The title of this message box");
-        private Variable<MessageBoxButtons> buttons = new Variable<MessageBoxButtons>("Buttons", MessageBoxButtons.OKCancel, "The buttons to display in this message box");
-        private Variable<MessageBoxIcon> icon = new Variable<MessageBoxIcon>("Icon", MessageBoxIcon.None, "The icon to display in this message box");
-        private Variable<DialogResult> result = new Variable<DialogResult>("Result", DialogResult.OK, "The result of this message box");
+        internal Variable<string> text = new Variable<string>("Text", "Text", "The text to display in this message box");
+        internal Variable<string> title = new Variable<string>("Title", "Title", "The title of this message box");
+        internal Variable<MessageBoxButtons> buttons = new Variable<MessageBoxButtons>("Buttons", MessageBoxButtons.OKCancel, "The buttons to display in this message box");
+        internal Variable<MessageBoxIcon> icon = new Variable<MessageBoxIcon>("Icon", MessageBoxIcon.None, "The icon to display in this message box");
+        internal Variable<DialogResult> result = new Variable<DialogResult>("Result", DialogResult.OK, "The result of this message box");
 
         public override NodeResult Run()
         {
@@ -130,6 +130,33 @@ namespace FlowTomator.Common.Nodes
             }
 
             return NodeResult.Fail;
+        }
+    }
+
+    [Node("Dialog", "General", "Ask the specified question to the user")]
+    public class Dialog : BinaryChoice
+    {
+        public override IEnumerable<Variable> Inputs
+        {
+            get
+            {
+                yield return message.text;
+                yield return message.title;
+                yield return message.icon;
+            }
+        }
+
+        private Message message = new Message();
+
+        public Dialog()
+        {
+            message.buttons.Value = MessageBoxButtons.YesNo;
+        }
+
+        public override NodeStep Evaluate()
+        {
+            NodeResult result = message.Run();
+            return new NodeStep(result, message.result.Value == DialogResult.Yes ? TrueSlot : FalseSlot);
         }
     }
 }
