@@ -14,14 +14,14 @@
       <Metadata Position.X="204" Position.Y="368" />
     </Node>
     <Node Type="FlowTomator.Common.Sleep" Id="2">
-      <Inputs Duration="1000" />
-      <Metadata Position.X="152" Position.Y="128" />
+      <Inputs Duration="2000" />
+      <Metadata Position.X="152" Position.Y="132" />
       <Slot>
         <Node Id="0" />
       </Slot>
     </Node>
     <Node Type="FlowTomator.Common.Origin" Id="3">
-      <Metadata Position.X="132" Position.Y="52" />
+      <Metadata Position.X="128" Position.Y="52" />
       <Slot>
         <Node Id="2" />
       </Slot>

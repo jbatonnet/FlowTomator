@@ -13,26 +13,32 @@ namespace FlowTomator.Desktop
 {
     public class DependencyManager
     {
-        public INotifyPropertyChanged Instance { get; private set; }
-        public PropertyChangedEventHandler PropertyChangedEventHandler { get; private set; }
+        public INotifyPropertyChanged Instance { get; protected set; }
+        public PropertyChangedEventHandler PropertyChangedEventHandler { get; protected set; }
 
         private Dictionary<string, List<PropertyInfo>> propertyDependencies = new Dictionary<string, List<PropertyInfo>>();
         private Dictionary<string, INotifyPropertyChanged> propertyValues = new Dictionary<string, INotifyPropertyChanged>();
 
+        protected DependencyManager() { }
         public DependencyManager(INotifyPropertyChanged instance, PropertyChangedEventHandler propertyChangedEventHandler)
         {
             Instance = instance;
             PropertyChangedEventHandler = propertyChangedEventHandler;
 
-            instance.PropertyChanged += Instance_PropertyChanged;
+            Initialize();
+        }
 
-            PropertyInfo[] propertyInfos = instance.GetType().GetProperties();
+        protected void Initialize()
+        {
+            Instance.PropertyChanged += Instance_PropertyChanged;
+
+            PropertyInfo[] propertyInfos = Instance.GetType().GetProperties();
             foreach (PropertyInfo propertyInfo in propertyInfos)
             {
                 // Inspect each INotifyPropertyChanged
                 if (propertyInfo.PropertyType.GetInterfaces().Contains(typeof(INotifyPropertyChanged)))
                 {
-                    INotifyPropertyChanged propertyValue = propertyInfo.GetValue(instance) as INotifyPropertyChanged;
+                    INotifyPropertyChanged propertyValue = propertyInfo.GetValue(Instance) as INotifyPropertyChanged;
 
                     if (propertyValue != null)
                     {
@@ -102,7 +108,6 @@ namespace FlowTomator.Desktop
                 }
             }
         }
-
         private void PropertyValue_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             INotifyPropertyChanged notifyPropertyObject = sender as INotifyPropertyChanged;
