@@ -17,25 +17,33 @@
         <Point x:Key="NodeOffset" X="0" Y="-40" />
     </UserControl.Resources>
 
-    <Canvas>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+    <Canvas PreviewMouseDown="Canvas_MouseDown" PreviewMouseMove="Canvas_MouseMove" PreviewMouseUp="Canvas_MouseUp" PreviewMouseWheel="Canvas_PreviewMouseWheel" PreviewKeyDown="Canvas_PreviewKeyDown"
+            Cursor="{Binding EditorCursor, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+            Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+            Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}">
+
+        <Canvas.Background>
+            <ImageBrush ImageSource="..\..\Resources\Icon-256.png" Opacity="0.25" Stretch="None" Viewport="0,0,2,2" Viewbox="0,0,1.3,1.3" />
+        </Canvas.Background>
+
+        <ScrollViewer x:Name="EditorScroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AllowDrop="True"
                       Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Canvas}}}"
-                      Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Canvas}}}">
+                      Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Canvas}}}"
+                      DragEnter="Canvas_DragEnter" Drop="Canvas_Drop">
 
-            <ScrollViewer.RenderTransform>
-                <ScaleTransform ScaleX="1" ScaleY="1" />
-            </ScrollViewer.RenderTransform>
-            <ScrollViewer.Background>
-                <ImageBrush ImageSource="..\..\Resources\Icon-256.png" Opacity="0.25" Stretch="None" Viewport="0,0,2,2" Viewbox="0,0,1.3,1.3" />
-            </ScrollViewer.Background>
+            <Canvas x:Name="EditorCanvas">
 
-            <Canvas x:Name="EditorCanvas" AllowDrop="True" Background="Transparent"
-                    MouseDown="Canvas_MouseDown" MouseMove="Canvas_MouseMove" MouseUp="Canvas_MouseUp" DragEnter="Canvas_DragEnter" Drop="Canvas_Drop">
-
+                <Canvas.RenderTransform>
+                    <TransformGroup>
+                        <TranslateTransform X="{Binding PanX, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                                            Y="{Binding PanY, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}" />
+                        <ScaleTransform ScaleX="{Binding Scale, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                                        ScaleY="{Binding Scale, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}" />
+                    </TransformGroup>
+                </Canvas.RenderTransform>
+                
                 <!-- Links -->
-                <ItemsControl ItemsSource="{Binding Links}"
-                              Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}"
-                              Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Canvas}}">
+                <ItemsControl ItemsSource="{Binding Links}">
 
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -139,9 +147,7 @@
                 </Path>
 
                 <!-- Nodes -->
-                <ItemsControl ItemsSource="{Binding Nodes}" x:Name="NodeList"
-                      Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}"
-                      Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Canvas}}">
+                <ItemsControl ItemsSource="{Binding Nodes}" x:Name="NodeList">
 
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -156,9 +162,9 @@
                     </ItemsControl.ItemContainerStyle>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <local:NodeControl NodeInfo="{Binding}" Opacity="{Binding Opacity}" BorderThickness="1"
-                                               HeaderMouseDown="NodeControl_HeaderMouseDown"
-                                               SlotMouseDown="NodeControl_SlotMouseDown">
+                            <local:NodeControl NodeInfo="{Binding}" Opacity="{Binding Opacity}" BorderThickness="1" SnapsToDevicePixels="True"
+                                               HeaderMouseDown="NodeControl_HeaderMouseDown" SlotMouseDown="NodeControl_SlotMouseDown"
+                                               LayoutUpdated="NodeControl_LayoutUpdated">
 
                                 <local:NodeControl.Effect>
                                     <DropShadowEffect ShadowDepth="0" BlurRadius="16" Color="{Binding StatusColor}" />
@@ -169,18 +175,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!-- Selection -->
-                <Rectangle Stroke="CornflowerBlue" StrokeDashArray="2,2" StrokeThickness="1.5"
-                           Canvas.Left="{Binding SelectionX, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
-                           Canvas.Top="{Binding SelectionY, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
-                           Width="{Binding SelectionWidth, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
-                           Height="{Binding SelectionHeight, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
-                           Visibility="{Binding SelectionVisibility, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}">
-                    <Rectangle.Fill>
-                        <SolidColorBrush Opacity="0.2" Color="CornflowerBlue" />
-                    </Rectangle.Fill>
-                </Rectangle>
-
                 <local:Anchor x:Name="SourceAnchor" />
                 <local:Anchor x:Name="DestinationAnchor" />
 
@@ -188,8 +182,20 @@
 
         </ScrollViewer>
         
+        <!-- Selection -->
+        <Rectangle Stroke="CornflowerBlue" StrokeDashArray="2,2" StrokeThickness="1.5"
+                           Canvas.Left="{Binding SelectionX, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                           Canvas.Top="{Binding SelectionY, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                           Width="{Binding SelectionWidth, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                           Height="{Binding SelectionHeight, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                           Visibility="{Binding SelectionVisibility, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}">
+            <Rectangle.Fill>
+                <SolidColorBrush Opacity="0.2" Color="CornflowerBlue" />
+            </Rectangle.Fill>
+        </Rectangle>
+
         <!--<Border Canvas.Bottom="8" Canvas.Right="8" Width="72" MinHeight="16" BorderBrush="Gray" BorderThickness="1">
-            <Image x:Name="EditorThumbnail" Source="{Binding ElementName=EditorCanvas, Converter={StaticResource VisualSnapshotConverter}}" />
+            <Image x:Name="EditorThumbnail"  Source="{Binding ElementName=EditorCanvas, Converter={StaticResource VisualSnapshotConverter}}" />
         </Border>-->
     </Canvas>
 </UserControl>

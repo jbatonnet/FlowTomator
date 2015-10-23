@@ -8,7 +8,8 @@
         Title="FlowTomator" SnapsToDevicePixels="True"
         Width="1024" Height="768" MinWidth="640" MinHeight="480"
         Icon="..\Icon.ico"
-        Loaded="Window_Loaded" Closing="Window_Closing">
+        Loaded="Window_Loaded" Closing="Window_Closing"
+        PreviewKeyDown="Window_PreviewKeyDown">
 
     <Window.Resources>
         <local:FlowEditorTemplateSelector x:Key="EditorTemplateSelector" />
@@ -179,12 +180,13 @@
 
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" MinHeight="240" />
+                    <RowDefinition Height="4" />
+                    <RowDefinition Height="Auto" MinHeight="128" />
                 </Grid.RowDefinitions>
 
                 <!-- Flow editors -->
-                <Border Grid.Row="0" Padding="0,4,4,4">
+                <Border Grid.Row="0" Padding="0,4,4,2">
                     <TabControl x:Name="Tabs" ItemsSource="{Binding Flows}" ContentTemplateSelector="{StaticResource EditorTemplateSelector}" SelectedItem="{Binding CurrentFlow}">
                         <TabControl.ItemTemplate>
                             <DataTemplate>
@@ -194,10 +196,10 @@
                     </TabControl>
                 </Border>
 
-                <GridSplitter ResizeDirection="Rows" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
+                <GridSplitter Grid.Row="1" ResizeDirection="Rows" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 
                 <!-- Log output -->
-                <Border Grid.Column="0" Grid.Row="1" Margin="4">
+                <Border Grid.Row="2" Margin="4,2,4,4">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -208,8 +210,8 @@
                             <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Output</TextBlock>
                         </Border>
 
-                        <TextBox x:Name="LogOutput" Grid.Row="1" Text="{Binding Output, FallbackValue=Output :)}" FontFamily="Consolas" FontSize="11" IsReadOnly="True" BorderThickness="0" Padding="2"
-                                 Height="128" Background="White" ScrollViewer.VerticalScrollBarVisibility="Visible" />
+                        <TextBox x:Name="LogOutput" Text="{Binding Output, FallbackValue=Output :)}" FontFamily="Consolas" FontSize="11" IsReadOnly="True" BorderThickness="0" Padding="2"
+                                 Grid.Row="1" MinHeight="128" Background="White" ScrollViewer.VerticalScrollBarVisibility="Visible" />
                     </Grid>
                 </Border>
             </Grid>

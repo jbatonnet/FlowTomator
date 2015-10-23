@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace FlowTomator.Common.Nodes
+namespace FlowTomator.Common
 {
     [Node("Message", "General", "Shows a message box with parameterable content")]
     public class Message : Task
@@ -95,7 +95,7 @@ namespace FlowTomator.Common.Nodes
 
         internal Variable<string> text = new Variable<string>("Text", "Text", "The text to display in this message box");
         internal Variable<string> title = new Variable<string>("Title", "Title", "The title of this message box");
-        internal Variable<MessageBoxButtons> buttons = new Variable<MessageBoxButtons>("Buttons", MessageBoxButtons.OKCancel, "The buttons to display in this message box");
+        internal Variable<MessageBoxButtons> buttons = new Variable<MessageBoxButtons>("Buttons", MessageBoxButtons.OK, "The buttons to display in this message box");
         internal Variable<MessageBoxIcon> icon = new Variable<MessageBoxIcon>("Icon", MessageBoxIcon.None, "The icon to display in this message box");
         internal Variable<DialogResult> result = new Variable<DialogResult>("Result", DialogResult.OK, "The result of this message box");
 

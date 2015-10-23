@@ -215,6 +215,29 @@ namespace FlowTomator.Desktop
 
             StopFlowCommand.Execute(null);
         }
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Z && e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Control))
+                UndoCommand.Execute(null);
+            else if (e.Key == Key.Y && e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Control))
+                RedoCommand.Execute(null);
+
+            else if (e.Key == Key.N && e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Control))
+                NewFlowCommand.Execute(null);
+            else if (e.Key == Key.O && e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Control))
+                OpenFlowCommand.Execute(null);
+            else if (e.Key == Key.S && e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Control | ModifierKeys.Shift))
+                SaveAllFlowsCommand.Execute(null);
+            else if (e.Key == Key.S && e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Control))
+                SaveFlowCommand.Execute(null);
+
+            else if (e.Key == Key.F5 && e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Shift))
+                StopFlowCommand.Execute(null);
+            else if (e.Key == Key.F5)
+                RunFlowCommand.Execute(null);
+            else if (e.Key == Key.F10)
+                StepFlowCommand.Execute(null);
+        }
 
         private void NewFlowCommandCallback(object parameter)
         {
@@ -273,7 +296,7 @@ namespace FlowTomator.Desktop
             {
                 switch (fileInfo.Extension)
                 {
-                    case ".xflow": flowInfo = new FlowInfo(XFlow.Load(XDocument.Load(fileInfo.FullName)), fileInfo.FullName); break;
+                    case ".xflow": flowInfo = new FlowInfo(XFlow.Load(XDocument.Load(fileInfo.FullName, LoadOptions.SetLineInfo)), fileInfo.FullName); break;
                 }
             }
             catch (Exception e)
@@ -303,12 +326,18 @@ namespace FlowTomator.Desktop
                 {
                     XDocument document = XFlow.Save(flowInfo.Flow as XFlow);
 
-                    /*if (string.IsNullOrEmpty(flowInfo.Path) || !File.Exists(flowInfo.Path))
+                    if (string.IsNullOrEmpty(flowInfo.Path) || !File.Exists(flowInfo.Path))
                     {
                         SaveFileDialog saveFileDialog = new SaveFileDialog();
 
-                        saveFileDialog
-                    }*/
+                        saveFileDialog.Filter = "XFlow files (*.xflow)|*.xflow";
+                        saveFileDialog.FilterIndex = 1;
+
+                        if (saveFileDialog.ShowDialog() != true)
+                            return;
+
+                        flowInfo.Path = saveFileDialog.FileName;
+                    }
 
                     document.Save(flowInfo.Path);
                 }

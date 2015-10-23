@@ -43,7 +43,7 @@ namespace FlowTomator.Desktop
         public override void Undo()
         {
             // Add the node
-            FlowInfo.Flow.Nodes.Remove(Node);
+            FlowInfo.Flow.Nodes.Add(Node);
 
             // Restore all links to this node
             foreach (Slot slot in slots)

@@ -111,14 +111,14 @@ namespace FlowTomator.Desktop
         {
             get
             {
-                return Node.Inputs.Select(i => VariableInfo.From(i));
+                return Node.Inputs.Select(i => VariableInfo.From(this, i));
             }
         }
         public IEnumerable<VariableInfo> Outputs
         {
             get
             {
-                return Node.Outputs.Select(o => VariableInfo.From(o));
+                return Node.Outputs.Select(o => VariableInfo.From(this, o));
             }
         }
         public IEnumerable<SlotInfo> Slots

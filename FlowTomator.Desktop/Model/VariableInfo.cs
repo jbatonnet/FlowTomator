@@ -15,6 +15,7 @@ namespace FlowTomator.Desktop
         private static Dictionary<Variable, VariableInfo> variableInfos = new Dictionary<Variable, VariableInfo>();
 
         public Variable Variable { get; private set; }
+        public NodeInfo NodeInfo { get; private set; }
         public Type Type
         {
             get
@@ -32,10 +33,16 @@ namespace FlowTomator.Desktop
             }
             set
             {
+                if (Variable.Value == value)
+                    return;
+
+                NodeInfo.FlowInfo.History.Do(new EditVariableAction(this, Variable.Value, value));
+
                 Variable.Value = value;
                 NotifyPropertyChanged();
             }
         }
+
         [DependsOn(nameof(Value))]
         public string Text
         {
@@ -99,17 +106,23 @@ namespace FlowTomator.Desktop
 
         private bool selected = false;
 
-        private VariableInfo(Variable variable)
+        private VariableInfo(NodeInfo nodeInfo, Variable variable)
         {
             Variable = variable;
+            NodeInfo = nodeInfo;
         }
 
-        public static VariableInfo From(Variable variable)
+        public void Update()
+        {
+            NotifyPropertyChanged(nameof(Value));
+        }
+
+        public static VariableInfo From(NodeInfo nodeInfo, Variable variable)
         {
             VariableInfo variableInfo;
 
             if (!variableInfos.TryGetValue(variable, out variableInfo))
-                variableInfos.Add(variable, variableInfo = new VariableInfo(variable));
+                variableInfos.Add(variable, variableInfo = new VariableInfo(nodeInfo, variable));
 
             return variableInfo;
         }

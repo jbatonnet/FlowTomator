@@ -92,7 +92,7 @@ namespace FlowTomator.Desktop
         {
             get
             {
-                return Math.Min(selectionStart.X, selectionEnd.X);
+                return Math.Min(selectionStart.X, selectionEnd.X) * Scale;
             }
         }
         [DependsOn(nameof(SelectionStart), nameof(SelectionEnd))]
@@ -100,7 +100,7 @@ namespace FlowTomator.Desktop
         {
             get
             {
-                return Math.Min(selectionStart.Y, selectionEnd.Y);
+                return Math.Min(selectionStart.Y, selectionEnd.Y) * Scale;
             }
         }
         [DependsOn(nameof(SelectionStart), nameof(SelectionEnd))]
@@ -108,7 +108,7 @@ namespace FlowTomator.Desktop
         {
             get
             {
-                return Math.Max(selectionStart.X, selectionEnd.X) - SelectionX;
+                return Math.Max(selectionStart.X, selectionEnd.X) * Scale - SelectionX;
             }
         }
         [DependsOn(nameof(SelectionStart), nameof(SelectionEnd))]
@@ -116,7 +116,7 @@ namespace FlowTomator.Desktop
         {
             get
             {
-                return Math.Max(selectionStart.Y, selectionEnd.Y) - SelectionY;
+                return Math.Max(selectionStart.Y, selectionEnd.Y) * Scale - SelectionY;
             }
         }
         [DependsOn(nameof(Selecting))]
@@ -125,6 +125,65 @@ namespace FlowTomator.Desktop
             get
             {
                 return selecting ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        public bool Panning
+        {
+            get
+            {
+                return panning;
+            }
+            set
+            {
+                panning = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public double PanX
+        {
+            get
+            {
+                return panX;
+            }
+            set
+            {
+                panX = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public double PanY
+        {
+            get
+            {
+                return panY;
+            }
+            set
+            {
+                panY = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public double Scale
+        {
+            get
+            {
+                return scale;
+            }
+            set
+            {
+                scale = value;
+                NotifyPropertyChanged();
+            }
+        }
+        
+        [DependsOn(nameof(Panning))]
+        public Cursor EditorCursor
+        {
+            get
+            {
+                return Panning ? Cursors.SizeAll : Cursors.Arrow;
             }
         }
 
@@ -137,12 +196,18 @@ namespace FlowTomator.Desktop
         private bool creatingNewLink = false;
         private SlotInfo newLinkSlot;
 
-        public bool selecting;
-        public Point selectionStart, selectionEnd;
+        private double scale = 1;
+
+        private bool selecting;
+        private Point selectionStart, selectionEnd;
+
+        private bool panning;
+        private Point panningStart;
+        private double panX, panY;
 
         public XFlowEditor()
         {
-            Tag = new DependencyManager(this, (s, e) => PropertyChanged(s, e));
+            Tag = new DependencyManager(this, (s, e) => NotifyPropertyChanged(e.PropertyName));
             InitializeComponent();
 
             DataContextChanged += XFlowEditor_DataContextChanged;
@@ -153,7 +218,13 @@ namespace FlowTomator.Desktop
 
         private void XFlowEditor_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            FlowInfo.PropertyChanged += FlowInfo_PropertyChanged;
+            FlowInfo oldFlow = e.OldValue as FlowInfo;
+            if (oldFlow != null)
+                oldFlow.PropertyChanged -= FlowInfo_PropertyChanged;
+
+            FlowInfo newFlow = e.NewValue as FlowInfo;
+            if (newFlow != null)
+                newFlow.PropertyChanged += FlowInfo_PropertyChanged;
         }
         private void XFlowEditor_Loaded(object sender, RoutedEventArgs e)
         {
@@ -186,6 +257,9 @@ namespace FlowTomator.Desktop
 
         private void NodeControl_HeaderMouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (e.LeftButton == MouseButtonState.Released || Keyboard.IsKeyDown(Key.Space))
+                return;
+
             NodeControl nodeControl = sender as NodeControl;
             ContentPresenter contentPresenter = VisualTreeHelper.GetParent(nodeControl) as ContentPresenter;
             Canvas canvas = VisualTreeHelper.GetParent(contentPresenter) as Canvas;
@@ -211,6 +285,9 @@ namespace FlowTomator.Desktop
         }
         private void NodeControl_SlotMouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (e.LeftButton == MouseButtonState.Released || Keyboard.IsKeyDown(Key.Space))
+                return;
+
             SlotInfo slotInfo = sender as SlotInfo;
 
             Border border = e.OriginalSource as Border;
@@ -227,20 +304,34 @@ namespace FlowTomator.Desktop
             NotifyPropertyChanged(nameof(DestinationAnchorBinder));
             NotifyPropertyChanged(nameof(NewLinkVisibility));
         }
+        private void NodeControl_LayoutUpdated(object sender, EventArgs e)
+        {
+
+        }
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.OriginalSource != sender)
-                return;
+            if (Keyboard.IsKeyDown(Key.Space) || e.MiddleButton == MouseButtonState.Pressed)
+            {
+                Panning = true;
+                panningStart = e.GetPosition(EditorScroller);
+            }
+            else if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                if (e.OriginalSource != EditorScroller)
+                    return;
 
-            SelectedNodes.Clear();
+                SelectedNodes.Clear();
 
-            foreach (NodeInfo nodeInfo in FlowInfo.Nodes)
-                foreach (VariableInfo variable in nodeInfo.Inputs)
-                    variable.Selected = false;
+                foreach (NodeInfo nodeInfo in FlowInfo.Nodes)
+                    foreach (VariableInfo variable in nodeInfo.Inputs)
+                        variable.Selected = false;
 
-            SelectionStart = SelectionEnd = e.GetPosition(sender as Canvas);
-            Selecting = true;
+                Point mousePosition = e.GetPosition(EditorCanvas);
+
+                Selecting = true;
+                SelectionStart = SelectionEnd = new Point(mousePosition.X + PanX, mousePosition.Y + PanY);
+            }
         }
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
@@ -252,11 +343,12 @@ namespace FlowTomator.Desktop
             if (movingNodeOrigins.Count > 0)
             {
                 Point mousePosition = e.GetPosition(canvas);
+                mousePosition = new Point(mousePosition.X - PanX, mousePosition.Y - PanY);
 
                 foreach (NodeControl nodeControl in movingNodeOrigins.Keys)
                 {
                     ContentPresenter contentPresenter = VisualTreeHelper.GetParent(nodeControl) as ContentPresenter;
-                    Point nodeControlPosition = new Point(mousePosition.X - movingNodeOffsets[nodeControl].Value.X, mousePosition.Y - movingNodeOffsets[nodeControl].Value.Y);
+                    Point nodeControlPosition = new Point(mousePosition.X / Scale - movingNodeOffsets[nodeControl].Value.X, mousePosition.Y / Scale - movingNodeOffsets[nodeControl].Value.Y);
 
                     nodeControlPosition.X = Math.Round(nodeControlPosition.X / 4) * 4;
                     nodeControlPosition.Y = Math.Round(nodeControlPosition.Y / 4) * 4;
@@ -284,24 +376,37 @@ namespace FlowTomator.Desktop
                     DestinationAnchorBinder.Anchor.SetValue(Canvas.TopProperty, mousePosition.Y);
                 }
 
-                if (PropertyChanged != null)
-                    PropertyChanged(this, new PropertyChangedEventArgs(nameof(DestinationAnchorBinder)));
+                NotifyPropertyChanged(nameof(DestinationAnchorBinder));
             }
 
-            if (selecting)
+            if (Panning)
             {
-                SelectionEnd = e.GetPosition(sender as Canvas);
+                Point panningPosition = e.GetPosition(EditorScroller);
+
+                PanX += (panningPosition.X - panningStart.X) / Scale;
+                PanY += (panningPosition.Y - panningStart.Y) / Scale;
+
+                panningStart = panningPosition;
+            }
+
+            if (Selecting)
+            {
+                Point mousePosition = e.GetPosition(EditorCanvas);
+
+                SelectionEnd = new Point(mousePosition.X + PanX, mousePosition.Y + PanY);
                 SelectedNodes.Clear();
 
                 Rect selectionRect = new Rect(SelectionStart, SelectionEnd);
 
                 foreach (var pair in nodeControls)
                 {
-                    Rect nodeRect = new Rect(pair.Key.X, pair.Key.Y, pair.Value.RenderSize.Width, pair.Value.RenderSize.Height);
+                    Rect nodeRect = new Rect(pair.Key.X + PanX, pair.Key.Y + PanY, pair.Value.ActualWidth, pair.Value.ActualHeight);
 
                     if (selectionRect.IntersectsWith(nodeRect))
                         SelectedNodes.Add(pair.Key);
                 }
+
+                UpdateThumbnail();
             }
         }
         private void Canvas_MouseUp(object sender, MouseButtonEventArgs e)
@@ -344,8 +449,22 @@ namespace FlowTomator.Desktop
                     PropertyChanged(this, new PropertyChangedEventArgs(nameof(NewLinkVisibility)));
             }
 
+            Panning = false;
             Selecting = false;
+
             SelectedNodes_CollectionChanged(null, null);
+        }
+        private void Canvas_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+            {
+                if (e.Delta > 0)
+                    Scale = (Math.Floor(Scale * 4) + 1) / 4.0;
+                else
+                    Scale = (Math.Ceiling(Scale * 4) - 1) / 4.0;
+            }
+            else
+                Scale *= 1 + e.Delta / 120 * 0.1;
         }
         private void Canvas_DragEnter(object sender, DragEventArgs e)
         {
@@ -354,10 +473,9 @@ namespace FlowTomator.Desktop
         }
         private void Canvas_Drop(object sender, DragEventArgs e)
         {
-            Canvas canvas = sender as Canvas;
             Type nodeType = e.Data.GetData("FlowTomator.Node") as Type;
 
-            Point mousePosition = e.GetPosition(canvas);
+            Point mousePosition = e.GetPosition(EditorCanvas);
 
             // Create new node
             Node node = Activator.CreateInstance(nodeType) as Node;
@@ -365,6 +483,11 @@ namespace FlowTomator.Desktop
             node.Metadata.Add("Position.Y", mousePosition.Y);
 
             FlowInfo.History.Do(new AddNodeAction(FlowInfo, node));
+        }
+        private void Canvas_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete)
+                FlowInfo.History.Do(new ActionGroup(SelectedNodes.Select(n => new DeleteNodeAction(n))));
         }
 
         private void RemoveLinkItem_Click(object sender, RoutedEventArgs e)
@@ -375,11 +498,19 @@ namespace FlowTomator.Desktop
             FlowInfo.History.Do(new DeleteLinkAction(linkInfo));
         }
 
+        private void UpdateThumbnail()
+        {
+            //EditorThumbnail.GetBindingExpression(Image.SourceProperty).UpdateTarget();
+            //EditorThumbnail.UpdateLayout();
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged([CallerMemberName]string property = null)
         {
             if (property != null && PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(property));
+
+            UpdateThumbnail();
         }
     }
 }

@@ -17,7 +17,19 @@ namespace FlowTomator.Desktop
         public EditableFlow Flow { get; private set; }
         public HistoryInfo History { get; } = new HistoryInfo();
 
-        public string Path { get; private set; }
+        public string Path
+        {
+            get
+            {
+                return path;
+            }
+            set
+            {
+                path = value;
+                NotifyPropertyChanged();
+            }
+        }
+        [DependsOn(nameof(Path))]
         public string Name
         {
             get
@@ -52,10 +64,12 @@ namespace FlowTomator.Desktop
             }
         }
 
+        private string path;
+
         public FlowInfo(EditableFlow flow, string path)
         {
             Flow = flow;
-            Path = path;
+            this.path = path;
         }
 
         public void Update()

@@ -35,6 +35,9 @@ namespace FlowTomator.Desktop
         }
         public void Execute(object parameter)
         {
+            if (!CanExecute(parameter))
+                return;
+
             if (ExecuteCallback != null)
             {
                 if (Application.Current?.Dispatcher != null)

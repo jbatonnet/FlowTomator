@@ -60,6 +60,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Actions\Action.cs" />
+    <Compile Include="Actions\ActionGroup.cs" />
     <Compile Include="Actions\AddLink.cs" />
     <Compile Include="Actions\AddNode.cs" />
     <Compile Include="Actions\DeleteLink.cs" />

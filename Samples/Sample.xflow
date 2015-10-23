@@ -1,47 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Flow>
+  <Properties />
   <Nodes>
-    <WriteFile Id="0" File="C:\Users\jbato_000\Desktop\Test.png" Content="$Screenshot" />
-    <Message Id="1" Text="From sleep" />
-    <Sleep Id="2" />
-    <Sleep Id="3" Duration="2000" />
-    <Sleep Id="4" Duration="3000" />
-    <Wait Id="5" Count="2" />
-    <Nope Id="6" />
-    <Origin Id="7" />
-    <Message Id="8" />
+    <Node Type="FlowTomator.Common.Screenshot" Id="0">
+      <Outputs Bitmap="$Screenshot" />
+      <Metadata Position.X="176" Position.Y="244" />
+      <Slot>
+        <Node Id="1" />
+      </Slot>
+    </Node>
+    <Node Type="FlowTomator.Common.WriteFile" Id="1">
+      <Inputs File="C:\Users\jbato_000\Desktop\Toto.png" Content="$Screenshot" />
+      <Metadata Position.X="204" Position.Y="368" />
+    </Node>
+    <Node Type="FlowTomator.Common.Sleep" Id="2">
+      <Inputs Duration="1000" />
+      <Metadata Position.X="152" Position.Y="128" />
+      <Slot>
+        <Node Id="0" />
+      </Slot>
+    </Node>
+    <Node Type="FlowTomator.Common.Origin" Id="3">
+      <Metadata Position.X="132" Position.Y="52" />
+      <Slot>
+        <Node Id="2" />
+      </Slot>
+    </Node>
   </Nodes>
-  <Slots>
-    <Slot Id="2">
-      <Node Id="5" />
-    </Slot>
-    <Slot Id="3">
-      <Node Id="5" />
-    </Slot>
-    <Slot Id="4">
-      <Node Id="5" />
-    </Slot>
-    <Slot Id="5">
-      <Node Id="1" />
-    </Slot>
-    <Slot Id="6">
-      <Node Id="2" />
-      <Node Id="3" />
-      <Node Id="4" />
-    </Slot>
-    <Slot Id="7">
-      <Node Id="8" />
-    </Slot>
-  </Slots>
-  <Edition>
-    <Node Id="0" X="224" Y="340" />
-    <Node Id="1" X="448" Y="312" />
-    <Node Id="2" X="304" Y="124" />
-    <Node Id="3" X="448" Y="124" />
-    <Node Id="4" X="592" Y="124" />
-    <Node Id="5" X="448" Y="224" />
-    <Node Id="6" X="448" Y="56" />
-    <Node Id="7" X="64" Y="108" />
-    <Node Id="8" X="74" Y="186.03776681888374" />
-  </Edition>
 </Flow>

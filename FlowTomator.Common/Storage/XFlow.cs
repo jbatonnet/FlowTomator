@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace FlowTomator.Common
@@ -16,13 +17,17 @@ namespace FlowTomator.Common
         public static XFlow Load(XDocument document)
         {
             Dictionary<int, Node> nodes = new Dictionary<int, Node>();
+            Dictionary<Slot, List<int>> slotNodes = new Dictionary<Slot, List<int>>();
             List<Variable> variables = new List<Variable>();
 
+            XElement propertiesElement = document.Root.Element("Properties");
+            XElement nodesElement = document.Root.Element("Properties");
+
             // Load references
-            XElement referenceElements = document.Root.Element("References");
+            XElement[] referenceElements = propertiesElement?.Element("References")?.Elements()?.ToArray();
             if (referenceElements != null)
             {
-                foreach (XElement referenceElement in referenceElements.Elements())
+                foreach (XElement referenceElement in referenceElements)
                 {
                     switch (referenceElement.Name.LocalName)
                     {
@@ -49,167 +54,182 @@ namespace FlowTomator.Common
                 }
             }
 
-            // Cache assemblies
-            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            Type[] nodeTypes = assemblies.SelectMany(a => a.GetTypes())
-                                            .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(Node)))
-                                            .ToArray();
-
-            // Create variables
-            XElement variableElements = document.Root.Element("Variables");
-
             // Create nodes
-            XElement nodeElements = document.Root.Element("Nodes");
-            foreach (XElement nodeElement in nodeElements.Elements())
+            XElement[] nodeElements = document.Root.Element("Nodes")?.Elements("Node")?.ToArray();
+            if (nodeElements != null)
             {
-                Type nodeType = nodeTypes.FirstOrDefault(t => t.Name == nodeElement.Name.LocalName);
-                int nodeId = -1;
-
-                Node node = Activator.CreateInstance(nodeType) as Node;
-                Variable[] nodeInputs = node.Inputs.ToArray();
-                Variable[] nodeOutputs = node.Outputs.ToArray();
-
-                foreach (XAttribute nodeAttribute in nodeElement.Attributes())
+                foreach (XElement nodeElement in nodeElements)
                 {
-                    string variableName = nodeAttribute.Name.LocalName;
+                    XAttribute typeAttribute = nodeElement.Attribute("Type");
+                    XAttribute idAttribute = nodeElement.Attribute("Id");
 
-                    if (variableName == "Id")
-                    {
-                        if (!int.TryParse(nodeAttribute.Value, out nodeId))
-                            throw new FormatException();
+                    if (typeAttribute == null || idAttribute == null)
+                        throw new Exception("Node type and/or id are missing in node at line " + (nodeElement as IXmlLineInfo).LineNumber);
 
-                        continue;
-                    }
-
-                    Variable inputVariable = nodeInputs.FirstOrDefault(v => v.Name == variableName);
-                    Variable outputVariable = nodeOutputs.FirstOrDefault(v => v.Name == variableName);
-
-                    if (inputVariable != null)
-                    {
-                        if (nodeAttribute.Value.StartsWith("$"))
-                        {
-                            variableName = nodeAttribute.Value.Substring(1);
-
-                            Variable boundVariable = variables.FirstOrDefault(v => v.Name == variableName);
-                            if (boundVariable == null)
-                                variables.Add(boundVariable = new Variable(variableName, inputVariable.Type));
-
-                            inputVariable.Link(boundVariable);
-                        }
-                        else if (inputVariable.Type != typeof(object))
-                        {
-                            object value = nodeAttribute.Value;
-
-                            try
-                            {
-                                TypeConverter converter = TypeDescriptor.GetConverter(inputVariable.Type);
-
-                                if (converter.IsValid(nodeAttribute.Value))
-                                    value = converter.ConvertFromString(nodeAttribute.Value);
-                                else
-                                    value = Activator.CreateInstance(inputVariable.Type, nodeAttribute.Value);
-                            }
-                            catch
-                            {
-                                throw new KeyNotFoundException("Could not convert the specified object into the variable " + variableName + " in task " + nodeType.Name);
-                            }
-
-                            inputVariable.Value = value;
-                        }
-                        else
-                            inputVariable.Value = nodeAttribute.Value;
-                    }
-                    else if (outputVariable != null)
-                    {
-                        if (nodeAttribute.Value.StartsWith("$"))
-                        {
-                            variableName = nodeAttribute.Value.Substring(1);
-
-                            Variable boundVariable = variables.FirstOrDefault(v => v.Name == variableName);
-                            if (boundVariable == null)
-                                variables.Add(boundVariable = new Variable(variableName, outputVariable.Type));
-
-                            outputVariable.Link(boundVariable);
-                        }
-                    }
-                    else
-                        throw new KeyNotFoundException("Could not find variable " + variableName + " in task " + nodeType.Name);
-                }
-
-                nodes.Add(nodeId, node);
-            }
-
-            // Fill slots
-            XElement slotElements = document.Root.Element("Slots");
-            if (slotElements != null)
-            {
-                foreach (XElement slotElement in slotElements.Elements())
-                {
-                    int nodeId = -1;
-                    int slotIndex = 0;
-
-                    XAttribute nodeIdAttribute = slotElement.Attribute("Id");
-                    if (nodeIdAttribute == null || !int.TryParse(nodeIdAttribute.Value, out nodeId))
-                        throw new FormatException("Could not find the node specified in this slot");
-                    if (!nodes.ContainsKey(nodeId))
-                        throw new FormatException("Could not find the node specified in this slot");
-
-                    Node node = nodes[nodeId];
-                    Slot[] nodeSlots = node.Slots.ToArray();
-
-                    XAttribute slotIndexAttribute = slotElement.Attribute("Index");
-                    if (slotIndexAttribute != null)
-                    {
-                        if (!int.TryParse(slotIndexAttribute.Value, out slotIndex))
-                            throw new FormatException("Could not find the task specified in this slot");
-                    }
-                    if (slotIndex >= nodeSlots.Length)
-                        throw new FormatException("Could not find the task specified in this slot");
-
-                    Slot nodeSlot = nodeSlots[slotIndex];
-
-                    foreach (XElement targetNodeElement in slotElement.Elements("Node"))
-                    {
-                        int targetNodeId = -1;
-
-                        XAttribute targetNodeIdAttribute = targetNodeElement.Attribute("Id");
-                        if (targetNodeIdAttribute == null || !int.TryParse(targetNodeIdAttribute.Value, out targetNodeId))
-                            throw new FormatException("Could not find the target node specified in this slot");
-                        if (!nodes.ContainsKey(targetNodeId))
-                            throw new FormatException("Could not find the target node specified in this slot");
-
-                        nodeSlot.Nodes.Add(nodes[targetNodeId]);
-                    }
-                }
-            }
-
-            // Load editor information
-            XElement editionElement = document.Root.Element("Edition");
-            if (editionElement != null)
-            {
-                foreach (XElement nodeElement in editionElement.Elements("Node"))
-                {
-                    XAttribute idAttribute = nodeElement.Attribute("Id"),
-                                xAttribute = nodeElement.Attribute("X"),
-                                yAttribute = nodeElement.Attribute("Y");
+                    Type type = Type.GetType(typeAttribute.Value, false);
+                    if (type == null)
+                        throw new Exception("Could not find node type " + typeAttribute.Value + " at line " + (typeAttribute as IXmlLineInfo).LineNumber);
 
                     int id = -1;
-                    if (idAttribute == null || !int.TryParse(idAttribute.Value, out id))
-                        throw new Exception("Could not find the specified node");
+                    if (!int.TryParse(idAttribute.Value, out id))
+                        throw new Exception("Node id could not be read at line " + (idAttribute as IXmlLineInfo).LineNumber);
 
-                    double x = id * 100, y = id * 100;
-                    if (xAttribute != null)
-                        double.TryParse(xAttribute.Value, out x);
-                    if (yAttribute != null)
-                        double.TryParse(yAttribute.Value, out y);
+                    XElement inputsElement = nodeElement.Element("Inputs");
+                    XElement outputsElement = nodeElement.Element("Outputs");
+                    XElement metadataElement = nodeElement.Element("Metadata");
+                    XElement[] slotsElement = nodeElement.Elements("Slot").ToArray();
 
-                    // Prepare node info
-                    Node node = nodes.First(p => p.Key == id).Value;
-                    node.Metadata.Add("Position.X", x);
-                    node.Metadata.Add("Position.Y", y);
+                    Node node = Activator.CreateInstance(type) as Node;
+                    Variable[] inputs = node.Inputs.ToArray();
+                    Variable[] outputs = node.Outputs.ToArray();
+                    Slot[] slots = node.Slots.ToArray();
+
+                    // Read inputs
+                    if (inputsElement != null)
+                    {
+                        foreach (XAttribute inputAttribute in inputsElement.Attributes())
+                        {
+                            string name = inputAttribute.Name.LocalName;
+
+                            Variable variable = inputs.FirstOrDefault(i => i.Name == name);
+                            if (variable == null)
+                                throw new Exception("Input " + name + " could not be found in node type at line " + (inputAttribute as IXmlLineInfo).LineNumber);
+
+                            if (inputAttribute.Value.StartsWith("$"))
+                            {
+                                string link = inputAttribute.Value.Substring(1);
+
+                                Variable linkedVariable = variables.FirstOrDefault(v => v.Name == link);
+                                if (linkedVariable == null)
+                                    variables.Add(linkedVariable = new Variable(link, variable.Type));
+
+                                variable.Link(linkedVariable);
+                            }
+                            else if (variable.Type == typeof(object) || variable.Type == typeof(string))
+                                variable.Value = inputAttribute.Value;
+                            else
+                            {
+                                object value = inputAttribute.Value;
+
+                                try
+                                {
+                                    TypeConverter converter = TypeDescriptor.GetConverter(variable.Type);
+
+                                    if (converter.IsValid(inputAttribute.Value))
+                                        value = converter.ConvertFromString(inputAttribute.Value);
+                                    else
+                                        value = Activator.CreateInstance(variable.Type, inputAttribute.Value);
+                                }
+                                catch
+                                {
+                                    throw new Exception("Could not convert the specified object into the variable " + name + " at line " + (inputAttribute as IXmlLineInfo).LineNumber);
+                                }
+
+                                variable.Value = value;
+                            }
+                        }
+                    }
+
+                    // Read outputs
+                    if (outputsElement != null)
+                    {
+                        foreach (XAttribute outputAttribute in outputsElement.Attributes())
+                        {
+                            string name = outputAttribute.Name.LocalName;
+
+                            Variable variable = outputs.FirstOrDefault(i => i.Name == name);
+                            if (variable == null)
+                                throw new Exception("Output " + name + " could not be found in node type at line " + (outputAttribute as IXmlLineInfo).LineNumber);
+
+                            if (!outputAttribute.Value.StartsWith("$"))
+                                throw new Exception("Output " + name + " cannot be set to a constant value at line " + (outputAttribute as IXmlLineInfo).LineNumber);
+
+                            string link = outputAttribute.Value.Substring(1);
+
+                            Variable linkedVariable = variables.FirstOrDefault(v => v.Name == link);
+                            if (linkedVariable == null)
+                                variables.Add(linkedVariable = new Variable(link, variable.Type));
+
+                            variable.Link(linkedVariable);
+                        }
+                    }
+
+                    // Read metadata
+                    if (metadataElement != null)
+                    {
+                        foreach (XAttribute metadataAttribute in metadataElement.Attributes())
+                        {
+                            string name = metadataAttribute.Name.LocalName;
+                            string value = metadataAttribute.Value;
+
+                            int intValue;
+                            if (int.TryParse(value, out intValue))
+                            {
+                                node.Metadata[name] = intValue;
+                                continue;
+                            }
+
+                            double doubleValue;
+                            if (double.TryParse(value, out doubleValue))
+                            {
+                                node.Metadata[name] = doubleValue;
+                                continue;
+                            }
+
+                            node.Metadata[name] = value;
+                        }
+                    }
+
+                    // Decode slots
+                    foreach (XElement slotElement in slotsElement)
+                    {
+                        XAttribute indexAttribute = slotElement.Attribute("Index");
+
+                        int index = 0;
+                        if (indexAttribute != null && !int.TryParse(indexAttribute.Value, out index))
+                            throw new Exception("Could not read slot index at line " + (indexAttribute as IXmlLineInfo).LineNumber);
+
+                        if (slots.Length <= index)
+                            throw new Exception("Could not find slot " + index + " at line " + (indexAttribute as IXmlLineInfo).LineNumber);
+
+                        Slot slot = slots[index];
+
+                        XElement[] slotNodeElements = slotElement.Elements("Node").ToArray();
+                        foreach (XElement slotNodeElement in slotNodeElements)
+                        {
+                            int slotNodeId = -1;
+
+                            XAttribute slotNodeIdAttribute = slotNodeElement.Attribute("Id");
+                            if (slotNodeIdAttribute == null || !int.TryParse(slotNodeIdAttribute.Value, out slotNodeId))
+                                throw new FormatException("Could not find the target node specified in slot at line " + (slotNodeElement as IXmlLineInfo).LineNumber);
+
+                            List<int> slotNodeIds;
+                            if (!slotNodes.TryGetValue(slot, out slotNodeIds))
+                                slotNodes.Add(slot, slotNodeIds = new List<int>());
+
+                            slotNodeIds.Add(slotNodeId);
+                        }
+                    }
+
+                    nodes.Add(id, node);
+                }
+
+                // Resolve slots
+                foreach (var pair in slotNodes)
+                {
+                    Slot slot = pair.Key;
+
+                    foreach (int slotNodeId in pair.Value)
+                    {
+                        Node node;
+                        if (!nodes.TryGetValue(slotNodeId, out node))
+                            throw new FormatException("Could not find the target node id " + slotNodeId);
+
+                        slot.Nodes.Add(node);
+                    }
                 }
             }
-
+            
             XFlow flow = new XFlow();
 
             foreach (Node node in nodes.Values)
@@ -247,25 +267,34 @@ namespace FlowTomator.Common
             {
                 Node node = flow.Nodes[i];
 
-                XElement nodeElement = new XElement(node.GetType().Name,
-                    new XAttribute("Id", i)
+                XElement inputsElement, outputsElement, metadataElement;
+                XElement nodeElement = new XElement("Node",
+                    new XAttribute("Type", node.GetType().FullName),
+                    new XAttribute("Id", i),
+                    inputsElement = new XElement("Inputs"),
+                    outputsElement = new XElement("Outputs"),
+                    metadataElement = new XElement("Metadata")
                 );
 
                 // Inputs
                 foreach (Variable input in node.Inputs)
                 {
                     if (input.Linked != null)
-                        nodeElement.Add(new XAttribute(input.Name, "$" + input.Linked.Name));
+                        inputsElement.Add(new XAttribute(input.Name, "$" + input.Linked.Name));
                     else if (input.Value != input.DefaultValue)
-                        nodeElement.Add(new XAttribute(input.Name, input.Value));
+                        inputsElement.Add(new XAttribute(input.Name, input.Value));
                 }
 
                 // Outputs
                 foreach (Variable output in node.Outputs)
                 {
                     if (output.Linked != null)
-                        nodeElement.Add(new XAttribute(output.Name, "$" + output.Linked.Name));
+                        outputsElement.Add(new XAttribute(output.Name, "$" + output.Linked.Name));
                 }
+
+                // Metadata
+                foreach (var pair in node.Metadata)
+                    metadataElement.Add(new XAttribute(pair.Key, pair.Value.ToString()));
 
                 // Slots
                 Slot[] slots = node.Slots.ToArray();
@@ -288,16 +317,13 @@ namespace FlowTomator.Common
                     nodeElement.Add(slotElement);
                 }
 
-                // Metadata
-                object x, y;
-                node.Metadata.TryGetValue("Position.X", out x);
-                node.Metadata.TryGetValue("Position.Y", out y);
-
-                if (x == null || y == null)
-                    continue;
-
-                nodeElement.Add(new XAttribute("X", x));
-                nodeElement.Add(new XAttribute("Y", y));
+                // Clean empty elements
+                if (!inputsElement.HasAttributes)
+                    inputsElement.Remove();
+                if (!outputsElement.HasAttributes)
+                    outputsElement.Remove();
+                if (!metadataElement.HasAttributes)
+                    metadataElement.Remove();
 
                 nodesElement.Add(nodeElement);
             }
