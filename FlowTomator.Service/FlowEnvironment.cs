@@ -12,17 +12,21 @@ namespace FlowTomator.Service
 {
     public class FlowEnvironment : MarshalByRefObject, IDisposable
     {
-        public AppDomain Domain { get; private set; }
-        public Flow Flow { get; internal set; }
+        public string Path { get; private set; }
 
-        public FlowEnvironment()
+        private AppDomain domain;
+        private Flow flow;
+
+        public FlowEnvironment(string path)
         {
+            Path = path;
+
             // Create a new domain
             string domainName = string.Format("FlowEnvironment.0x{0:X8}", GetHashCode());
-            Domain = AppDomain.CreateDomain(domainName);
+            domain = AppDomain.CreateDomain(domainName);
 
             // Preload common assemblies
-            Domain.DoCallBack(PreloadAssemblies);
+            domain.DoCallBack(PreloadAssemblies);
         }
         ~FlowEnvironment()
         {
@@ -56,16 +60,16 @@ namespace FlowTomator.Service
             if (flow == null)
                 return null;
 
-            return new FlowEnvironment()
+            return new FlowEnvironment(path)
             {
-                Flow = flow
+                flow = flow
             };
         }
 
         public void Start()
         {
-            Flow.Reset();
-            Flow.Evaluate();
+            flow.Reset();
+            flow.Evaluate();
         }
 
         public override object InitializeLifetimeService()
@@ -75,7 +79,7 @@ namespace FlowTomator.Service
         public void Dispose()
         {
             GC.SuppressFinalize(this);
-            AppDomain.Unload(Domain);
+            AppDomain.Unload(domain);
         }
 
         private static void PreloadAssemblies()

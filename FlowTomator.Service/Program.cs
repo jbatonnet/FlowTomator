@@ -40,7 +40,7 @@ namespace FlowTomator.Service
                                     .ToDictionary(p => p.Separator == -1 ? p.Parameter.ToLower() : p.Parameter.Substring(0, p.Separator).ToLower(), p => p.Separator == -1 ? null : p.Parameter.Substring(p.Separator + 1));
             
             // Install service if needed
-            if (Parameters.ContainsKey("uninstall"))
+            if (Parameters.ContainsKey("reinstall"))
             {
                 if (ServiceManager.ServiceIsInstalled(ServiceName))
                 {

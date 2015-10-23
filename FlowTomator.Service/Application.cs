@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Ipc;
@@ -72,6 +73,28 @@ namespace FlowTomator.Service
         private void Menu_Popup(object sender, EventArgs e)
         {
             Menu.MenuItems.Clear();
+
+            if (Service != null)
+            {
+                FlowEnvironment[] flows = Service.Flows.ToArray();
+                if (flows.Length > 0)
+                {
+                    foreach (FlowEnvironment flow in flows)
+                    {
+                        string path = flow.Path;
+                        string file = Path.GetFileName(path);
+
+                        Menu.MenuItems.Add(new MenuItem(file, new[]
+                        {
+                        new MenuItem("Edit", (a, b) => Process.Start(path)),
+                        new MenuItem("Stop")
+                    }));
+                    }
+
+                    Menu.MenuItems.Add("-");
+                }
+            }
+
             Menu.MenuItems.AddRange(new[]
             {
                 new MenuItem("Load flow ...", LoadFlowButton_Click),
@@ -84,7 +107,7 @@ namespace FlowTomator.Service
                 new MenuItem("Exit", ExitButton_Click)
             });
         }
-
+        
         private void LoadFlowButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();

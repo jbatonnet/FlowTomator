@@ -267,6 +267,7 @@ namespace FlowTomator.Desktop
             }
 
             FlowInfo flowInfo = null;
+            string error = "";
 
             try
             {
@@ -275,15 +276,17 @@ namespace FlowTomator.Desktop
                     case ".xflow": flowInfo = new FlowInfo(XFlow.Load(XDocument.Load(fileInfo.FullName)), fileInfo.FullName); break;
                 }
             }
-            catch
+            catch (Exception e)
             {
+                error = e.Message;
+
                 if (System.Diagnostics.Debugger.IsAttached)
-                    Debugger.Break();
+                    System.Diagnostics.Debugger.Break();
             }
 
-            if (flowInfo.Flow == null)
+            if (flowInfo == null || flowInfo.Flow == null)
             {
-                MessageBox.Show("Could not open specified file " + path, "FlowTomator", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Could not open specified file " + path + "." + Environment.NewLine + error, "FlowTomator", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 

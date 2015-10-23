@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml.Linq;
 
 namespace FlowTomator.Common
@@ -16,119 +18,131 @@ namespace FlowTomator.Common
             Dictionary<int, Node> nodes = new Dictionary<int, Node>();
             List<Variable> variables = new List<Variable>();
 
-            try
+            // Load references
+            XElement referenceElements = document.Root.Element("References");
+            if (referenceElements != null)
             {
-                // Load references
-                XElement referenceElements = document.Root.Element("References");
-                if (referenceElements != null)
+                foreach (XElement referenceElement in referenceElements.Elements())
                 {
-                    foreach (XElement referenceElement in referenceElements.Elements())
+                    switch (referenceElement.Name.LocalName)
                     {
-                        switch (referenceElement.Name.LocalName)
-                        {
-                            case "Assembly":
-                                string path = referenceElement.Attribute("Path").Value;
-                                Assembly assembly = Assembly.LoadFile(path);
-                                break;
+                        case "Assembly":
+                            string file = referenceElement.Attribute("Path").Value;
+                            string path = file;
 
-                            case "Script":
-                                throw new NotSupportedException();
-                        }
+                            if (!Path.IsPathRooted(path))
+                                path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), path);
+
+                            try
+                            {
+                                Assembly assembly = Assembly.LoadFile(path);
+                            }
+                            catch
+                            {
+                                throw new Exception("Could not find referenced assembly " + file);
+                            }
+                            break;
+
+                        case "Script":
+                            throw new NotSupportedException();
                     }
                 }
+            }
 
-                // Cache assemblies
-                Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                Type[] nodeTypes = assemblies.SelectMany(a => a.GetTypes())
-                                             .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(Node)))
-                                             .ToArray();
+            // Cache assemblies
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            Type[] nodeTypes = assemblies.SelectMany(a => a.GetTypes())
+                                            .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(Node)))
+                                            .ToArray();
 
-                // Create variables
-                XElement variableElements = document.Root.Element("Variables");
+            // Create variables
+            XElement variableElements = document.Root.Element("Variables");
 
-                // Create nodes
-                XElement nodeElements = document.Root.Element("Nodes");
-                foreach (XElement nodeElement in nodeElements.Elements())
+            // Create nodes
+            XElement nodeElements = document.Root.Element("Nodes");
+            foreach (XElement nodeElement in nodeElements.Elements())
+            {
+                Type nodeType = nodeTypes.FirstOrDefault(t => t.Name == nodeElement.Name.LocalName);
+                int nodeId = -1;
+
+                Node node = Activator.CreateInstance(nodeType) as Node;
+                Variable[] nodeInputs = node.Inputs.ToArray();
+                Variable[] nodeOutputs = node.Outputs.ToArray();
+
+                foreach (XAttribute nodeAttribute in nodeElement.Attributes())
                 {
-                    Type nodeType = nodeTypes.FirstOrDefault(t => t.Name == nodeElement.Name.LocalName);
-                    int nodeId = -1;
+                    string variableName = nodeAttribute.Name.LocalName;
 
-                    Node node = Activator.CreateInstance(nodeType) as Node;
-                    Variable[] nodeInputs = node.Inputs.ToArray();
-                    Variable[] nodeOutputs = node.Outputs.ToArray();
-
-                    foreach (XAttribute nodeAttribute in nodeElement.Attributes())
+                    if (variableName == "Id")
                     {
-                        string variableName = nodeAttribute.Name.LocalName;
+                        if (!int.TryParse(nodeAttribute.Value, out nodeId))
+                            throw new FormatException();
 
-                        if (variableName == "Id")
+                        continue;
+                    }
+
+                    Variable inputVariable = nodeInputs.FirstOrDefault(v => v.Name == variableName);
+                    Variable outputVariable = nodeOutputs.FirstOrDefault(v => v.Name == variableName);
+
+                    if (inputVariable != null)
+                    {
+                        if (nodeAttribute.Value.StartsWith("$"))
                         {
-                            if (!int.TryParse(nodeAttribute.Value, out nodeId))
-                                throw new FormatException();
+                            variableName = nodeAttribute.Value.Substring(1);
 
-                            continue;
+                            Variable boundVariable = variables.FirstOrDefault(v => v.Name == variableName);
+                            if (boundVariable == null)
+                                variables.Add(boundVariable = new Variable(variableName, inputVariable.Type));
+
+                            inputVariable.Link(boundVariable);
                         }
-
-                        Variable inputVariable = nodeInputs.FirstOrDefault(v => v.Name == variableName);
-                        Variable outputVariable = nodeOutputs.FirstOrDefault(v => v.Name == variableName);
-
-                        if (inputVariable != null)
+                        else if (inputVariable.Type != typeof(object))
                         {
-                            if (nodeAttribute.Value.StartsWith("$"))
+                            object value = nodeAttribute.Value;
+
+                            try
                             {
-                                variableName = nodeAttribute.Value.Substring(1);
+                                TypeConverter converter = TypeDescriptor.GetConverter(inputVariable.Type);
 
-                                Variable boundVariable = variables.FirstOrDefault(v => v.Name == variableName);
-                                if (boundVariable == null)
-                                    variables.Add(boundVariable = new Variable(variableName, inputVariable.Type));
-
-                                inputVariable.Link(boundVariable);
+                                if (converter.IsValid(nodeAttribute.Value))
+                                    value = converter.ConvertFromString(nodeAttribute.Value);
+                                else
+                                    value = Activator.CreateInstance(inputVariable.Type, nodeAttribute.Value);
                             }
-                            else if (inputVariable.Type != typeof(object))
+                            catch
                             {
-                                object value = nodeAttribute.Value;
-
-                                try
-                                {
-                                    TypeConverter converter = TypeDescriptor.GetConverter(inputVariable.Type);
-
-                                    if (converter.IsValid(nodeAttribute.Value))
-                                        value = converter.ConvertFromString(nodeAttribute.Value);
-                                    else
-                                        value = Activator.CreateInstance(inputVariable.Type, nodeAttribute.Value);
-                                }
-                                catch
-                                {
-                                    throw new KeyNotFoundException("Could not convert the specified object into the variable " + variableName + " in task " + nodeType.Name);
-                                }
-
-                                inputVariable.Value = value;
+                                throw new KeyNotFoundException("Could not convert the specified object into the variable " + variableName + " in task " + nodeType.Name);
                             }
-                            else
-                                inputVariable.Value = nodeAttribute.Value;
-                        }
-                        else if (outputVariable != null)
-                        {
-                            if (nodeAttribute.Value.StartsWith("$"))
-                            {
-                                variableName = nodeAttribute.Value.Substring(1);
 
-                                Variable boundVariable = variables.FirstOrDefault(v => v.Name == variableName);
-                                if (boundVariable == null)
-                                    variables.Add(boundVariable = new Variable(variableName, outputVariable.Type));
-
-                                outputVariable.Link(boundVariable);
-                            }
+                            inputVariable.Value = value;
                         }
                         else
-                            throw new KeyNotFoundException("Could not find variable " + variableName + " in task " + nodeType.Name);
+                            inputVariable.Value = nodeAttribute.Value;
                     }
+                    else if (outputVariable != null)
+                    {
+                        if (nodeAttribute.Value.StartsWith("$"))
+                        {
+                            variableName = nodeAttribute.Value.Substring(1);
 
-                    nodes.Add(nodeId, node);
+                            Variable boundVariable = variables.FirstOrDefault(v => v.Name == variableName);
+                            if (boundVariable == null)
+                                variables.Add(boundVariable = new Variable(variableName, outputVariable.Type));
+
+                            outputVariable.Link(boundVariable);
+                        }
+                    }
+                    else
+                        throw new KeyNotFoundException("Could not find variable " + variableName + " in task " + nodeType.Name);
                 }
 
-                // Fill slots
-                XElement slotElements = document.Root.Element("Slots");
+                nodes.Add(nodeId, node);
+            }
+
+            // Fill slots
+            XElement slotElements = document.Root.Element("Slots");
+            if (slotElements != null)
+            {
                 foreach (XElement slotElement in slotElements.Elements())
                 {
                     int nodeId = -1;
@@ -167,14 +181,17 @@ namespace FlowTomator.Common
                         nodeSlot.Nodes.Add(nodes[targetNodeId]);
                     }
                 }
+            }
 
-                // Load editor information
-                XElement editionElement = document.Root.Element("Edition");
+            // Load editor information
+            XElement editionElement = document.Root.Element("Edition");
+            if (editionElement != null)
+            {
                 foreach (XElement nodeElement in editionElement.Elements("Node"))
                 {
                     XAttribute idAttribute = nodeElement.Attribute("Id"),
-                               xAttribute = nodeElement.Attribute("X"),
-                               yAttribute = nodeElement.Attribute("Y");
+                                xAttribute = nodeElement.Attribute("X"),
+                                yAttribute = nodeElement.Attribute("Y");
 
                     int id = -1;
                     if (idAttribute == null || !int.TryParse(idAttribute.Value, out id))
@@ -191,10 +208,6 @@ namespace FlowTomator.Common
                     node.Metadata.Add("Position.X", x);
                     node.Metadata.Add("Position.Y", y);
                 }
-            }
-            catch (Exception e)
-            {
-                return null;
             }
 
             XFlow flow = new XFlow();
