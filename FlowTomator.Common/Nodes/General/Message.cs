@@ -11,7 +11,7 @@ using System.Windows.Forms;
 namespace FlowTomator.Common
 {
     [Node("Message", "General", "Shows a message box with parameterable content")]
-    public class Message : Task
+    public class Message : Node
     {
         [StructLayout(LayoutKind.Sequential)]
         struct WTS_SESSION_INFO
@@ -85,11 +85,43 @@ namespace FlowTomator.Common
                 yield return icon;
             }
         }
-        public override IEnumerable<Variable> Outputs
+        public override IEnumerable<Slot> Slots
         {
             get
             {
-                yield return result;
+                switch (buttons.Value)
+                {
+                    case MessageBoxButtons.AbortRetryIgnore:
+                        yield return abortSlot;
+                        yield return retrySlot;
+                        yield return ignoreSlot;
+                        yield break;
+
+                    case MessageBoxButtons.OK:
+                        yield return okSlot;
+                        yield break;
+
+                    case MessageBoxButtons.OKCancel:
+                        yield return okSlot;
+                        yield return cancelSlot;
+                        yield break;
+
+                    case MessageBoxButtons.RetryCancel:
+                        yield return retrySlot;
+                        yield return cancelSlot;
+                        yield break;
+
+                    case MessageBoxButtons.YesNo:
+                        yield return yesSlot;
+                        yield return noSlot;
+                        yield break;
+
+                    case MessageBoxButtons.YesNoCancel:
+                        yield return yesSlot;
+                        yield return noSlot;
+                        yield return cancelSlot;
+                        yield break;
+                }
             }
         }
 
@@ -99,7 +131,15 @@ namespace FlowTomator.Common
         internal Variable<MessageBoxIcon> icon = new Variable<MessageBoxIcon>("Icon", MessageBoxIcon.None, "The icon to display in this message box");
         internal Variable<DialogResult> result = new Variable<DialogResult>("Result", DialogResult.OK, "The result of this message box");
 
-        public override NodeResult Run()
+        internal Slot okSlot = new Slot("OK");
+        internal Slot yesSlot = new Slot("Yes");
+        internal Slot noSlot = new Slot("No");
+        internal Slot cancelSlot = new Slot("Cancel");
+        internal Slot abortSlot = new Slot("Abort");
+        internal Slot ignoreSlot = new Slot("Ignore");
+        internal Slot retrySlot = new Slot("Retry");
+
+        public override NodeStep Evaluate()
         {
             if (Environment.UserInteractive)
                 result.Value = MessageBox.Show(text.Value, title.Value, buttons.Value, icon.Value);
@@ -109,54 +149,23 @@ namespace FlowTomator.Common
 
                 int session = GetActiveSessions(WTS_CURRENT_SERVER_HANDLE).First();
                 if (!WTSSendMessage(WTS_CURRENT_SERVER_HANDLE, session, title.Value, title.Value.Length, text.Value, text.Value.Length, buttons.Value, 0, out result, true))
-                    return NodeResult.Fail;
+                    return new NodeStep(NodeResult.Fail);
 
                 this.result.Value = result;
             }
 
             switch (result.Value)
             {
-                case DialogResult.OK:
-                case DialogResult.Yes:
-                case DialogResult.No:
-                    return NodeResult.Success;
-
-                case DialogResult.Cancel:
-                    return NodeResult.Stop;
-
-                case DialogResult.Ignore:
-                case DialogResult.Abort:
-                    return NodeResult.Skip;
+                case DialogResult.Abort: return new NodeStep(NodeResult.Success, abortSlot);
+                case DialogResult.Cancel: return new NodeStep(NodeResult.Success, cancelSlot);
+                case DialogResult.Ignore: return new NodeStep(NodeResult.Success, ignoreSlot);
+                case DialogResult.No: return new NodeStep(NodeResult.Success, noSlot);
+                case DialogResult.OK: return new NodeStep(NodeResult.Success, okSlot);
+                case DialogResult.Retry: return new NodeStep(NodeResult.Success, retrySlot);
+                case DialogResult.Yes: return new NodeStep(NodeResult.Success, yesSlot);
             }
 
-            return NodeResult.Fail;
-        }
-    }
-
-    [Node("Dialog", "General", "Ask the specified question to the user")]
-    public class Dialog : BinaryChoice
-    {
-        public override IEnumerable<Variable> Inputs
-        {
-            get
-            {
-                yield return message.text;
-                yield return message.title;
-                yield return message.icon;
-            }
-        }
-
-        private Message message = new Message();
-
-        public Dialog()
-        {
-            message.buttons.Value = MessageBoxButtons.YesNo;
-        }
-
-        public override NodeStep Evaluate()
-        {
-            NodeResult result = message.Run();
-            return new NodeStep(result, message.result.Value == DialogResult.Yes ? TrueSlot : FalseSlot);
+            return new NodeStep(NodeResult.Fail);
         }
     }
 }

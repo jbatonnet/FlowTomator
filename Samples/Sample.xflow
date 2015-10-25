@@ -2,29 +2,15 @@
 <Flow>
   <Properties />
   <Nodes>
-    <Node Type="FlowTomator.Common.Screenshot" Id="0">
-      <Outputs Bitmap="$Screenshot" />
-      <Metadata Position.X="176" Position.Y="244" />
+    <Node Type="FlowTomator.Common.Origin" Id="0">
+      <Metadata Position.X="244" Position.Y="48" />
       <Slot>
         <Node Id="1" />
       </Slot>
     </Node>
-    <Node Type="FlowTomator.Common.WriteFile" Id="1">
-      <Inputs File="C:\Users\jbato_000\Desktop\Toto.png" Content="$Screenshot" />
-      <Metadata Position.X="204" Position.Y="368" />
-    </Node>
-    <Node Type="FlowTomator.Common.Sleep" Id="2">
-      <Inputs Duration="2000" />
-      <Metadata Position.X="152" Position.Y="132" />
-      <Slot>
-        <Node Id="0" />
-      </Slot>
-    </Node>
-    <Node Type="FlowTomator.Common.Origin" Id="3">
-      <Metadata Position.X="128" Position.Y="52" />
-      <Slot>
-        <Node Id="2" />
-      </Slot>
+    <Node Type="FlowTomator.Common.Message" Id="1">
+      <Inputs Text="Hello World !" Title="FlowTomator" />
+      <Metadata Position.X="244" Position.Y="108" />
     </Node>
   </Nodes>
 </Flow>

@@ -187,6 +187,11 @@ namespace FlowTomator.Desktop
             NodeAnchorBinder.PropertyChanged += NodeAnchorBinder_PropertyChanged;
         }
 
+        public void Update()
+        {
+            NotifyPropertyChanged(nameof(Slots));
+        }
+
         private void NodeAnchorBinder_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             NotifyPropertyChanged(nameof(NodeAnchorBinder));

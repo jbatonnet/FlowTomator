@@ -81,8 +81,6 @@ namespace FlowTomator.Common
 
                     Node node = Activator.CreateInstance(type) as Node;
                     Variable[] inputs = node.Inputs.ToArray();
-                    Variable[] outputs = node.Outputs.ToArray();
-                    Slot[] slots = node.Slots.ToArray();
 
                     // Read inputs
                     if (inputsElement != null)
@@ -129,6 +127,8 @@ namespace FlowTomator.Common
                             }
                         }
                     }
+
+                    Variable[] outputs = node.Outputs.ToArray();
 
                     // Read outputs
                     if (outputsElement != null)
@@ -179,6 +179,8 @@ namespace FlowTomator.Common
                             node.Metadata[name] = value;
                         }
                     }
+
+                    Slot[] slots = node.Slots.ToArray();
 
                     // Decode slots
                     foreach (XElement slotElement in slotsElement)

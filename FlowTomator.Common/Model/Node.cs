@@ -38,6 +38,10 @@ namespace FlowTomator.Common
             Result = result;
             Slot = slot;
         }
+        public NodeStep(NodeResult result)
+        {
+            Result = result;
+        }
     }
 
     public abstract class Node

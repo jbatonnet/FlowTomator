@@ -40,6 +40,7 @@ namespace FlowTomator.Desktop
 
                 Variable.Value = value;
                 NotifyPropertyChanged();
+                NodeInfo.Update();
             }
         }
 

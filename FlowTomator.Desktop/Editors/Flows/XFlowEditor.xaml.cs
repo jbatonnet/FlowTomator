@@ -335,9 +335,6 @@ namespace FlowTomator.Desktop
         }
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Released)
-                return;
-
             Canvas canvas = sender as Canvas;
 
             if (movingNodeOrigins.Count > 0)
