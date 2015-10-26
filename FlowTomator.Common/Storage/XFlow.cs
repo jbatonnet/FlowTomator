@@ -54,6 +54,8 @@ namespace FlowTomator.Common
                 }
             }
 
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
             // Create nodes
             XElement[] nodeElements = document.Root.Element("Nodes")?.Elements("Node")?.ToArray();
             if (nodeElements != null)
@@ -66,7 +68,9 @@ namespace FlowTomator.Common
                     if (typeAttribute == null || idAttribute == null)
                         throw new Exception("Node type and/or id are missing in node at line " + (nodeElement as IXmlLineInfo).LineNumber);
 
-                    Type type = Type.GetType(typeAttribute.Value, false);
+                    Type type = assemblies.Select(a => a.GetType(typeAttribute.Value, false))
+                                          .Where(t => t != null)
+                                          .FirstOrDefault();
                     if (type == null)
                         throw new Exception("Could not find node type " + typeAttribute.Value + " at line " + (typeAttribute as IXmlLineInfo).LineNumber);
 

@@ -369,8 +369,8 @@ namespace FlowTomator.Desktop
                     Point mousePosition = e.GetPosition(canvas);
 
                     DestinationAnchorBinder.Anchor = DestinationAnchor;
-                    DestinationAnchorBinder.Anchor.SetValue(Canvas.LeftProperty, mousePosition.X);
-                    DestinationAnchorBinder.Anchor.SetValue(Canvas.TopProperty, mousePosition.Y);
+                    DestinationAnchorBinder.Anchor.SetValue(Canvas.LeftProperty, mousePosition.X / Scale - PanX);
+                    DestinationAnchorBinder.Anchor.SetValue(Canvas.TopProperty, mousePosition.Y / Scale - PanY);
                 }
 
                 NotifyPropertyChanged(nameof(DestinationAnchorBinder));
