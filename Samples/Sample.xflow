@@ -1,16 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Flow>
-  <Properties />
+  <Properties>
+    <References>
+      <Assembly Path="D:\Projets\C#\FlowTomator\Binaries\FlowTomator.SmartSync.dll" />
+    </References>
+  </Properties>
   <Nodes>
     <Node Type="FlowTomator.Common.Origin" Id="0">
-      <Metadata Position.X="244" Position.Y="48" />
+      <Metadata Position.X="332" Position.Y="104" />
       <Slot>
-        <Node Id="1" />
+        <Node Id="2" />
       </Slot>
     </Node>
     <Node Type="FlowTomator.Common.Message" Id="1">
       <Inputs Text="Hello World !" Title="FlowTomator" />
-      <Metadata Position.X="244" Position.Y="108" />
+      <Metadata Position.X="136" Position.Y="136" />
+    </Node>
+    <Node Type="FlowTomator.SmartSync.ManualSync" Id="2">
+      <Inputs Diff="Dates" L.Path="D:\Temp\Left" R="Zip" R.Storage="Basic" R.Storage.Path="D:\Temp\Right" R.Path="/Backup.zip" />
+      <Metadata Position.X="332" Position.Y="152" />
     </Node>
   </Nodes>
 </Flow>

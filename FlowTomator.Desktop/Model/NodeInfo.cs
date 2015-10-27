@@ -189,6 +189,8 @@ namespace FlowTomator.Desktop
 
         public void Update()
         {
+            NotifyPropertyChanged(nameof(Inputs));
+            NotifyPropertyChanged(nameof(Outputs));
             NotifyPropertyChanged(nameof(Slots));
         }
 

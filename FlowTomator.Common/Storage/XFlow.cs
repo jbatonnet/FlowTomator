@@ -84,13 +84,13 @@ namespace FlowTomator.Common
                     XElement[] slotsElement = nodeElement.Elements("Slot").ToArray();
 
                     Node node = Activator.CreateInstance(type) as Node;
-                    Variable[] inputs = node.Inputs.ToArray();
-
+                    
                     // Read inputs
                     if (inputsElement != null)
                     {
                         foreach (XAttribute inputAttribute in inputsElement.Attributes())
                         {
+                            Variable[] inputs = node.Inputs.ToArray();
                             string name = inputAttribute.Name.LocalName;
 
                             Variable variable = inputs.FirstOrDefault(i => i.Name == name);
@@ -115,19 +115,12 @@ namespace FlowTomator.Common
 
                                 try
                                 {
-                                    TypeConverter converter = TypeDescriptor.GetConverter(variable.Type);
-
-                                    if (converter.IsValid(inputAttribute.Value))
-                                        value = converter.ConvertFromString(inputAttribute.Value);
-                                    else
-                                        value = Activator.CreateInstance(variable.Type, inputAttribute.Value);
+                                    variable.Value = value;
                                 }
                                 catch
                                 {
                                     throw new Exception("Could not convert the specified object into the variable " + name + " at line " + (inputAttribute as IXmlLineInfo).LineNumber);
                                 }
-
-                                variable.Value = value;
                             }
                         }
                     }

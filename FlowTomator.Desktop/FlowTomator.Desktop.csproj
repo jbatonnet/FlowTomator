@@ -189,6 +189,10 @@
       <Project>{e5f21c34-4808-418e-8e20-706893643b28}</Project>
       <Name>FlowTomator.Engine</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FlowTomator.SmartSync\FlowTomator.SmartSync.csproj">
+      <Project>{10ffedc4-b104-49c2-9a4f-79d00743af15}</Project>
+      <Name>FlowTomator.SmartSync</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Add.png" />

@@ -35,10 +35,18 @@ namespace FlowTomator.Common
                         if (valueType != type && !valueType.IsSubclassOf(type))
                         {
                             TypeConverter converter = TypeDescriptor.GetConverter(type);
-                            if (!converter.CanConvertFrom(valueType))
-                                throw new Exception("Unable to set the specified value to this variable");
 
-                            value = converter.ConvertFrom(value);
+                            try
+                            {
+                                if (converter.IsValid(value))
+                                    value = converter.ConvertFrom(value);
+                                else
+                                    value = Activator.CreateInstance(type, value);
+                            }
+                            catch
+                            {
+                                throw new Exception("Unable to set the specified value to this variable");
+                            }
                         }
                     }
 
