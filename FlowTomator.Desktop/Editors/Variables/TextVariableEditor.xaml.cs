@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace FlowTomator.Desktop
 {
@@ -26,7 +27,17 @@ namespace FlowTomator.Desktop
         private void TextVariableEditor_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if ((bool)e.NewValue)
-                FocusManager.SetFocusedElement(TextBox, TextBox);
+            {
+                Dispatcher.BeginInvoke(new System.Action(() =>
+                {
+                    TextBox.SelectAll();
+                    FocusManager.SetFocusedElement(this, TextBox);
+                }), DispatcherPriority.ApplicationIdle);
+            }
+            else
+            {
+                FocusManager.SetFocusedElement(this, this);
+            }
         }
     }
 }

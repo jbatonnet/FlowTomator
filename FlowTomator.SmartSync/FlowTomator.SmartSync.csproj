@@ -31,7 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="SmartSync.Common">
-      <HintPath>External\SmartSync.Common.dll</HintPath>
+      <HintPath>..\..\SmartSync\Binaries\SmartSync.Common.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

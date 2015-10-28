@@ -357,12 +357,14 @@ namespace FlowTomator.Desktop
 
             if (creatingNewLink)
             {
-                Border border = e.OriginalSource as Border;
-                Anchor anchor = border == null ? null : VisualTreeHelper.GetChild(border, 0) as Anchor;
+                DependencyObject overElement = e.OriginalSource as DependencyObject;
+                while (overElement != null && !(overElement is NodeControl))
+                    overElement = VisualTreeHelper.GetParent(overElement);
 
-                if (anchor != null)
+                NodeControl nodeControl = overElement as NodeControl;
+                if (nodeControl != null)
                 {
-                    DestinationAnchorBinder.Anchor = anchor;
+                    DestinationAnchorBinder.Anchor = nodeControl.NodeAnchor;
                 }
                 else
                 {
@@ -424,21 +426,13 @@ namespace FlowTomator.Desktop
 
             if (creatingNewLink)
             {
-                Border border = e.OriginalSource as Border;
+                DependencyObject overElement = e.OriginalSource as DependencyObject;
+                while (overElement != null && !(overElement is NodeControl))
+                    overElement = VisualTreeHelper.GetParent(overElement);
 
-                if (border != null)
-                {
-                    StackPanel stackPanel = VisualTreeHelper.GetParent(border) as StackPanel;
-
-                    if (stackPanel != null)
-                    {
-                        DependencyObject nodeControl = border;
-                        while (!(nodeControl is NodeControl))
-                            nodeControl = VisualTreeHelper.GetParent(nodeControl);
-
-                        FlowInfo.History.Do(new AddLinkAction(newLinkSlot, (nodeControl as NodeControl).NodeInfo));
-                    }
-                }
+                NodeControl nodeControl = overElement as NodeControl;
+                if (nodeControl != null && !newLinkSlot.Slot.Nodes.Contains(nodeControl.NodeInfo.Node))
+                    FlowInfo.History.Do(new AddLinkAction(newLinkSlot, nodeControl.NodeInfo));
 
                 creatingNewLink = false;
 
@@ -463,7 +457,7 @@ namespace FlowTomator.Desktop
             else
                 Scale *= 1 + e.Delta / 120 * 0.1;
         }
-        private void Canvas_DragEnter(object sender, DragEventArgs e)
+        private void Canvas_DragOver(object sender, DragEventArgs e)
         {
             if (!e.Data.GetDataPresent("FlowTomator.Node") || sender == e.Source)
                 e.Effects = DragDropEffects.None;

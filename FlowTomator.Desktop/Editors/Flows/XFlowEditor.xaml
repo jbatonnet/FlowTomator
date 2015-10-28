@@ -29,7 +29,7 @@
         <ScrollViewer x:Name="EditorScroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AllowDrop="True"
                       Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Canvas}}}"
                       Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Canvas}}}"
-                      DragEnter="Canvas_DragEnter" Drop="Canvas_Drop">
+                      DragOver="Canvas_DragOver" Drop="Canvas_Drop">
 
             <Canvas x:Name="EditorCanvas">
 
@@ -52,56 +52,85 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Path Stroke="Gray" StrokeThickness="1.5">
-                                <Path.Style>
-                                    <Style TargetType="{x:Type Path}">
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Stroke" Value="Red"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Path.Style>
-                                <Path.ContextMenu>
-                                    <ContextMenu>
-                                        <MenuItem Tag="{Binding}" Header="Remove this link" Click="RemoveLinkItem_Click" />
-                                    </ContextMenu>
-                                </Path.ContextMenu>
-                                <Path.Data>
-                                    <PathGeometry>
-                                        <PathGeometry.Figures>
-                                            <PathFigure IsClosed="False">
-                                                <PathFigure.StartPoint>
-                                                    <MultiBinding Converter="{StaticResource AnchorPoint}">
-                                                        <Binding Path="SlotAnchorBinder" />
-                                                        <Binding RelativeSource="{RelativeSource AncestorType={x:Type Canvas}}" />
-                                                    </MultiBinding>
-                                                </PathFigure.StartPoint>
-                                                <BezierSegment>
-                                                    <BezierSegment.Point1>
-                                                        <MultiBinding Converter="{StaticResource AnchorPoint}" ConverterParameter="{StaticResource SlotOffset}">
+                            <Canvas>
+                                <Path Stroke="Gray" StrokeThickness="1.5">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathGeometry.Figures>
+                                                <PathFigure IsClosed="False">
+                                                    <PathFigure.StartPoint>
+                                                        <MultiBinding Converter="{StaticResource AnchorPoint}">
                                                             <Binding Path="SlotAnchorBinder" />
                                                             <Binding RelativeSource="{RelativeSource AncestorType={x:Type Canvas}}" />
                                                         </MultiBinding>
-                                                    </BezierSegment.Point1>
-                                                    <BezierSegment.Point2>
-                                                        <MultiBinding Converter="{StaticResource AnchorPoint}" ConverterParameter="{StaticResource NodeOffset}">
-                                                            <Binding Path="NodeAnchorBinder" />
-                                                            <Binding RelativeSource="{RelativeSource AncestorType={x:Type Canvas}}" />
-                                                        </MultiBinding>
-                                                    </BezierSegment.Point2>
-                                                    <BezierSegment.Point3>
+                                                    </PathFigure.StartPoint>
+                                                    <BezierSegment>
+                                                        <BezierSegment.Point1>
+                                                            <MultiBinding Converter="{StaticResource AnchorPoint}" ConverterParameter="{StaticResource SlotOffset}">
+                                                                <Binding Path="SlotAnchorBinder" />
+                                                                <Binding RelativeSource="{RelativeSource AncestorType={x:Type Canvas}}" />
+                                                            </MultiBinding>
+                                                        </BezierSegment.Point1>
+                                                        <BezierSegment.Point2>
+                                                            <MultiBinding Converter="{StaticResource AnchorPoint}" ConverterParameter="{StaticResource NodeOffset}">
+                                                                <Binding Path="NodeAnchorBinder" />
+                                                                <Binding RelativeSource="{RelativeSource AncestorType={x:Type Canvas}}" />
+                                                            </MultiBinding>
+                                                        </BezierSegment.Point2>
+                                                        <BezierSegment.Point3>
+                                                            <MultiBinding Converter="{StaticResource AnchorPoint}">
+                                                                <Binding Path="NodeAnchorBinder" />
+                                                                <Binding RelativeSource="{RelativeSource AncestorType={x:Type Canvas}}" />
+                                                            </MultiBinding>
+                                                        </BezierSegment.Point3>
+                                                    </BezierSegment>
+                                                </PathFigure>
+                                            </PathGeometry.Figures>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                                <Path Stroke="Transparent" StrokeThickness="8">
+                                    <Path.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Tag="{Binding}" Header="Remove this link" Click="RemoveLinkItem_Click" />
+                                        </ContextMenu>
+                                    </Path.ContextMenu>
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathGeometry.Figures>
+                                                <PathFigure IsClosed="False">
+                                                    <PathFigure.StartPoint>
                                                         <MultiBinding Converter="{StaticResource AnchorPoint}">
-                                                            <Binding Path="NodeAnchorBinder" />
+                                                            <Binding Path="SlotAnchorBinder" />
                                                             <Binding RelativeSource="{RelativeSource AncestorType={x:Type Canvas}}" />
                                                         </MultiBinding>
-                                                    </BezierSegment.Point3>
-                                                </BezierSegment>
-                                            </PathFigure>
-                                        </PathGeometry.Figures>
-                                    </PathGeometry>
-                                </Path.Data>
-                            </Path>
+                                                    </PathFigure.StartPoint>
+                                                    <BezierSegment>
+                                                        <BezierSegment.Point1>
+                                                            <MultiBinding Converter="{StaticResource AnchorPoint}" ConverterParameter="{StaticResource SlotOffset}">
+                                                                <Binding Path="SlotAnchorBinder" />
+                                                                <Binding RelativeSource="{RelativeSource AncestorType={x:Type Canvas}}" />
+                                                            </MultiBinding>
+                                                        </BezierSegment.Point1>
+                                                        <BezierSegment.Point2>
+                                                            <MultiBinding Converter="{StaticResource AnchorPoint}" ConverterParameter="{StaticResource NodeOffset}">
+                                                                <Binding Path="NodeAnchorBinder" />
+                                                                <Binding RelativeSource="{RelativeSource AncestorType={x:Type Canvas}}" />
+                                                            </MultiBinding>
+                                                        </BezierSegment.Point2>
+                                                        <BezierSegment.Point3>
+                                                            <MultiBinding Converter="{StaticResource AnchorPoint}">
+                                                                <Binding Path="NodeAnchorBinder" />
+                                                                <Binding RelativeSource="{RelativeSource AncestorType={x:Type Canvas}}" />
+                                                            </MultiBinding>
+                                                        </BezierSegment.Point3>
+                                                    </BezierSegment>
+                                                </PathFigure>
+                                            </PathGeometry.Figures>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </Canvas>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

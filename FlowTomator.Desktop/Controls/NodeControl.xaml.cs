@@ -75,10 +75,6 @@ namespace FlowTomator.Desktop
                 SlotMouseDown(slotInfo, e);
         }
 
-        private void RemoveNodeItem_Click(object sender, RoutedEventArgs e)
-        {
-            NodeInfo.FlowInfo.History.Do(new DeleteNodeAction(NodeInfo));
-        }
         private void ResetDefaultValueItem_Click(object sender, RoutedEventArgs e)
         {
             MenuItem menuItem = sender as MenuItem;

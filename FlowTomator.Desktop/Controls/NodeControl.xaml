@@ -15,8 +15,8 @@
     
     <StackPanel x:Name="Root" Width="128">
         <Border Visibility="{Binding Path=InputSlotVisibility, FallbackValue=Visible}"
-                Width="12" Height="6" Background="White" CornerRadius="6,6,0,0" BorderBrush="Gray" BorderThickness="1,1,1,0" Cursor="Hand">
-            <local:Anchor Margin="0,5,0,0" Binder="{Binding NodeInfo.NodeAnchorBinder}" />
+                Width="12" Height="6" Background="White" CornerRadius="6,6,0,0" BorderBrush="Gray" BorderThickness="1,1,1,0">
+            <local:Anchor x:Name="NodeAnchor" Margin="0,5,0,0" Binder="{Binding NodeInfo.NodeAnchorBinder}" />
         </Border>
 
         <Border BorderBrush="Gray" BorderThickness="1">
@@ -29,11 +29,6 @@
                         <TextBlock.Background>
                             <SolidColorBrush Color="{Binding NodeInfo.TypeInfo.Color}" Opacity="0.7" />
                         </TextBlock.Background>
-                        <TextBlock.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="Remove this node" Click="RemoveNodeItem_Click" />
-                            </ContextMenu>
-                        </TextBlock.ContextMenu>
                     </TextBlock>
                 </Border>
 
@@ -65,7 +60,7 @@
                                     </TextBlock>
 
                                     <TextBlock Grid.Column="1" FontSize="11" HorizontalAlignment="Stretch" Padding="0,0,2,0" TextAlignment="Right"
-                                               Text="{Binding Text}" Visibility="{Binding DisplayVisibility}" ToolTip="{Binding Text}" Cursor="IBeam"
+                                               Text="{Binding Text}" Visibility="{Binding DisplayVisibility}" ToolTip="{Binding Text}" Cursor="Hand"
                                                MouseLeftButtonDown="VariableValue_MouseLeftButtonDown">
                                         <TextBlock.Foreground>
                                             <SolidColorBrush Color="{Binding EditorColor}" />
