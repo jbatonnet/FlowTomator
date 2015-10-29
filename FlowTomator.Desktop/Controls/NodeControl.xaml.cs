@@ -15,7 +15,6 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 using FlowTomator.Common;
-using FlowTomator.Common.Nodes;
 
 namespace FlowTomator.Desktop
 {

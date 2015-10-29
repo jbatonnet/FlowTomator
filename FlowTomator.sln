@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowTomator.Service", "Flow
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowTomator.SmartSync", "FlowTomator.SmartSync\FlowTomator.SmartSync.csproj", "{10FFEDC4-B104-49C2-9A4F-79D00743AF15}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{F21C22CD-813C-4AB6-9662-CAECEC127987}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,5 +49,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{10FFEDC4-B104-49C2-9A4F-79D00743AF15} = {F21C22CD-813C-4AB6-9662-CAECEC127987}
 	EndGlobalSection
 EndGlobal

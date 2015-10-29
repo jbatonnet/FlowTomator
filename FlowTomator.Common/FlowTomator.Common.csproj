@@ -56,7 +56,11 @@
     <Compile Include="Nodes\General\Sleep.cs" />
     <Compile Include="Nodes\General\Nope.cs" />
     <Compile Include="Nodes\End.cs" />
+    <Compile Include="Nodes\IO\ChooseFile.cs" />
+    <Compile Include="Nodes\IO\CreateDirectory.cs" />
     <Compile Include="Nodes\IO\DeleteFile.cs" />
+    <Compile Include="Nodes\IO\DirectoryExists.cs" />
+    <Compile Include="Nodes\IO\FileExists.cs" />
     <Compile Include="Nodes\IO\ReadFile.cs" />
     <Compile Include="Nodes\IO\AppendFile.cs" />
     <Compile Include="Nodes\Origin.cs" />

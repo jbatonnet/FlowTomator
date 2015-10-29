@@ -69,6 +69,9 @@
     <Compile Include="Actions\HistoryInfo.cs" />
     <Compile Include="Actions\MoveNode.cs" />
     <Compile Include="Editors\VariableEditorAttribute.cs" />
+    <Compile Include="Editors\Variables\DirectoryInfoVariableEditor.xaml.cs">
+      <DependentUpon>DirectoryInfoVariableEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Editors\Variables\FileInfoVariableEditor.xaml.cs">
       <DependentUpon>FileInfoVariableEditor.xaml</DependentUpon>
     </Compile>
@@ -89,6 +92,7 @@
       <DependentUpon>TextVariableEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Model\FlowDebugger.cs" />
+    <Compile Include="OpenFolderDialog.cs" />
     <Compile Include="_WPF_\DependencyManager.cs" />
     <Compile Include="_WPF_\DependencyModel.cs" />
     <Compile Include="_WPF_\DependsOnAttribute.cs" />
@@ -99,6 +103,10 @@
     <Compile Include="_WPF_\DelegateCommand.cs" />
     <Compile Include="_WPF_\IPropertyUpdatable.cs" />
     <Compile Include="_WPF_\VisualSnapshotConverter.cs" />
+    <Page Include="Editors\Variables\DirectoryInfoVariableEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Editors\Variables\FileInfoVariableEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -174,6 +182,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="app.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

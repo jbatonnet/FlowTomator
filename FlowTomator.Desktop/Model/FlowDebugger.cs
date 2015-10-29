@@ -109,8 +109,11 @@ namespace FlowTomator.Desktop
 
             foreach (NodeInfo nodeInfo in stepNodes)
             {
+                //TaskScheduler scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                //CancellationToken token = new CancellationToken(false);
+                //Task task = await Task.Factory.StartNew(() => Evaluate(nodeInfo), token, TaskCreationOptions.LongRunning, scheduler);
+
                 Task task = Task.Run(() => Evaluate(nodeInfo));
-                //Task task = Evaluate(nodeInfo);
 
                 lock (tasks)
                     tasks.Add(task);

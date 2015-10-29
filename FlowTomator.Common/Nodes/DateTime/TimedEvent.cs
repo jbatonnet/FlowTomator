@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FlowTomator.Common.Nodes
+namespace FlowTomator.Common
 {
     [Node("Timed event", "Date / Time", "Triggers the following nodes when the specified date and time conditions are met")]
     public class TimedEvent : Event

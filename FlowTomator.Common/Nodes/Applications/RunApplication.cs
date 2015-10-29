@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FlowTomator.Common.Nodes
+namespace FlowTomator.Common
 {
     [Node("RunApp", "Applications", "Run the specified application")]
     public class RunApplication : Task
