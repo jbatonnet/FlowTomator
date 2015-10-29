@@ -5,9 +5,9 @@ You can build your own automation flow by connecting nodes representing basic ac
 
 FlowTomator features an engine alowing to run your flows in console mode, and a visual designer and debugger with edit and continue, step by step evaluation among other tools. 
 
-<center>
+<p align="center">
     <img width="48" src="https://raw.githubusercontent.com/jbatonnet/flowtomator/master/Icon-256.png" />
-</center>
+</p>
 
 ## Structure
 
@@ -22,9 +22,9 @@ FlowTomator features the core ability to load and use assembly plugins. Everyone
 
 - **FlowTomator.SmartSync** : A simple FlowTomator plugin to manipulate and run [SmartSync](https://github.com/jbatonnet/smartsync) synchronization profiles. It can be used to automate your backups, deployments, ...
 
-<center>
+<p align="center">
     <img width="48" src="https://raw.githubusercontent.com/jbatonnet/flowtomator/master/Icon-256.png" />
-</center>
+</p>
 
 ## Development
 
