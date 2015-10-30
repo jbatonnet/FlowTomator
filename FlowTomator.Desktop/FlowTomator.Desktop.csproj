@@ -194,6 +194,10 @@
       <Project>{6c68ae0d-ae83-442b-9ab9-42a0cde65f02}</Project>
       <Name>FlowTomator.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FlowTomator.Data\FlowTomator.Data.csproj">
+      <Project>{5dbb54c6-b165-4551-ab90-17185ce97562}</Project>
+      <Name>FlowTomator.Data</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FlowTomator.Engine\FlowTomator.Engine.csproj">
       <Project>{e5f21c34-4808-418e-8e20-706893643b28}</Project>
       <Name>FlowTomator.Engine</Name>
