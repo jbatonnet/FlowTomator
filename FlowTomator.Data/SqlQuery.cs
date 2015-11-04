@@ -129,7 +129,7 @@ namespace FlowTomator.Common
             switch (serverType.Value)
             {
                 case SqlServerType.SQLite:
-                    connection = new System.Data.SQLite.SQLiteConnection(string.Format("Data Source={0};", sqliteMode.Value == SQLiteMode.Memory ? ":memory:" : file.Value.FullName));
+                    //connection = new System.Data.SQLite.SQLiteConnection(string.Format("Data Source={0};", sqliteMode.Value == SQLiteMode.Memory ? ":memory:" : file.Value.FullName));
                     break;
 
                 case SqlServerType.MySQL:
