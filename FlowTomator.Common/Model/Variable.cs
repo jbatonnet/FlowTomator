@@ -137,4 +137,29 @@ namespace FlowTomator.Common
         public Variable(string name, T value) : base(name, typeof(T), value) { }
         public Variable(string name, T value, string description) : base(name, typeof(T), value, description) { }
     }
+
+    public class EnumVariable<T> : Variable<T>
+    {
+        public IEnumerable<T> Values
+        {
+            get
+            {
+                return values;
+            }
+        }
+        private T[] values;
+
+        public EnumVariable(string name, IEnumerable<T> values) : base(name, default(T))
+        {
+            this.values = values.ToArray();
+        }
+        public EnumVariable(string name, IEnumerable<T> values, T value) : base(name, value)
+        {
+            this.values = values.ToArray();
+        }
+        public EnumVariable(string name, IEnumerable<T> values, T value, string description) : base(name, value, description)
+        {
+            this.values = values.ToArray();
+        }
+    }
 }

@@ -344,7 +344,10 @@ namespace FlowTomator.Desktop
 
                 flowInfo.History.Clear();
             }
-            catch { }
+            catch (Exception e)
+            {
+                MessageBox.Show("An error occurred while saving your flow. " + e);
+            }
         }
 
         private void RunFlowCommandCallback(object parameter)

@@ -62,6 +62,18 @@ namespace FlowTomator.Desktop
             }
         }
 
+        [DependsOn(nameof(Value))]
+        public string Linked
+        {
+            get
+            {
+                if (Variable.Linked != null)
+                    return "$" + Variable.Linked.Name;
+                else
+                    return "null";
+            }
+        }
+
         public bool Selected
         {
             get

@@ -17,9 +17,13 @@ namespace FlowTomator.Desktop
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
             VariableInfo variableInfo = item as VariableInfo;
+            Type variableType = variableInfo.Variable.GetType();
+
             DataTemplate dataTemplate = new DataTemplate();
 
-            if (variableInfo.Type.IsEnum)
+            if (variableType.IsGenericType && variableType.GetGenericTypeDefinition() == typeof(EnumVariable<>))
+                dataTemplate.VisualTree = new FrameworkElementFactory(typeof(DynamicEnumerableVariableEditor));
+            else if (variableInfo.Type.IsEnum)
                 dataTemplate.VisualTree = new FrameworkElementFactory(typeof(EnumerableVariableEditor));
             else
             {
