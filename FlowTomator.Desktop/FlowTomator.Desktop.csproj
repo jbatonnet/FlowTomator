@@ -73,6 +73,9 @@
     <Compile Include="Editors\Variables\DirectoryInfoVariableEditor.xaml.cs">
       <DependentUpon>DirectoryInfoVariableEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Editors\Variables\DynamicEnumerableVariableEditor.xaml.cs">
+      <DependentUpon>DynamicEnumerableVariableEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Editors\Variables\FileInfoVariableEditor.xaml.cs">
       <DependentUpon>FileInfoVariableEditor.xaml</DependentUpon>
     </Compile>
@@ -105,6 +108,10 @@
     <Compile Include="_WPF_\IPropertyUpdatable.cs" />
     <Compile Include="_WPF_\VisualSnapshotConverter.cs" />
     <Page Include="Editors\Variables\DirectoryInfoVariableEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Editors\Variables\DynamicEnumerableVariableEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

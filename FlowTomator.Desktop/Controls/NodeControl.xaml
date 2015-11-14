@@ -99,7 +99,11 @@
                                                Text="{Binding Variable.Name}" ToolTip="{Binding Variable.Description}" />
 
                                     <TextBlock Grid.Column="1" FontSize="11" HorizontalAlignment="Stretch" Padding="0,0,2,0" TextAlignment="Right"
-                                               Text="{Binding Text}" Visibility="{Binding DisplayVisibility}" ToolTip="{Binding Text}" />
+                                               Text="{Binding Linked}" Visibility="{Binding DisplayVisibility}">
+                                        <TextBlock.Foreground>
+                                            <SolidColorBrush Color="{Binding EditorColor}" />
+                                        </TextBlock.Foreground>
+                                    </TextBlock>
 
                                 </Grid>
                             </DataTemplate>
