@@ -244,6 +244,8 @@ namespace FlowTomator.Service
             serviceRef = RemotingServices.Marshal(this, nameof(FlowTomatorService));
 
             Log.Info("Service started");
+
+            Log.Debug("TickCount: {0}", Environment.TickCount);
         }
         protected override void OnStop()
         {
