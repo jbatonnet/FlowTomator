@@ -105,12 +105,6 @@
                                         <StackPanel>
 
                                             <StackPanel Background="WhiteSmoke" Orientation="Horizontal">
-                                                <!--<Path Width="8" Height="5" Stretch="Fill" Fill="Gray" Margin="4">
-                                                <Path.Data>
-                                                    <Geometry>M0,0 L1,0 0.5,1Z</Geometry>
-                                                </Path.Data>
-                                            </Path>-->
-
                                                 <TextBlock Foreground="Gray" Text="{Binding Category}" Margin="2,2,0,3" />
                                             </StackPanel>
 
@@ -145,7 +139,7 @@
                                                             </Border>
 
                                                             <TextBlock Grid.Column="1" Margin="2,2" Text="{Binding Name}" />
-                                                            <TextBlock Grid.Column="2" Margin="3,2" Text="{Binding Model}" Foreground="Gray" />
+                                                            <!--<TextBlock Grid.Column="2" Margin="3,2" Text="{Binding Model}" Foreground="Gray" />-->
                                                         </Grid>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>

@@ -141,6 +141,12 @@ namespace FlowTomator.Common
 
         public override NodeStep Evaluate()
         {
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                Log.Warning("Message node is not supported on this platform. The first slot will be chosen.");
+                return new NodeStep(NodeResult.Success, Slots.FirstOrDefault(s => s.Nodes.Count > 0));
+            }
+
             if (Environment.UserInteractive)
                 result.Value = MessageBox.Show(text.Value, title.Value, buttons.Value, icon.Value);
             else

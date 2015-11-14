@@ -98,7 +98,7 @@ namespace FlowTomator.SmartSync
             switch (storageType)
             {
                 case StorageType.Basic: type = typeof(BasicStorage); break;
-                case StorageType.Sftp: type = typeof(SftpStorage); break;
+                //case StorageType.Sftp: type = typeof(SftpStorage); break;
                 case StorageType.Zip: type = typeof(ZipStorage); break;
             }
 
@@ -146,7 +146,7 @@ namespace FlowTomator.SmartSync
             switch (storageType)
             {
                 case StorageType.Basic: type = typeof(BasicStorage); break;
-                case StorageType.Sftp: type = typeof(SftpStorage); break;
+                //case StorageType.Sftp: type = typeof(SftpStorage); break;
                 case StorageType.Zip: type = typeof(ZipStorage); break;
             }
 

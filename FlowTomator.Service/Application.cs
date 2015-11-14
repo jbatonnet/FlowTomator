@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Ipc;
 using System.Runtime.Serialization.Formatters;
@@ -14,10 +15,29 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using FlowTomator.Common;
 using FlowTomator.Service.Properties;
+
+using Task = System.Threading.Tasks.Task;
 
 namespace FlowTomator.Service
 {
+    public class NotificationReceiver : MarshalByRefObject
+    {
+        internal event FlowTomatorNotificationHandler Notification;
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
+
+        public void OnNotification(FlowTomatorNotification notification)
+        {
+            if (Notification != null)
+                Notification(notification);
+        }
+    }
+
     public class FlowTomatorApplication : ApplicationContext
     {
         public NotifyIcon Icon { get; private set; }
@@ -26,6 +46,7 @@ namespace FlowTomator.Service
 
         private IChannel channel;
         private MenuItem startServiceButton, stopServiceButton;
+        private NotificationReceiver notificationReceiver = new NotificationReceiver();
 
         public FlowTomatorApplication()
         {
@@ -81,14 +102,17 @@ namespace FlowTomator.Service
                 {
                     foreach (FlowEnvironment flow in flows)
                     {
-                        string path = flow.Path;
-                        string file = Path.GetFileName(path);
+                        string path = flow.File.FullName;
+                        string file = flow.File.Name;
 
                         Menu.MenuItems.Add(new MenuItem(file, new[]
                         {
-                        new MenuItem("Edit", (a, b) => Process.Start(path)),
-                        new MenuItem("Stop")
-                    }));
+                            new MenuItem("Reload", (a, b) => ReloadFlowButton_Click(flow, b)),
+                            new MenuItem("Stop", (a, b) => StopFlowButton_Click(flow, b)),
+                            new MenuItem("-"),
+                            new MenuItem("Edit", (a, b) => EditFlowButton_Click(flow, b)),
+                            new MenuItem("Remove", (a, b) => RemoveFlowButton_Click(flow, b)),
+                        }));
                     }
 
                     Menu.MenuItems.Add("-");
@@ -126,7 +150,6 @@ namespace FlowTomator.Service
             }
             catch (Exception ex)
             {
-
             }
         }
         private void StartServiceButton_Click(object sender, EventArgs e)
@@ -147,7 +170,52 @@ namespace FlowTomator.Service
             if (Program.Parameters.ContainsKey("start"))
                 StopService();
 
+            Icon.Visible = false;
             ExitThread();
+        }
+        private void ReloadFlowButton_Click(object sender, EventArgs e)
+        {
+            FlowEnvironment flow = sender as FlowEnvironment;
+            if (flow == null)
+                return;
+
+            flow.Restart(true);
+        }
+        private void StopFlowButton_Click(object sender, EventArgs e)
+        {
+            FlowEnvironment flow = sender as FlowEnvironment;
+            if (flow == null)
+                return;
+
+            throw new NotImplementedException();
+        }
+        private void EditFlowButton_Click(object sender, EventArgs e)
+        {
+            FlowEnvironment flow = sender as FlowEnvironment;
+            if (flow == null)
+                return;
+
+            // Try to find FlowTomator.Desktop.exe
+            string assemblyPath = Assembly.GetExecutingAssembly().Location;
+            string assemblyDirectory = Path.GetDirectoryName(assemblyPath);
+            string editorPath = Path.Combine(assemblyDirectory, "FlowTomator.Desktop.exe");
+
+            if (!File.Exists(editorPath))
+            {
+                MessageBox.Show("Could not find FlowTomator editor");
+                return;
+            }
+
+            // Start the editor
+            Process.Start(editorPath, flow.File.FullName);
+        }
+        private void RemoveFlowButton_Click(object sender, EventArgs e)
+        {
+            FlowEnvironment flow = sender as FlowEnvironment;
+            if (flow == null)
+                return;
+
+            throw new NotImplementedException();
         }
 
         private void StartService()
@@ -155,7 +223,7 @@ namespace FlowTomator.Service
             ServiceController service = ServiceController.GetServices().SingleOrDefault(s => s.ServiceName == Program.ServiceName);
             if (service == null)
             {
-                Icon.ShowBalloonTip(5000, "FlowTomator", "Could not start FlowTomator service. It may not be installed", ToolTipIcon.Error);
+                Icon.ShowBalloonTip(5000, "FlowTomator", "FlowTomator service is not installed on this computer", ToolTipIcon.Error);
                 return;
             }
 
@@ -171,11 +239,12 @@ namespace FlowTomator.Service
             ServiceController service = ServiceController.GetServices().SingleOrDefault(s => s.ServiceName == Program.ServiceName);
             if (service == null)
             {
-                Icon.ShowBalloonTip(5000, "FlowTomator", "Could not start FlowTomator service. It may not be installed", ToolTipIcon.Error);
+                Icon.ShowBalloonTip(5000, "FlowTomator", "FlowTomator service is not installed on this computer", ToolTipIcon.Error);
                 return;
             }
 
-            service.Stop();
+            if (service.Status != ServiceControllerStatus.Stopped && service.Status != ServiceControllerStatus.StopPending)
+                service.Stop();
 
             startServiceButton.Enabled = true;
             stopServiceButton.Enabled = false;
@@ -189,7 +258,10 @@ namespace FlowTomator.Service
                 Service = (FlowTomatorService)Activator.GetObject(typeof(FlowTomatorService), uri);
                 Service.ToString();
 
-                Icon.ShowBalloonTip(5000, "FlowTomator", "Connected to FlowTomator service", ToolTipIcon.Info);
+                Icon.ShowBalloonTip(4000, "FlowTomator", "Connected to FlowTomator service", ToolTipIcon.Info);
+
+                Service.Notification += notificationReceiver.OnNotification;
+                notificationReceiver.Notification += Service_Notification;
             }
             catch (Exception e)
             {
@@ -198,8 +270,22 @@ namespace FlowTomator.Service
                 if (canThrow && Debugger.IsAttached)
                     Debugger.Break();
                 else
-                    Icon.ShowBalloonTip(5000, "FlowTomator", "Could not connect to FlowTomator service. " + e.Message, ToolTipIcon.Error);
+                    Icon.ShowBalloonTip(4000, "FlowTomator", "Could not connect to FlowTomator service. " + e.Message, ToolTipIcon.Error);
             }
+        }
+
+        private void Service_Notification(FlowTomatorNotification notification)
+        {
+            ToolTipIcon icon = ToolTipIcon.None;
+
+            switch (notification.Importance)
+            {
+                case LogVerbosity.Error: icon = ToolTipIcon.Error; break;
+                case LogVerbosity.Warning: icon = ToolTipIcon.Warning; break;
+                case LogVerbosity.Info: icon = ToolTipIcon.Info; break;
+            }
+
+            Icon.ShowBalloonTip(5000, "FlowTomator", notification.Message, icon);
         }
     }
 }

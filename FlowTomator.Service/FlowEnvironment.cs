@@ -12,14 +12,17 @@ namespace FlowTomator.Service
 {
     public class FlowEnvironment : MarshalByRefObject, IDisposable
     {
-        public string Path { get; private set; }
+        public FileInfo File { get; private set; }
 
         private AppDomain domain;
         private Flow flow;
+        private FileSystemWatcher watcher;
 
         public FlowEnvironment(string path)
         {
-            Path = path;
+            File = new FileInfo(path);
+            if (!File.Exists)
+                throw new FileNotFoundException("Unable to find the specified file path");
 
             // Create a new domain
             string domainName = string.Format("FlowEnvironment.0x{0:X8}", GetHashCode());
@@ -27,7 +30,18 @@ namespace FlowTomator.Service
 
             // Preload common assemblies
             domain.DoCallBack(PreloadAssemblies);
+
+            // Load the specified flow
+            Reload();
+
+            // Watch the specified path
+            watcher = new FileSystemWatcher();
+            watcher.Path = File.DirectoryName;
+            watcher.Filter = File.Name;
+            watcher.Changed += (s, e) => Reload();
+            watcher.EnableRaisingEvents = true;
         }
+
         ~FlowEnvironment()
         {
             Dispose();
@@ -37,28 +51,23 @@ namespace FlowTomator.Service
         {
             FileInfo fileInfo = new FileInfo(path);
             if (!fileInfo.Exists)
-                return null;
+                throw new FileNotFoundException("The speficied flow path could not be found : " + path, path);
 
             Flow flow = null;
 
-            try
+            switch (fileInfo.Extension)
             {
-                switch (fileInfo.Extension)
-                {
-                    case ".xflow":
-                        XDocument document = XDocument.Load(fileInfo.FullName);
-                        flow = XFlow.Load(document);
-                        break;
-                }
+                case ".xflow":
+                    XDocument document = XDocument.Load(fileInfo.FullName);
+                    flow = XFlow.Load(document);
+                    break;
 
-            }
-            catch
-            {
-                return null;
+                default:
+                    throw new NotSupportedException("The specified flow format is not supported by FlowTomator service yet");
             }
 
             if (flow == null)
-                return null;
+                throw new Exception("The specified flow could not be loaded");
 
             return new FlowEnvironment(path)
             {
@@ -66,10 +75,38 @@ namespace FlowTomator.Service
             };
         }
 
+        private void Reload()
+        {
+            flow = null;
+
+            switch (File.Extension)
+            {
+                case ".xflow":
+                    XDocument document = XDocument.Load(File.FullName);
+                    flow = XFlow.Load(document);
+                    break;
+            }
+
+            if (flow == null)
+                throw new Exception("The specified flow format is not supported");
+        }
+
         public void Start()
         {
             flow.Reset();
             flow.Evaluate();
+        }
+        public void Stop()
+        {
+        }
+        public void Restart(bool reload = true)
+        {
+            Stop();
+
+            if (reload)
+                Reload();
+
+            Start();
         }
 
         public override object InitializeLifetimeService()

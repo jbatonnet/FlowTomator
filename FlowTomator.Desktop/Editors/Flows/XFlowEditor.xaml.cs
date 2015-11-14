@@ -431,7 +431,7 @@ namespace FlowTomator.Desktop
                     overElement = VisualTreeHelper.GetParent(overElement);
 
                 NodeControl nodeControl = overElement as NodeControl;
-                if (nodeControl != null && !newLinkSlot.Slot.Nodes.Contains(nodeControl.NodeInfo.Node))
+                if (nodeControl != null && nodeControl.NodeInfo != newLinkSlot.NodeInfo && !newLinkSlot.Slot.Nodes.Contains(nodeControl.NodeInfo.Node))
                     FlowInfo.History.Do(new AddLinkAction(newLinkSlot, nodeControl.NodeInfo));
 
                 creatingNewLink = false;

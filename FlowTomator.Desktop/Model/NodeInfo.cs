@@ -179,6 +179,7 @@ namespace FlowTomator.Desktop
         private NodeStatus status;
         private NodeResult? result;
         private bool selected;
+        private double width, height;
 
         private NodeInfo(FlowInfo flowInfo, Node node)
         {

@@ -65,8 +65,6 @@ namespace FlowTomator.Engine
                 return;
             }
 
-            Application.EnableVisualStyles();
-
             flow.Reset();
             NodeStep nodeStep = flow.Evaluate();
 

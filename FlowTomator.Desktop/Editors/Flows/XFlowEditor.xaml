@@ -192,8 +192,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <local:NodeControl NodeInfo="{Binding}" Opacity="{Binding Opacity}" BorderThickness="1" SnapsToDevicePixels="True"
-                                               HeaderMouseDown="NodeControl_HeaderMouseDown" SlotMouseDown="NodeControl_SlotMouseDown"
-                                               LayoutUpdated="NodeControl_LayoutUpdated">
+                                               HeaderMouseDown="NodeControl_HeaderMouseDown" SlotMouseDown="NodeControl_SlotMouseDown" LayoutUpdated="NodeControl_LayoutUpdated">
 
                                 <local:NodeControl.Effect>
                                     <DropShadowEffect ShadowDepth="0" BlurRadius="16" Color="{Binding StatusColor}" />

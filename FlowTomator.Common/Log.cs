@@ -23,7 +23,12 @@ namespace FlowTomator.Common
 
     public static class Log
     {
-        public static LogVerbosity Verbosity { get; set; } = LogVerbosity.Info;
+        public static LogVerbosity Verbosity { get; set; } =
+#if DEBUG
+            LogVerbosity.Trace;
+#else
+            LogVerbosity.Info;
+#endif
 
         private static object mutex = new object();
 

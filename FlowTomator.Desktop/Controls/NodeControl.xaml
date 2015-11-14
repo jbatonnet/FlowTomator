@@ -19,21 +19,23 @@
             <local:Anchor x:Name="NodeAnchor" Margin="0,5,0,0" Binder="{Binding NodeInfo.NodeAnchorBinder}" />
         </Border>
 
-        <Border BorderBrush="Gray" BorderThickness="1">
+        <Border Background="White" BorderBrush="Gray" BorderThickness="1">
             <StackPanel>
 
-                <Border Background="White">
-                    <TextBlock Text="{Binding NodeInfo.TypeInfo.Name, FallbackValue=NodeType}" ToolTip="{Binding NodeInfo.Attribute.Description}"
-                               FontSize="14" TextAlignment="Center" Padding="3" Cursor="SizeAll"
-                               MouseLeftButtonDown="TextBlock_MouseLeftButtonDown">
-                        <TextBlock.Background>
-                            <SolidColorBrush Color="{Binding NodeInfo.TypeInfo.Color}" Opacity="0.7" />
-                        </TextBlock.Background>
+                <Border>
+                    <Border.Background>
+                        <SolidColorBrush Color="{Binding NodeInfo.TypeInfo.Color, FallbackValue=SkyBlue}" Opacity="0.7" />
+                    </Border.Background>
+                        
+                    <TextBlock Text="{Binding NodeInfo.TypeInfo.Name, FallbackValue=MessageBox}" ToolTip="{Binding NodeInfo.Attribute.Description}"
+                                FontSize="14" TextAlignment="Center" Padding="0,3,0,4" Cursor="SizeAll" Foreground="Black"
+                                MouseLeftButtonDown="TextBlock_MouseLeftButtonDown">
                     </TextBlock>
+
                 </Border>
 
-                <StackPanel Visibility="{Binding Path=InputsVisibility}" Background="White">
-                    <TextBlock FontFamily="Consolas" FontSize="9" Background="DarkGray" Foreground="White" Padding="2,1,0,0" Margin="0,0,0,1">INPUTS</TextBlock>
+                <StackPanel Visibility="{Binding InputsVisibility}" Background="White">
+                    <TextBlock FontFamily="Consolas" FontSize="9" Background="DimGray" Foreground="White" Padding="2,1,0,0" Margin="0,0,0,1">INPUTS</TextBlock>
                     <ItemsControl MinHeight="4" ItemsSource="{Binding NodeInfo.Inputs}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -45,11 +47,11 @@
                                 <Grid Margin="2,0,1,1">
 
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="46" />
+                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Grid.Column="0" FontSize="11" Foreground="Gray" HorizontalAlignment="Stretch"
+                                    <TextBlock Grid.Column="0" FontSize="11" Foreground="Gray" HorizontalAlignment="Stretch" Margin="0,0,4,0"
                                                Text="{Binding Variable.Name}" ToolTip="{Binding Variable.Description}">
                                         <TextBlock.ContextMenu>
                                             <ContextMenu>
@@ -76,8 +78,8 @@
                     </ItemsControl>
                 </StackPanel>
 
-                <StackPanel MinHeight="4" Visibility="{Binding OutputsVisibility}">
-                    <TextBlock FontFamily="Consolas" FontSize="9" Background="DarkGray" Foreground="White" Padding="2,1,0,0">OUTPUTS</TextBlock>
+                <StackPanel Visibility="{Binding OutputsVisibility}">
+                    <TextBlock FontFamily="Consolas" FontSize="9" Background="DimGray" Foreground="White" Padding="2,1,0,0">OUTPUTS</TextBlock>
                     <ItemsControl MinHeight="4" ItemsSource="{Binding NodeInfo.Outputs}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>

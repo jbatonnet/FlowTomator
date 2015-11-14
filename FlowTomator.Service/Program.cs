@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Configuration.Install;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -14,17 +18,12 @@ namespace FlowTomator.Service
     public class Program
     {
         public const string ServiceName = "FlowTomator";
-
         public static Dictionary<string, string> Parameters { get; private set; }
 
         [STAThread]
         public static void Main(string[] args)
         {
-            //NetworkCredential credential;
-            //WindowsAuthentication.GetCredentialsVistaAndUp("", out credential);
-            //return;
-
-            if (!Environment.UserInteractive)
+            if (!Environment.UserInteractive || Environment.OSVersion.Platform == PlatformID.Unix)
             {
                 ServiceBase.Run(new FlowTomatorService());
                 return;
@@ -38,22 +37,68 @@ namespace FlowTomator.Service
                                     .Select(p => p.TrimStart('/'))
                                     .Select(p => new { Parameter = p.Trim(), Separator = p.Trim().IndexOf(':') })
                                     .ToDictionary(p => p.Separator == -1 ? p.Parameter.ToLower() : p.Parameter.Substring(0, p.Separator).ToLower(), p => p.Separator == -1 ? null : p.Parameter.Substring(p.Separator + 1));
-            
+
+            // Quick flag to stop the service
+            if (Parameters.ContainsKey("stop"))
+            {
+                ServiceController service = ServiceController.GetServices().SingleOrDefault(s => s.ServiceName == Program.ServiceName);
+                if (service == null)
+                    return;
+
+                if (service.Status != ServiceControllerStatus.Stopped && service.Status != ServiceControllerStatus.StopPending)
+                    service.Stop();
+
+                return;
+            }
+
             // Install service if needed
             if (Parameters.ContainsKey("reinstall"))
             {
-                if (ServiceManager.ServiceIsInstalled(ServiceName))
+                if (FlowTomatorServiceInstaller.Installed)
                 {
-                    ServiceManager.UninstallService(ServiceName);
+                    try
+                    {
+                        FlowTomatorServiceInstaller.Uninstall();
+                    }
+                    catch (Exception e)
+                    {
+                        if (Debugger.IsAttached)
+                            throw;
+                        else
+                            MessageBox.Show("Could not uninstall FlowTomator service. " + e.Message);
+                    }
+                    
                     Thread.Sleep(1000);
                 }
 
-                ServiceManager.InstallService(ServiceName, "FlowTomator", Assembly.GetExecutingAssembly().Location);
+                try
+                {
+                    FlowTomatorServiceInstaller.Install();
+                }
+                catch (Exception e)
+                {
+                    if (Debugger.IsAttached)
+                        throw;
+                    else
+                        MessageBox.Show("Could not install FlowTomator service. " + e.Message);
+                }
             }
             else if (Parameters.ContainsKey("install"))
             {
-                if (!ServiceManager.ServiceIsInstalled(ServiceName))
-                    ServiceManager.InstallService(ServiceName, "FlowTomator", Assembly.GetExecutingAssembly().Location);
+                if (!FlowTomatorServiceInstaller.Installed)
+                {
+                    try
+                    {
+                        FlowTomatorServiceInstaller.Install();
+                    }
+                    catch (Exception e)
+                    {
+                        if (Debugger.IsAttached)
+                            throw;
+                        else
+                            MessageBox.Show("Could not install FlowTomator service. " + e.Message);
+                    }
+                }
             }
 
             // Start FlowTomator service UI

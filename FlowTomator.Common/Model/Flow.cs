@@ -37,12 +37,31 @@ namespace FlowTomator.Common
                 Log.Error("Node {0} failed", node.GetType().Name);
                 return NodeResult.Fail;
             }
-            if (step.Result == NodeResult.Skip || step.Slot.Nodes.Count == 0)
+            if (step.Result == NodeResult.Skip || step.Slot == null || step.Slot.Nodes.Count == 0)
                 return step.Result;
 
-            return step.Slot.Nodes.AsParallel()
-                                  .Select(n => Evaluate(n))
-                                  .Max();
+
+            //System.Threading.Tasks.Task.WhenAll()
+
+
+            NodeResult result = NodeResult.Success;
+            object resultMutex = new object();
+
+            Semaphore semaphore = new Semaphore(step.Slot.Nodes.Count, 1);
+                      
+
+            semaphore.WaitOne();
+
+            Parallel.ForEach(step.Slot.Nodes, new ParallelOptions() { MaxDegreeOfParallelism = step.Slot.Nodes.Count }, n =>
+            {
+                NodeResult nodeResult = Evaluate(n);
+
+                lock (resultMutex)
+                    if (nodeResult > result)
+                        result = nodeResult;
+            });
+
+            return result;
         }
 
         public virtual IEnumerable<Node> GetAllNodes()

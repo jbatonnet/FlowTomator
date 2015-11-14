@@ -46,6 +46,7 @@ namespace FlowTomator.Desktop
     {
         public ObservableCollection<FlowInfo> Flows { get; } = new ObservableCollection<FlowInfo>();
         public ObservableCollection<NodeCategoryInfo> NodeCategories { get; } = new ObservableCollection<NodeCategoryInfo>();
+        public ObservableCollection<VariableInfo> Variables { get; } = new ObservableCollection<VariableInfo>();
 
         public DelegateCommand NewFlowCommand { get; private set; }
         public DelegateCommand OpenFlowCommand { get; private set; }
