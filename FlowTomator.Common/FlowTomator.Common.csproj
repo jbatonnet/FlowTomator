@@ -84,6 +84,7 @@
     <Compile Include="Model\Task.cs" />
     <Compile Include="Storage\XDependencyFlow.cs" />
     <Compile Include="Storage\XFlow.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

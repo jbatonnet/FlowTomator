@@ -28,18 +28,24 @@ namespace FlowTomator.Common
     [Node("DeviceLock", "System", "Triggers when the system session is locked")]
     public class DeviceLockEvent : Event
     {
-        private AutoResetEvent sessionLockEvent = new AutoResetEvent(false);
+        private EventWaitHandle deviceLockEvent;
 
         public DeviceLockEvent()
         {
-            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+            if (Environment.UserInteractive)
+            {
+                deviceLockEvent = new AutoResetEvent(false);
+                SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+            }
+            else
+                deviceLockEvent = Utils.GetOrCreateEvent("FlowTomator.DeviceLock");
         }
 
         public override NodeResult Check()
         {
             DateTime start = DateTime.Now;
 
-            while (!sessionLockEvent.WaitOne(500))
+            while (!deviceLockEvent.WaitOne(500))
             {
                 if (timeout.Value == TimeSpan.MaxValue)
                     continue;
@@ -54,25 +60,31 @@ namespace FlowTomator.Common
         private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
         {
             if (e.Reason == SessionSwitchReason.SessionLock)
-                sessionLockEvent.Set();
+                deviceLockEvent.Set();
         }
     }
 
     [Node("DeviceUnlock", "System", "Triggers when the system session is unlocked")]
     public class DeviceUnlockEvent : Event
     {
-        private AutoResetEvent sessionUnlockEvent = new AutoResetEvent(false);
+        private EventWaitHandle deviceUnlockEvent;
 
         public DeviceUnlockEvent()
         {
-            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+            if (Environment.UserInteractive)
+            {
+                deviceUnlockEvent = new AutoResetEvent(false);
+                SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+            }
+            else
+                deviceUnlockEvent = Utils.GetOrCreateEvent("FlowTomator.DeviceUnlock");
         }
 
         public override NodeResult Check()
         {
             DateTime start = DateTime.Now;
 
-            while (!sessionUnlockEvent.WaitOne(500))
+            while (!deviceUnlockEvent.WaitOne(500))
             {
                 if (timeout.Value == TimeSpan.MaxValue)
                     continue;
@@ -87,7 +99,7 @@ namespace FlowTomator.Common
         private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
         {
             if (e.Reason == SessionSwitchReason.SessionUnlock)
-                sessionUnlockEvent.Set();
+                deviceUnlockEvent.Set();
         }
     }
 

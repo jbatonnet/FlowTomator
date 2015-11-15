@@ -95,7 +95,11 @@ namespace FlowTomator.Common
 
                             Variable variable = inputs.FirstOrDefault(i => i.Name == name);
                             if (variable == null)
-                                throw new Exception("Input " + name + " could not be found in node type at line " + (inputAttribute as IXmlLineInfo).LineNumber);
+                            {
+                                Log.Warning("Input {0} could not be found in node type at line {1}. Its content will be saved in nodes metadata.", name, (inputAttribute as IXmlLineInfo).LineNumber);
+                                node.Metadata["Input." + name] = inputAttribute.Value;
+                                continue;
+                            }
 
                             if (inputAttribute.Value.StartsWith("$"))
                             {
@@ -136,18 +140,24 @@ namespace FlowTomator.Common
 
                             Variable variable = outputs.FirstOrDefault(i => i.Name == name);
                             if (variable == null)
-                                throw new Exception("Output " + name + " could not be found in node type at line " + (outputAttribute as IXmlLineInfo).LineNumber);
+                            {
+                                Log.Warning("Output {0} could not be found in node type at line {1}. Its content will be saved in nodes metadata.", name, (outputAttribute as IXmlLineInfo).LineNumber);
+                                node.Metadata["Output." + name] = outputAttribute.Value;
+                                continue;
+                            }
 
                             if (!outputAttribute.Value.StartsWith("$"))
-                                throw new Exception("Output " + name + " cannot be set to a constant value at line " + (outputAttribute as IXmlLineInfo).LineNumber);
+                                Log.Warning("Output {0} cannot be set to a constant value at line {1}. Its content will be skipped.", name, (outputAttribute as IXmlLineInfo).LineNumber);
+                            else
+                            {
+                                string link = outputAttribute.Value.Substring(1);
 
-                            string link = outputAttribute.Value.Substring(1);
+                                Variable linkedVariable = variables.FirstOrDefault(v => v.Name == link);
+                                if (linkedVariable == null)
+                                    variables.Add(linkedVariable = new Variable(link, variable.Type));
 
-                            Variable linkedVariable = variables.FirstOrDefault(v => v.Name == link);
-                            if (linkedVariable == null)
-                                variables.Add(linkedVariable = new Variable(link, variable.Type));
-
-                            variable.Link(linkedVariable);
+                                variable.Link(linkedVariable);
+                            }
                         }
                     }
 

@@ -117,9 +117,15 @@ namespace FlowTomator.Common
                         }
                     }
 
-                    if (!evaluated)
+                    if (evaluating && !evaluated)
                         EvaluateNodes();
                 });
+            }
+
+            if (!evaluating)
+            {
+                Return(NodeResult.Stop);
+                return;
             }
 
             // Register threads
@@ -144,7 +150,9 @@ namespace FlowTomator.Common
                 step = new NodeStep(NodeResult.Fail, null);
             }
 
-            Log.Trace("Exiting node {0} with result {1}{2}", node.GetType().Name, step.Result, step.Slot == null ? "" : (" by slot " + step.Slot.Name));
+            if (evaluating)
+                Log.Trace("Exiting node {0} with result {1}{2}", node.GetType().Name, step.Result, step.Slot == null ? "" : (" by slot " + step.Slot.Name));
+
             return step;
         }
 

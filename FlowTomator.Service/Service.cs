@@ -11,8 +11,11 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Ipc;
 using System.Runtime.Serialization.Formatters;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using FlowTomator.Common;
@@ -332,6 +335,21 @@ namespace FlowTomator.Service
         protected override void OnSessionChange(SessionChangeDescription changeDescription)
         {
             base.OnSessionChange(changeDescription);
+
+            EventWaitHandle eventWaitHandle = null;
+
+            switch (changeDescription.Reason)
+            {
+                case SessionChangeReason.SessionLock: eventWaitHandle = Utils.GetOrCreateEvent("FlowTomator.DeviceLock"); break;
+                case SessionChangeReason.SessionUnlock: eventWaitHandle = Utils.GetOrCreateEvent("FlowTomator.DeviceUnlock"); break;
+            }
+
+            if (eventWaitHandle != null)
+            {
+                eventWaitHandle.Set();
+                Thread.Yield();
+                eventWaitHandle.Reset();
+            }
         }
     }
 }
