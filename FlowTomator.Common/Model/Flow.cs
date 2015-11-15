@@ -23,45 +23,12 @@ namespace FlowTomator.Common
             if (!Origins.Any())
                 return NodeResult.Success;
 
-            return Origins.AsParallel()
-                          .Select(n => Evaluate(n))
-                          .Max();
-        }
+            BasicNodesEvaluator nodesEvaluator = new BasicNodesEvaluator();
 
-        private NodeResult Evaluate(Node node)
-        {
-            NodeStep step = node.Evaluate();
+            foreach (Origin origin in Origins)
+                nodesEvaluator.Nodes.Add(origin);
 
-            if (step.Result == NodeResult.Fail)
-            {
-                Log.Error("Node {0} failed", node.GetType().Name);
-                return NodeResult.Fail;
-            }
-            if (step.Result == NodeResult.Skip || step.Slot == null || step.Slot.Nodes.Count == 0)
-                return step.Result;
-
-
-            //System.Threading.Tasks.Task.WhenAll()
-
-
-            NodeResult result = NodeResult.Success;
-            object resultMutex = new object();
-
-            Semaphore semaphore = new Semaphore(step.Slot.Nodes.Count, 1);
-                      
-
-            semaphore.WaitOne();
-
-            Parallel.ForEach(step.Slot.Nodes, new ParallelOptions() { MaxDegreeOfParallelism = step.Slot.Nodes.Count }, n =>
-            {
-                NodeResult nodeResult = Evaluate(n);
-
-                lock (resultMutex)
-                    if (nodeResult > result)
-                        result = nodeResult;
-            });
-
-            return result;
+            return nodesEvaluator.Evaluate();
         }
 
         public virtual IEnumerable<Node> GetAllNodes()

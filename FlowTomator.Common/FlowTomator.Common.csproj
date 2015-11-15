@@ -42,8 +42,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Evaluator\BasicNodesEvaluator.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Model\EditableFlow.cs" />
+    <Compile Include="Evaluator\NodesEvaluator.cs" />
     <Compile Include="NodeAttribute.cs" />
     <Compile Include="Model\Slot.cs" />
     <Compile Include="Nodes\Applications\RunApplication.cs" />

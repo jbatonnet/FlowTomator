@@ -93,6 +93,16 @@ namespace FlowTomator.Service
 
         private void Menu_Popup(object sender, EventArgs e)
         {
+            try
+            {
+                if (Service != null)
+                    Service.ToString();
+            }
+            catch
+            {
+                Service = null;
+            }
+
             Menu.MenuItems.Clear();
 
             if (Service != null)
@@ -108,7 +118,7 @@ namespace FlowTomator.Service
                         Menu.MenuItems.Add(new MenuItem(file, new[]
                         {
                             new MenuItem("Reload", (a, b) => ReloadFlowButton_Click(flow, b)),
-                            new MenuItem("Stop", (a, b) => StopFlowButton_Click(flow, b)),
+                            new MenuItem("Stop", (a, b) => StopFlowButton_Click(flow, b)) { Enabled = flow.Running },
                             new MenuItem("-"),
                             new MenuItem("Edit", (a, b) => EditFlowButton_Click(flow, b)),
                             new MenuItem("Remove", (a, b) => RemoveFlowButton_Click(flow, b)),
@@ -122,12 +132,48 @@ namespace FlowTomator.Service
             Menu.MenuItems.AddRange(new[]
             {
                 new MenuItem("Load flow ...", LoadFlowButton_Click),
-                new MenuItem("-"),
-                new MenuItem("Service", new[]
+                new MenuItem("-")
+            });
+
+            if (!FlowTomatorService.Installed)
+            {
+                Menu.MenuItems.AddRange(new[]
                 {
-                    startServiceButton,
-                    stopServiceButton
-                }),
+                    new MenuItem("Install service", InstallServiceButton_Click)
+                });
+            }
+            else
+            {
+                Menu.MenuItems.AddRange(new[]
+                {
+                    new MenuItem("Service", new[]
+                    {
+                        new MenuItem("Start", StartServiceButton_Click) { Enabled = !FlowTomatorService.Running },
+                        new MenuItem("Stop", StopServiceButton_Click) { Enabled = FlowTomatorService.Running },
+                        new MenuItem("-"),
+                        new MenuItem("Uninstall", UninstallServiceButton_Click) { Enabled = !FlowTomatorService.Running },
+                        new MenuItem("-"),
+                        new MenuItem("Settings", new[]
+                        {
+                            new MenuItem("Log", new[]
+                            {
+                                new MenuItem("Open", OpenLogButton_Click),
+                                new MenuItem("Verbosity", new[]
+                                {
+                                    new MenuItem("Trace", (a, b) => SetLogVerbosityButton_Click(LogVerbosity.Trace, b)),
+                                    new MenuItem("Debug", (a, b) => SetLogVerbosityButton_Click(LogVerbosity.Debug, b)),
+                                    new MenuItem("Info", (a, b) => SetLogVerbosityButton_Click(LogVerbosity.Info, b)),
+                                    new MenuItem("Warning", (a, b) => SetLogVerbosityButton_Click(LogVerbosity.Warning, b)),
+                                    new MenuItem("Error", (a, b) => SetLogVerbosityButton_Click(LogVerbosity.Error, b)),
+                                })
+                            }) { Enabled = FlowTomatorService.Running }
+                        }),
+                    })
+                });
+            }
+
+            Menu.MenuItems.AddRange(new[]
+            {
                 new MenuItem("Exit", ExitButton_Click)
             });
         }
@@ -165,6 +211,14 @@ namespace FlowTomator.Service
             Task.Run(() => StopService())
                 .ContinueWith(t => Service = null);
         }
+        private void InstallServiceButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+        private void UninstallServiceButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
         private void ExitButton_Click(object sender, EventArgs e)
         {
             if (Program.Parameters.ContainsKey("start"))
@@ -187,7 +241,7 @@ namespace FlowTomator.Service
             if (flow == null)
                 return;
 
-            throw new NotImplementedException();
+            flow.Stop();
         }
         private void EditFlowButton_Click(object sender, EventArgs e)
         {
@@ -217,17 +271,27 @@ namespace FlowTomator.Service
 
             throw new NotImplementedException();
         }
+        private void OpenLogButton_Click(object sender, EventArgs e)
+        {
+            Process.Start(Service.LogFile.FullName);
+        }
+        private void SetLogVerbosityButton_Click(object sender, EventArgs e)
+        {
+            LogVerbosity verbosity = (LogVerbosity)sender;
+            Service.LogVerbosity = verbosity;
+        }
 
         private void StartService()
         {
-            ServiceController service = ServiceController.GetServices().SingleOrDefault(s => s.ServiceName == Program.ServiceName);
-            if (service == null)
+            if (!FlowTomatorService.Installed)
             {
-                Icon.ShowBalloonTip(5000, "FlowTomator", "FlowTomator service is not installed on this computer", ToolTipIcon.Error);
+                if (!Program.Parameters.ContainsKey("quiet"))
+                    Icon.ShowBalloonTip(5000, "FlowTomator", "FlowTomator service is not installed on this computer", ToolTipIcon.Error);
+
                 return;
             }
 
-            service.Start();
+            FlowTomatorService.Start();
             
             startServiceButton.Enabled = false;
             stopServiceButton.Enabled = true;
@@ -236,15 +300,15 @@ namespace FlowTomator.Service
         }
         private void StopService()
         {
-            ServiceController service = ServiceController.GetServices().SingleOrDefault(s => s.ServiceName == Program.ServiceName);
-            if (service == null)
+            if (!FlowTomatorService.Installed)
             {
-                Icon.ShowBalloonTip(5000, "FlowTomator", "FlowTomator service is not installed on this computer", ToolTipIcon.Error);
+                if (!Program.Parameters.ContainsKey("quiet"))
+                    Icon.ShowBalloonTip(5000, "FlowTomator", "FlowTomator service is not installed on this computer", ToolTipIcon.Error);
+
                 return;
             }
 
-            if (service.Status != ServiceControllerStatus.Stopped && service.Status != ServiceControllerStatus.StopPending)
-                service.Stop();
+            FlowTomatorService.Stop();
 
             startServiceButton.Enabled = true;
             stopServiceButton.Enabled = false;
@@ -258,7 +322,8 @@ namespace FlowTomator.Service
                 Service = (FlowTomatorService)Activator.GetObject(typeof(FlowTomatorService), uri);
                 Service.ToString();
 
-                Icon.ShowBalloonTip(4000, "FlowTomator", "Connected to FlowTomator service", ToolTipIcon.Info);
+                if (!Program.Parameters.ContainsKey("quiet"))
+                    Icon.ShowBalloonTip(4000, "FlowTomator", "Connected to FlowTomator service", ToolTipIcon.Info);
 
                 Service.Notification += notificationReceiver.OnNotification;
                 notificationReceiver.Notification += Service_Notification;
@@ -269,7 +334,7 @@ namespace FlowTomator.Service
 
                 if (canThrow && Debugger.IsAttached)
                     Debugger.Break();
-                else
+                else if (!Program.Parameters.ContainsKey("quiet"))
                     Icon.ShowBalloonTip(4000, "FlowTomator", "Could not connect to FlowTomator service. " + e.Message, ToolTipIcon.Error);
             }
         }

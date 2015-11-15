@@ -13,10 +13,19 @@ namespace FlowTomator.Service
     public class FlowEnvironment : MarshalByRefObject, IDisposable
     {
         public FileInfo File { get; private set; }
+        public bool Running
+        {
+            get
+            {
+                return evaluator != null && evaluator.Evaluating;
+            }
+        }
 
         private AppDomain domain;
-        private Flow flow;
         private FileSystemWatcher watcher;
+
+        private Flow flow;
+        private NodesEvaluator evaluator;
 
         public FlowEnvironment(string path)
         {
@@ -38,7 +47,7 @@ namespace FlowTomator.Service
             watcher = new FileSystemWatcher();
             watcher.Path = File.DirectoryName;
             watcher.Filter = File.Name;
-            watcher.Changed += (s, e) => Reload();
+            watcher.Changed += (s, e) => Restart(true);
             watcher.EnableRaisingEvents = true;
         }
 
@@ -77,6 +86,7 @@ namespace FlowTomator.Service
 
         private void Reload()
         {
+            Log.Trace("{0}oading flow {1}", flow == null ? "L" : "Rel", File.Name);
             flow = null;
 
             switch (File.Extension)
@@ -93,11 +103,24 @@ namespace FlowTomator.Service
 
         public void Start()
         {
+            Log.Trace("Resetting flow {0}", File.Name);
             flow.Reset();
-            flow.Evaluate();
+
+            evaluator = new BasicNodesEvaluator();
+
+            foreach (Origin origin in flow.Origins)
+                evaluator.Nodes.Add(origin);
+
+            Log.Trace("Beginning evaluation of flow {0}", File.Name);
+            evaluator.BeginEvaluate();
         }
         public void Stop()
         {
+            if (evaluator.Evaluating)
+            {
+                Log.Trace("Stopping evaluation of flow {0}", File.Name);
+                evaluator.Stop();
+            }
         }
         public void Restart(bool reload = true)
         {

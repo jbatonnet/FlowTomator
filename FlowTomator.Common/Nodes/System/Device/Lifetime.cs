@@ -28,9 +28,10 @@ namespace FlowTomator.Common
         {
             get
             {
+                const string eventName = @"Global\FlowTomator.FakeShutdown";
                 EventWaitHandle fakeShutdownEvent = null;
 
-                if (!EventWaitHandle.TryOpenExisting(@"Global\FlowTomator.FakeShutdown", out fakeShutdownEvent))
+                if (!EventWaitHandle.TryOpenExisting(eventName, out fakeShutdownEvent))
                 {
                     SecurityIdentifier users = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
                     EventWaitHandleAccessRule rule = new EventWaitHandleAccessRule(users, EventWaitHandleRights.Synchronize | EventWaitHandleRights.Modify, AccessControlType.Allow);
@@ -38,7 +39,7 @@ namespace FlowTomator.Common
                     security.AddAccessRule(rule);
 
                     bool created;
-                    fakeShutdownEvent = new EventWaitHandle(false, EventResetMode.AutoReset, @"Global\FlowTomator.FakeShutdown", out created, security);
+                    fakeShutdownEvent = new EventWaitHandle(false, EventResetMode.AutoReset, eventName, out created, security);
                 }
 
                 return fakeShutdownEvent;

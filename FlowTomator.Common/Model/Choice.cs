@@ -20,7 +20,7 @@ namespace FlowTomator.Common
             }
         }
 
-        protected Slot TrueSlot { get; } = new Slot("True branch");
-        protected Slot FalseSlot { get; } = new Slot("False branch");
+        protected Slot TrueSlot { get; } = new Slot("True");
+        protected Slot FalseSlot { get; } = new Slot("False");
     }
 }

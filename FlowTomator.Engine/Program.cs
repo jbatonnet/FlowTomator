@@ -7,47 +7,57 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+
 using FlowTomator.Common;
 
 namespace FlowTomator.Engine
 {
     class Program
     {
-        static void Main(string[] args)
-        {
-            Dictionary<string, string> parameters = Environment.GetCommandLineArgs()
-                                                               .Where(p => p.StartsWith("/"))
-                                                               .Select(p => p.TrimStart('/'))
-                                                               .Select(p => new { Parameter = p.Trim(), Separator = p.Trim().IndexOf(':') })
-                                                               .ToDictionary(p => p.Separator == -1 ? p.Parameter : p.Parameter.Substring(0, p.Separator).ToLower(), p => p.Separator == -1 ? null : p.Parameter.Substring(p.Separator + 1));
+        public static Dictionary<string, string> Options { get; private set; }
+        public static List<string> Parameters { get; private set; }
 
-            if (parameters.ContainsKey("log"))
+        [STAThread]
+        public static void Main(string[] args)
+        {
+            Console.Title = "FlowTomator";
+
+            Options = args.Where(a => a.StartsWith("/"))
+                          .Select(a => a.TrimStart('/'))
+                          .Select(a => new { Parameter = a.Trim(), Separator = a.Trim().IndexOf(':') })
+                          .ToDictionary(a => a.Separator == -1 ? a.Parameter : a.Parameter.Substring(0, a.Separator).ToLower(), a => a.Separator == -1 ? null : a.Parameter.Substring(a.Separator + 1));
+            Parameters = args.Where(a => !a.StartsWith("/"))
+                             .ToList();
+
+            if (Options.ContainsKey("log"))
             {
                 LogVerbosity verbosity;
 
-                if (!Enum.TryParse(parameters["log"], out verbosity))
+                if (!Enum.TryParse(Options["log"], out verbosity))
                 {
                     Log.Error("The specified log verbosity does not exist");
-                    return;
+                    Exit(-1);
                 }
 
                 Log.Verbosity = verbosity;
             }
 
-            string flowPath = Environment.GetCommandLineArgs().Skip(1).LastOrDefault();
+            string flowPath = Parameters.FirstOrDefault();
             if (flowPath == null)
             {
                 Log.Error("You must specify a flow to evaluate");
-                return;
+                Exit(-1);
             }
 
             FileInfo flowInfo = new FileInfo(flowPath);
             if (!flowInfo.Exists)
             {
                 Log.Error("Could not find the specified flow");
-                return;
+                Exit(-1);
             }
-            
+
+            Console.Title = "FlowTomator - " + flowInfo.Name;
+
             Flow flow = null;
 
             try
@@ -68,9 +78,19 @@ namespace FlowTomator.Engine
             flow.Reset();
             NodeStep nodeStep = flow.Evaluate();
 
-            if (Debugger.IsAttached)
+            Exit((int)nodeStep.Result);
+        }
+
+        public static void Exit(int code)
+        {
+            if (Debugger.IsAttached || Options.ContainsKey("pause"))
+            {
+                Console.WriteLine();
+                Console.Write("Press any key to exit ...");
                 Console.ReadKey(true);
-            Environment.Exit((int)nodeStep.Result);
+            }
+
+            Environment.Exit(code);
         }
     }
 }

@@ -16,17 +16,12 @@ namespace FlowTomator.Common
             }
         }
 
-        private Slot slot = new Slot("Next nodes");
+        private Slot slot = new Slot("Out");
 
         public abstract NodeResult Run();
         public sealed override NodeStep Evaluate()
         {
-            Log.Trace("Entering task {0}", GetType().Name);
-
-            NodeStep step = new NodeStep(Run(), slot);
-
-            Log.Trace("Exiting task {0} with result {1}", GetType().Name, step.Result);
-            return step;
+            return new NodeStep(Run(), slot);
         }
     }
 }

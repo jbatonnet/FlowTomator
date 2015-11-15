@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using FlowTomator.Common;
+using FlowTomator.Service.Properties;
 
 namespace FlowTomator.Service
 {
@@ -32,63 +33,12 @@ namespace FlowTomator.Service
     [RunInstaller(true)]
     public sealed class FlowTomatorServiceInstaller : ServiceInstaller
     {
-        public static bool Installed
-        {
-            get
-            {
-                ServiceController service = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == Program.ServiceName);
-                return service != null;
-            }
-        }
-
         public FlowTomatorServiceInstaller()
         {
             Description = "FlowTomator Service";
             DisplayName = Program.ServiceName;
             ServiceName = Program.ServiceName;
             StartType = ServiceStartMode.Automatic;
-        }
-
-        public static void Install()
-        {
-            if (Installed)
-                return;
-
-            IDictionary saveState = new Hashtable();
-
-            using (AssemblyInstaller installer = new AssemblyInstaller(Assembly.GetExecutingAssembly(), new string[0]))
-            {
-                installer.UseNewContext = true;
-
-                try
-                {
-                    installer.Install(saveState);
-                    installer.Commit(saveState);
-                }
-                catch
-                {
-                    try
-                    {
-                        installer.Rollback(saveState);
-                    }
-                    catch { }
-
-                    throw;
-                }
-            }
-        }
-        public static void Uninstall()
-        {
-            if (!Installed)
-                return;
-
-            IDictionary saveState = new Hashtable();
-
-            using (AssemblyInstaller installer = new AssemblyInstaller(Assembly.GetExecutingAssembly(), new string[0]))
-            {
-                installer.UseNewContext = true;
-                installer.Uninstall(saveState);
-            }
         }
     }
 
@@ -138,10 +88,103 @@ namespace FlowTomator.Service
 
     public class FlowTomatorService : ServiceBase
     {
+        #region Service control
+
+        public static bool Installed
+        {
+            get
+            {
+                ServiceController service = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == Program.ServiceName);
+                return service != null;
+            }
+        }
+        public static bool Running
+        {
+            get
+            {
+                ServiceController service = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == Program.ServiceName);
+                return service != null && service.Status == ServiceControllerStatus.Running;
+            }
+        }
+
+        public static void Install()
+        {
+            if (Installed)
+                return;
+
+            IDictionary saveState = new Hashtable();
+
+            using (AssemblyInstaller installer = new AssemblyInstaller(Assembly.GetExecutingAssembly(), new string[0]))
+            {
+                installer.UseNewContext = true;
+
+                try
+                {
+                    installer.Install(saveState);
+                    installer.Commit(saveState);
+                }
+                catch
+                {
+                    try
+                    {
+                        installer.Rollback(saveState);
+                    }
+                    catch { }
+
+                    throw;
+                }
+            }
+        }
+        public static void Uninstall()
+        {
+            if (!Installed)
+                return;
+
+            IDictionary saveState = new Hashtable();
+
+            using (AssemblyInstaller installer = new AssemblyInstaller(Assembly.GetExecutingAssembly(), new string[0]))
+            {
+                installer.UseNewContext = true;
+                installer.Uninstall(saveState);
+            }
+        }
+        public static void Start()
+        {
+            ServiceController service = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == Program.ServiceName);
+            if (service == null)
+                throw new Exception("FlowTomator service is not installed on this computer");
+
+            if (service.Status != ServiceControllerStatus.Running)
+                service.Start();
+        }
+        public static void Stop()
+        {
+            ServiceController service = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == Program.ServiceName);
+            if (service == null)
+                throw new Exception("FlowTomator service is not installed on this computer");
+
+            if (service.Status != ServiceControllerStatus.Stopped || service.Status != ServiceControllerStatus.StopPending)
+                service.Stop();
+        }
+
+        #endregion
+
         public Dictionary<string, string> Parameters { get; private set; }
         public ObservableCollection<FlowEnvironment> Flows { get; } = new ObservableCollection<FlowEnvironment>();
         public event FlowTomatorNotificationHandler Notification;
+
         public FileInfo LogFile { get; private set; }
+        public LogVerbosity LogVerbosity
+        {
+            get
+            {
+                return Log.Verbosity;
+            }
+            set
+            {
+                Log.Verbosity = value;
+            }
+        }
 
         private ObjRef serviceRef;
 
@@ -160,9 +203,12 @@ namespace FlowTomator.Service
         {
             FlowEnvironment flow = null;
 
+            Log.Debug("Loading {0}", path);
+
             try
             {
                 flow = FlowEnvironment.Load(path);
+                Log.Info("Loaded {0}", flow.File.Name);
             }
             catch (Exception e)
             {
@@ -245,7 +291,18 @@ namespace FlowTomator.Service
 
             Log.Info("Service started");
 
-            Log.Debug("TickCount: {0}", Environment.TickCount);
+            // Autostart startup flows
+            if (Settings.Default.StartupFlows != null)
+                foreach (string startupFlow in Settings.Default.StartupFlows)
+                {
+                    string path = startupFlow;
+
+                    if (!Path.IsPathRooted(path))
+                        path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), path);
+
+                    FlowEnvironment flow = Load(path);
+                    flow.Start();
+                }
         }
         protected override void OnStop()
         {

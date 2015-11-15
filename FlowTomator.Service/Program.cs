@@ -54,11 +54,11 @@ namespace FlowTomator.Service
             // Install service if needed
             if (Parameters.ContainsKey("reinstall"))
             {
-                if (FlowTomatorServiceInstaller.Installed)
+                if (FlowTomatorService.Installed)
                 {
                     try
                     {
-                        FlowTomatorServiceInstaller.Uninstall();
+                        FlowTomatorService.Uninstall();
                     }
                     catch (Exception e)
                     {
@@ -73,7 +73,7 @@ namespace FlowTomator.Service
 
                 try
                 {
-                    FlowTomatorServiceInstaller.Install();
+                    FlowTomatorService.Install();
                 }
                 catch (Exception e)
                 {
@@ -85,11 +85,11 @@ namespace FlowTomator.Service
             }
             else if (Parameters.ContainsKey("install"))
             {
-                if (!FlowTomatorServiceInstaller.Installed)
+                if (!FlowTomatorService.Installed)
                 {
                     try
                     {
-                        FlowTomatorServiceInstaller.Install();
+                        FlowTomatorService.Install();
                     }
                     catch (Exception e)
                     {
