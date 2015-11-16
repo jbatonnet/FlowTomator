@@ -117,8 +117,9 @@ namespace FlowTomator.Service
 
                         Menu.MenuItems.Add(new MenuItem(file, new[]
                         {
-                            new MenuItem("Reload", (a, b) => ReloadFlowButton_Click(flow, b)),
+                            new MenuItem("Start", (a, b) => StartFlowButton_Click(flow, b))  { Enabled = !flow.Running },
                             new MenuItem("Stop", (a, b) => StopFlowButton_Click(flow, b)) { Enabled = flow.Running },
+                            new MenuItem("Reload", (a, b) => ReloadFlowButton_Click(flow, b)),
                             new MenuItem("-"),
                             new MenuItem("Edit", (a, b) => EditFlowButton_Click(flow, b)),
                             new MenuItem("Remove", (a, b) => RemoveFlowButton_Click(flow, b)),
@@ -155,18 +156,7 @@ namespace FlowTomator.Service
                         new MenuItem("-"),
                         new MenuItem("Settings", new[]
                         {
-                            new MenuItem("Log", new[]
-                            {
-                                new MenuItem("Open", OpenLogButton_Click),
-                                new MenuItem("Verbosity", new[]
-                                {
-                                    new MenuItem("Trace", (a, b) => SetLogVerbosityButton_Click(LogVerbosity.Trace, b)),
-                                    new MenuItem("Debug", (a, b) => SetLogVerbosityButton_Click(LogVerbosity.Debug, b)),
-                                    new MenuItem("Info", (a, b) => SetLogVerbosityButton_Click(LogVerbosity.Info, b)),
-                                    new MenuItem("Warning", (a, b) => SetLogVerbosityButton_Click(LogVerbosity.Warning, b)),
-                                    new MenuItem("Error", (a, b) => SetLogVerbosityButton_Click(LogVerbosity.Error, b)),
-                                })
-                            }) { Enabled = FlowTomatorService.Running }
+                            new MenuItem("Open log", OpenLogButton_Click) { Enabled = FlowTomatorService.Running }
                         }),
                     })
                 });
@@ -235,6 +225,14 @@ namespace FlowTomator.Service
 
             flow.Restart(true);
         }
+        private void StartFlowButton_Click(object sender, EventArgs e)
+        {
+            FlowEnvironment flow = sender as FlowEnvironment;
+            if (flow == null)
+                return;
+
+            flow.Start();
+        }
         private void StopFlowButton_Click(object sender, EventArgs e)
         {
             FlowEnvironment flow = sender as FlowEnvironment;
@@ -269,7 +267,10 @@ namespace FlowTomator.Service
             if (flow == null)
                 return;
 
-            throw new NotImplementedException();
+            if (flow.Running)
+                flow.Stop();
+
+            Service.Flows.Remove(flow);
         }
         private void OpenLogButton_Click(object sender, EventArgs e)
         {

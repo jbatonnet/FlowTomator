@@ -28,17 +28,11 @@ namespace FlowTomator.Common
     [Node("DeviceLock", "System", "Triggers when the system session is locked")]
     public class DeviceLockEvent : Event
     {
-        private EventWaitHandle deviceLockEvent;
+        private ManualResetEvent deviceLockEvent = new ManualResetEvent(false);
 
         public DeviceLockEvent()
         {
-            if (Environment.UserInteractive)
-            {
-                deviceLockEvent = new AutoResetEvent(false);
-                SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
-            }
-            else
-                deviceLockEvent = Utils.GetOrCreateEvent("FlowTomator.DeviceLock");
+            DeviceEvents.DeviceLocked += DeviceEvents_DeviceLocked;
         }
 
         public override NodeResult Check()
@@ -54,30 +48,25 @@ namespace FlowTomator.Common
                     return NodeResult.Skip;
             }
 
+            deviceLockEvent.Reset();
+
             return NodeResult.Success;
         }
 
-        private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
+        private void DeviceEvents_DeviceLocked()
         {
-            if (e.Reason == SessionSwitchReason.SessionLock)
-                deviceLockEvent.Set();
+            deviceLockEvent.Set();
         }
     }
 
     [Node("DeviceUnlock", "System", "Triggers when the system session is unlocked")]
     public class DeviceUnlockEvent : Event
     {
-        private EventWaitHandle deviceUnlockEvent;
+        private ManualResetEvent deviceUnlockEvent = new ManualResetEvent(false);
 
         public DeviceUnlockEvent()
         {
-            if (Environment.UserInteractive)
-            {
-                deviceUnlockEvent = new AutoResetEvent(false);
-                SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
-            }
-            else
-                deviceUnlockEvent = Utils.GetOrCreateEvent("FlowTomator.DeviceUnlock");
+            DeviceEvents.DeviceUnlocked += DeviceEvents_DeviceUnlocked;
         }
 
         public override NodeResult Check()
@@ -93,13 +82,14 @@ namespace FlowTomator.Common
                     return NodeResult.Skip;
             }
 
+            deviceUnlockEvent.Reset();
+
             return NodeResult.Success;
         }
 
-        private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
+        private void DeviceEvents_DeviceUnlocked()
         {
-            if (e.Reason == SessionSwitchReason.SessionUnlock)
-                deviceUnlockEvent.Set();
+            deviceUnlockEvent.Set();
         }
     }
 

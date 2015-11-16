@@ -27,15 +27,15 @@
       </Slot>
     </Node>
     <Node Type="FlowTomator.Common.DeviceUnlockEvent" Id="4">
-      <Metadata Position.X="112" Position.Y="140" />
+      <Metadata Position.X="108" Position.Y="144" />
       <Slot>
-        <Node Id="5" />
         <Node Id="6" />
+        <Node Id="5" />
       </Slot>
     </Node>
     <Node Type="FlowTomator.Common.Message" Id="5">
       <Inputs Text="Welcome back :)" Title="FlowTomator" Icon="Asterisk" />
-      <Metadata Position.X="100" Position.Y="264" />
+      <Metadata Position.X="100" Position.Y="296" />
     </Node>
     <Node Type="FlowTomator.Common.Nope" Id="6">
       <Metadata Position.X="296" Position.Y="200" />

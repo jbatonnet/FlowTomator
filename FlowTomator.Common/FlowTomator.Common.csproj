@@ -69,6 +69,7 @@
     <Compile Include="Nodes\DateTime\TimedEvent.cs" />
     <Compile Include="Model\Flow.cs" />
     <Compile Include="Nodes\System\Clipboard.cs" />
+    <Compile Include="Nodes\System\Desktop.cs" />
     <Compile Include="Nodes\System\Device\Lifetime.cs" />
     <Compile Include="Nodes\System\Screenshot.cs" />
     <Compile Include="Nodes\System\Device\Lock.cs" />
@@ -82,9 +83,10 @@
     <Compile Include="Model\Choice.cs" />
     <Compile Include="Model\Variable.cs" />
     <Compile Include="Model\Task.cs" />
+    <Compile Include="Utils\DeviceEvents.cs" />
     <Compile Include="Storage\XDependencyFlow.cs" />
     <Compile Include="Storage\XFlow.cs" />
-    <Compile Include="Utils.cs" />
+    <Compile Include="Utils\Utils.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

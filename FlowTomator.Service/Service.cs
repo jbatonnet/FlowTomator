@@ -29,7 +29,7 @@ namespace FlowTomator.Service
         public FlowTomatorServiceProcessInstaller()
         {
             Account = ServiceAccount.User;
-            Username = @".\" + Environment.UserName;
+            Username = WindowsIdentity.GetCurrent().Name;
         }
     }
 
@@ -310,7 +310,10 @@ namespace FlowTomator.Service
         protected override void OnStop()
         {
             Log.Info("Stopping FlowTomator service");
+
             base.OnStop();
+
+            Environment.Exit(0);
         }
         protected override void OnPause()
         {
@@ -336,19 +339,10 @@ namespace FlowTomator.Service
         {
             base.OnSessionChange(changeDescription);
 
-            EventWaitHandle eventWaitHandle = null;
-
             switch (changeDescription.Reason)
             {
-                case SessionChangeReason.SessionLock: eventWaitHandle = Utils.GetOrCreateEvent("FlowTomator.DeviceLock"); break;
-                case SessionChangeReason.SessionUnlock: eventWaitHandle = Utils.GetOrCreateEvent("FlowTomator.DeviceUnlock"); break;
-            }
-
-            if (eventWaitHandle != null)
-            {
-                eventWaitHandle.Set();
-                Thread.Yield();
-                eventWaitHandle.Reset();
+                case SessionChangeReason.SessionLock: DeviceEvents.OnDeviceLocked(); break;
+                case SessionChangeReason.SessionUnlock: DeviceEvents.OnDeviceUnlocked(); break;
             }
         }
     }
