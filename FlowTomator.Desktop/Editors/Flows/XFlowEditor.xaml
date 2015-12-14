@@ -31,7 +31,7 @@
                       Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Canvas}}}"
                       DragOver="Canvas_DragOver" Drop="Canvas_Drop">
 
-            <Canvas x:Name="EditorCanvas">
+            <Canvas x:Name="EditorCanvas" RenderOptions.BitmapScalingMode="NearestNeighbor">
 
                 <Canvas.RenderTransform>
                     <TransformGroup>
@@ -222,8 +222,9 @@
             </Rectangle.Fill>
         </Rectangle>
 
-        <!--<Border Canvas.Bottom="8" Canvas.Right="8" Width="72" MinHeight="16" BorderBrush="Gray" BorderThickness="1">
+        <!-- Thumbnail -->
+        <Border Canvas.Bottom="8" Canvas.Right="8" Width="72" MinHeight="16" BorderBrush="Gray" BorderThickness="1">
             <Image x:Name="EditorThumbnail"  Source="{Binding ElementName=EditorCanvas, Converter={StaticResource VisualSnapshotConverter}}" />
-        </Border>-->
+        </Border>
     </Canvas>
 </UserControl>

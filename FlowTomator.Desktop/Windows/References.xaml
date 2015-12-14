@@ -1,0 +1,47 @@
+﻿<Window x:Class="FlowTomator.Desktop.References"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FlowTomator.Desktop"
+        mc:Ignorable="d"
+        WindowStyle="SingleBorderWindow"
+        Title="References"
+        MinWidth="480" MinHeight="360"
+        Width="480" Height="360">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="6">
+            <TextBlock>
+                Select references ...
+            </TextBlock>
+        </StackPanel>
+        
+        <TabControl Grid.Row="1" Margin="2">
+            <TabItem Header="Assemblies">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    
+                    <ListView Grid.Row="0">
+                        
+                    </ListView>
+
+                    <StackPanel Grid.Row="1">
+                        <Button Command="{Binding OpenFlowCommand}" ToolTip="Add an existing assembly">
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Flows">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

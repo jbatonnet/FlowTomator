@@ -98,6 +98,9 @@
     </Compile>
     <Compile Include="Model\FlowDebugger.cs" />
     <Compile Include="OpenFolderDialog.cs" />
+    <Compile Include="Windows\References.xaml.cs">
+      <DependentUpon>References.xaml</DependentUpon>
+    </Compile>
     <Compile Include="_WPF_\DependencyManager.cs" />
     <Compile Include="_WPF_\DependencyModel.cs" />
     <Compile Include="_WPF_\DependsOnAttribute.cs" />
@@ -165,6 +168,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Windows\References.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\FlowInfo.cs" />
@@ -218,7 +225,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Add.png" />
-    <Resource Include="Resources\New.png" />
     <Resource Include="Resources\Open.png" />
     <Resource Include="Resources\Save.png" />
     <Resource Include="Resources\SaveAll.png" />
@@ -235,13 +241,36 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Break.png" />
-    <Resource Include="Resources\Run.png" />
     <Resource Include="Resources\Step.png" />
     <Resource Include="Resources\Stop.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Redo.png" />
     <Resource Include="Resources\Undo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\BuildSelection.png" />
+    <Resource Include="Resources\BuildSolution.png" />
+    <Resource Include="Resources\Cancel.png" />
+    <Resource Include="Resources\CancelBuild.png" />
+    <Resource Include="Resources\Connect.png" />
+    <Resource Include="Resources\Copy.png" />
+    <Resource Include="Resources\Cut.png" />
+    <Resource Include="Resources\Database.png" />
+    <Resource Include="Resources\Disconnect.png" />
+    <Resource Include="Resources\Grid.png" />
+    <Resource Include="Resources\List.png" />
+    <Resource Include="Resources\ListView.png" />
+    <Resource Include="Resources\NewFile.png" />
+    <Resource Include="Resources\NewSolution.png" />
+    <Resource Include="Resources\Paste.png" />
+    <Resource Include="Resources\Refresh.png" />
+    <Resource Include="Resources\Restart.png" />
+    <Resource Include="Resources\Server 1.png" />
+    <Resource Include="Resources\Server 2.png" />
+    <Resource Include="Resources\Settings.png" />
+    <Resource Include="Resources\Start.png" />
+    <Resource Include="Resources\StepOver.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

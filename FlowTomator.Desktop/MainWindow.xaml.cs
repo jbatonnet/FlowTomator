@@ -70,6 +70,9 @@ namespace FlowTomator.Desktop
         [DependsOn(nameof(Debugger))]
         public DelegateCommand StopFlowCommand { get; private set; }
 
+        public DelegateCommand ReloadNodesCommand { get; private set; }
+        public DelegateCommand ManageNodesCommand { get; private set; }
+
         [DependsOn(nameof(Flows))]
         public FlowInfo CurrentFlow
         {
@@ -137,6 +140,8 @@ namespace FlowTomator.Desktop
             StepFlowCommand = new DelegateCommand(StepFlowCommandCallback, p => Debugger?.State != DebuggerState.Running);
             BreakFlowCommand = new DelegateCommand(BreakFlowCommandCallback, p => Debugger?.State == DebuggerState.Running);
             StopFlowCommand = new DelegateCommand(StopFlowCommandCallback, p => (Debugger?.State ?? DebuggerState.Idle) != DebuggerState.Idle);
+            ReloadNodesCommand = new DelegateCommand(ReloadNodesCommandCallback);
+            ManageNodesCommand = new DelegateCommand(ManageNodesCommandCallback);
 
             // Redirect console output
             Console.SetOut(outRedirector);
@@ -408,6 +413,27 @@ namespace FlowTomator.Desktop
             DragDrop.DoDragDrop(grid, dragData, DragDropEffects.Move);
 
             draggingNode = false;
+        }
+
+        private void NodesMenu_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            NodesMenu.ContextMenu.IsOpen = true;
+        }
+        private void ReloadNodesCommandCallback(object parameter)
+        {
+            NodeCategories.Clear();
+
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+                AnalyzeAssembly(assembly);
+        }
+        private void ManageNodesCommandCallback(object parameter)
+        {
+            new References().ShowDialog();
+        }
+
+        private void VariablesMenu_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            VariablesMenu.ContextMenu.IsOpen = true;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

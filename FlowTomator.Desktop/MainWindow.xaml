@@ -34,7 +34,7 @@
         <ToolBarTray Grid.Row="0">
             <ToolBar ToolBarTray.IsLocked="True" >
                 <Button Command="{Binding NewFlowCommand}" ToolTip="Create an new flow">
-                    <Image Source="Resources\New.png" Style="{StaticResource ImageEnabled}" />
+                    <Image Source="Resources\NewFile.png" Style="{StaticResource ImageEnabled}" />
                 </Button>
                 <Button Command="{Binding OpenFlowCommand}" ToolTip="Open an existing flow">
                     <Image Source="Resources\Open.png" Style="{StaticResource ImageEnabled}" />
@@ -55,7 +55,7 @@
                 </Button>
                 <Separator />
                 <Button Command="{Binding RunFlowCommand}" ToolTip="Run the current flow">
-                    <Image Source="Resources\Run.png" Style="{StaticResource ImageEnabled}" />
+                    <Image Source="Resources\Start.png" Style="{StaticResource ImageEnabled}" />
                 </Button>
                 <Button Command="{Binding StepFlowCommand}" ToolTip="Step the current flow">
                     <Image Source="Resources\Step.png" Style="{StaticResource ImageEnabled}" />
@@ -90,7 +90,32 @@
                         </Grid.RowDefinitions>
 
                         <Border Grid.Row="0" BorderBrush="DarkGray" BorderThickness="0,0,0,1" Margin="0,0,0,4" Padding="0,0,0,2">
-                            <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Nodes</TextBlock>
+                            <DockPanel>
+                                <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Nodes</TextBlock>
+
+                                <Button x:Name="NodesMenu" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Background="Transparent" PreviewMouseLeftButtonUp="NodesMenu_MouseLeftButtonUp">
+                                    <StackPanel Orientation="Vertical">
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
+                                    </StackPanel>
+                                    
+                                    <Button.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Reload" Command="{Binding ReloadNodesCommand}">
+                                                <MenuItem.Icon>
+                                                    <Image Source="Resources\Refresh.png" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Manage nodes" Command="{Binding ManageNodesCommand}">
+                                                <MenuItem.Icon>
+                                                    <Image Source="Resources\Settings.png" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                        </ContextMenu>
+                                    </Button.ContextMenu>
+                                </Button>
+                            </DockPanel>
                         </Border>
 
                         <ScrollViewer Grid.Row="1" Background="White" VerticalScrollBarVisibility="Auto">
@@ -162,7 +187,23 @@
                         </Grid.RowDefinitions>
 
                         <Border Grid.Row="0" BorderBrush="DarkGray" BorderThickness="0,0,0,1" Margin="0,0,0,4" Padding="0,0,0,2">
-                            <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Variables</TextBlock>
+                            <DockPanel>
+                                <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Variables</TextBlock>
+
+                                <Button x:Name="VariablesMenu" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Background="Transparent" PreviewMouseLeftButtonUp="VariablesMenu_MouseLeftButtonUp">
+                                    <StackPanel Orientation="Vertical">
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
+                                    </StackPanel>
+
+                                    <Button.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Test" />
+                                        </ContextMenu>
+                                    </Button.ContextMenu>
+                                </Button>
+                            </DockPanel>
                         </Border>
 
                         <ScrollViewer Grid.Row="1" Background="White" VerticalScrollBarVisibility="Auto">

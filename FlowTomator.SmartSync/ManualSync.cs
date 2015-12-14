@@ -41,7 +41,7 @@ namespace FlowTomator.SmartSync
         }
 
         private Variable<DiffType> diffType = new Variable<DiffType>("Diff", DiffType.Dates, "The method used to detect differences");
-        private Variable<SyncType> syncType = new Variable<SyncType>("Sync", SyncType.LeftToRight, "The method used to sync your files");
+        private Variable<SyncType> syncType = new Variable<SyncType>("Sync", SyncType.Clone, "The method used to sync your files");
         private Variable<string[]> exclusions = new Variable<string[]>("Exclusions", new string[0], "List of paths excluded from the sync");
         private Variable<StorageType> leftType = new Variable<StorageType>("L", StorageType.Basic);
         private Variable<StorageType> rightType = new Variable<StorageType>("R", StorageType.Basic);
