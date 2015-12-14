@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FlowTomator.Common
@@ -21,23 +22,36 @@ namespace FlowTomator.Common
 
         private object mutex = new object();
         private uint actualCount = 0;
+        private ManualResetEvent waitEvent = new ManualResetEvent(false);
 
         public override void Reset()
         {
             base.Reset();
 
             actualCount = 0;
+            waitEvent.Reset();
         }
         public override NodeResult Run()
         {
+            uint lastCount;
+
             lock (mutex)
             {
                 actualCount++;
+                lastCount = actualCount;
+            }
 
-                if (actualCount < count.Value)
-                    return NodeResult.Skip;
+            if (lastCount < count.Value)
+            {
+                waitEvent.WaitOne();
+                return NodeResult.Skip;
+            }
+            else
+            {
+                lock (mutex)
+                    actualCount = 0;
 
-                actualCount = 0;
+                waitEvent.Set();
                 return NodeResult.Success;
             }
         }
