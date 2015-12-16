@@ -20,6 +20,8 @@ namespace FlowTomator.Desktop
 
     public class FlowDebugger : DependencyModel
     {
+        public static LogCategory DebuggerCategory { get; } = new LogCategory("Debugger");
+
         public FlowInfo FlowInfo { get; private set; }
         public DebuggerState State
         {
@@ -140,7 +142,11 @@ namespace FlowTomator.Desktop
            
             try
             {
+                Log.Trace(DebuggerCategory, "Entering node {0}", nodeInfo.Type.Name);
+
                 nodeStep = nodeInfo.Node.Evaluate();
+
+                Log.Trace(DebuggerCategory, "Exiting node {0} with result {1}", nodeInfo.Type.Name, nodeStep.Result);
             }
             catch
             {

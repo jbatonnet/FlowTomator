@@ -203,25 +203,51 @@
 
                                     <Button.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="Test" />
+                                            <MenuItem Header="Add variable" Click="AddVariableButton_Click">
+                                                <MenuItem.Icon>
+                                                    <Image Source="Resources\Add.png" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
                                         </ContextMenu>
                                     </Button.ContextMenu>
                                 </Button>
                             </DockPanel>
                         </Border>
 
-                        <ScrollViewer Grid.Row="1" Background="White" VerticalScrollBarVisibility="Auto">
+                        <ListView Grid.Row="1" Background="White" ItemsSource="{Binding CurrentVariables}" BorderBrush="LightGray" BorderThickness="0">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
 
-                        </ScrollViewer>
+                                        <TextBlock Grid.Column="0" FontSize="11" Foreground="Gray" HorizontalAlignment="Stretch" Margin="0,0,4,0"
+                                               Text="{Binding Variable.Name}" ToolTip="{Binding Variable.Description}">
+                                        </TextBlock>
+
+                                        <TextBlock Grid.Column="1" FontSize="11" HorizontalAlignment="Stretch" Padding="0,0,2,0" TextAlignment="Right"
+                                               Text="{Binding Text}" ToolTip="{Binding Text}" Cursor="Hand">
+                                            <TextBlock.Foreground>
+                                                <SolidColorBrush Color="{Binding EditorColor}" />
+                                            </TextBlock.Foreground>
+                                        </TextBlock>
+
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                     </Grid>
                 </Border>
             </Grid>
 
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" MinHeight="240" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="4" />
-                    <RowDefinition Height="Auto" MinHeight="128" />
+                    <RowDefinition Height="Auto" MinHeight="160" MaxHeight="320" />
                 </Grid.RowDefinitions>
 
                 <!-- Flow editors -->
@@ -238,7 +264,7 @@
                 <GridSplitter Grid.Row="1" ResizeDirection="Rows" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 
                 <!-- Log output -->
-                <Border Grid.Row="2" Margin="4,2,4,4" MinHeight="160">
+                <Border Grid.Row="2" Margin="4,2,4,4">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -270,9 +296,11 @@
                                             </MenuItem>
                                             <Separator />
                                             <MenuItem Header="Test" Click="TestLogButton_Click" />
+                                            <!--<MenuItem Header="Follow logs" IsCheckable="True" IsChecked="{Binding LogFollow, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" />-->
                                         </ContextMenu>
                                     </Button.ContextMenu>
                                 </Button>
+                                
                                 <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Padding="0" Background="Transparent" PreviewMouseLeftButtonUp="Menu_MouseLeftButtonUp">
                                     <Image Width="16" Height="16" Source="Resources/Filter.png" />
 
@@ -318,46 +346,49 @@
                                 </TabControl.ItemTemplate>
                                 <TabControl.ContentTemplate>
                                     <DataTemplate>
-                                        <DataGrid IsReadOnly="True" AutoGenerateColumns="False"
-                                                  GridLinesVisibility="None" HeadersVisibility="None" Background="White"
-                                                  BorderBrush="LightGray" EnableRowVirtualization="True" Height="128"
-                                                  local:DataGridBehavior.Autoscroll="{Binding LogAutoscroll, RelativeSource={RelativeSource AncestorType={x:Type local:MainWindow}}}">
+                                        <Grid>
+                                            <DataGrid IsReadOnly="True" AutoGenerateColumns="False"
+                                                      GridLinesVisibility="None" HeadersVisibility="None" Background="White"
+                                                      BorderBrush="LightGray" EnableRowVirtualization="True"
+                                                      local:DataGridBehavior.Autoscroll="{Binding LogFollow, RelativeSource={RelativeSource AncestorType={x:Type local:MainWindow}}}"
+                                                      Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}">
 
-                                            <DataGrid.ItemsSource>
-                                                <MultiBinding Converter="{StaticResource MessageSourceFilterConverter}">
-                                                    <Binding Path="Value" />
-                                                    <Binding Path="LogVerbosity" RelativeSource="{RelativeSource AncestorType={x:Type local:MainWindow}}"/>
-                                                </MultiBinding>
-                                            </DataGrid.ItemsSource>
+                                                <DataGrid.ItemsSource>
+                                                    <MultiBinding Converter="{StaticResource MessageSourceFilterConverter}">
+                                                        <Binding Path="Value" />
+                                                        <Binding Path="LogVerbosity" RelativeSource="{RelativeSource AncestorType={x:Type local:MainWindow}}"/>
+                                                    </MultiBinding>
+                                                </DataGrid.ItemsSource>
 
-                                            <DataGrid.Resources>
-                                                <Style TargetType="{x:Type DataGridCell}">
-                                                    <Setter Property="BorderThickness" Value="2" />
-                                                    <Setter Property="BorderBrush" Value="Transparent" />
+                                                <DataGrid.Resources>
+                                                    <Style TargetType="{x:Type DataGridCell}">
+                                                        <Setter Property="BorderThickness" Value="2" />
+                                                        <Setter Property="BorderBrush" Value="Transparent" />
 
-                                                    <Style.Triggers>
-                                                        <Trigger Property="DataGridCell.IsSelected" Value="True">
-                                                            <Setter Property="Background" Value="#10000000" />
-                                                            <Setter Property="Foreground" Value="{x:Static SystemColors.ControlTextBrush}" />
-                                                            <Setter Property="BorderBrush" Value="#10000000" />
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </DataGrid.Resources>
+                                                        <Style.Triggers>
+                                                            <Trigger Property="DataGridCell.IsSelected" Value="True">
+                                                                <Setter Property="Background" Value="#10000000" />
+                                                                <Setter Property="Foreground" Value="{x:Static SystemColors.ControlTextBrush}" />
+                                                                <Setter Property="BorderBrush" Value="#10000000" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </DataGrid.Resources>
 
-                                            <DataGrid.Columns>
-                                                <DataGridTemplateColumn Header="Verbosity" Width="16">
-                                                    <DataGridTemplateColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <Image Width="12" Height="12" Source="{Binding Verbosity, Converter={StaticResource VerbosityIconConverter}}" />
-                                                        </DataTemplate>
-                                                    </DataGridTemplateColumn.CellTemplate>
-                                                </DataGridTemplateColumn>
+                                                <DataGrid.Columns>
+                                                    <DataGridTemplateColumn Header="Verbosity" Width="16">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <Image Width="12" Height="12" Source="{Binding Verbosity, Converter={StaticResource VerbosityIconConverter}}" />
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
 
-                                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=HH:mm:ss}" />
-                                                <DataGridTextColumn Header="Message" Width="*" Binding="{Binding Message}" />
-                                            </DataGrid.Columns>
-                                        </DataGrid>
+                                                    <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=HH:mm:ss}" />
+                                                    <DataGridTextColumn Header="Message" Width="*" Binding="{Binding Message}" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </Grid>
                                     </DataTemplate>
                                 </TabControl.ContentTemplate>
                             </TabControl>

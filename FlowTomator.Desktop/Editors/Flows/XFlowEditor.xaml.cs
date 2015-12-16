@@ -364,10 +364,14 @@ namespace FlowTomator.Desktop
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            Canvas canvas = sender as Canvas;
+
             if (Keyboard.IsKeyDown(Key.Space) || e.MiddleButton == MouseButtonState.Pressed)
             {
                 Panning = true;
                 panningStart = e.GetPosition(EditorScroller);
+
+                canvas.CaptureMouse();
             }
             else if (e.LeftButton == MouseButtonState.Pressed)
             {
@@ -384,6 +388,8 @@ namespace FlowTomator.Desktop
 
                 Selecting = true;
                 SelectionStart = SelectionEnd = new Point(mousePosition.X + PanX, mousePosition.Y + PanY);
+
+                canvas.CaptureMouse();
             }
         }
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
@@ -463,6 +469,8 @@ namespace FlowTomator.Desktop
         }
         private void Canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            Canvas canvas = sender as Canvas;
+
             if (movingNodeOrigins.Count > 0)
             {
                 foreach (NodeControl nodeControl in movingNodeOrigins.Keys)
@@ -495,6 +503,8 @@ namespace FlowTomator.Desktop
 
             Panning = false;
             Selecting = false;
+
+            canvas.ReleaseMouseCapture();
 
             SelectedNodes_CollectionChanged(null, null);
         }

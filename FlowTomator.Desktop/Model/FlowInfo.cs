@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -63,6 +64,7 @@ namespace FlowTomator.Desktop
                             yield return LinkInfo.From(NodeInfo.From(this, node), slot, linkedNode);
             }
         }
+        public ObservableCollection<VariableInfo> Variables { get; } = new ObservableCollection<VariableInfo>();
 
         private string path;
 
@@ -70,6 +72,17 @@ namespace FlowTomator.Desktop
         {
             Flow = flow;
             this.path = path;
+
+            foreach (NodeInfo node in Nodes)
+            {
+                foreach (VariableInfo input in node.Inputs)
+                    if (input.Variable.Linked != null)
+                        Variables.Add(VariableInfo.From(input.Variable.Linked));
+
+                foreach (VariableInfo output in node.Outputs)
+                    if (output.Variable.Linked != null)
+                        Variables.Add(VariableInfo.From(output.Variable.Linked));
+            }
         }
 
         public void Update()
