@@ -96,8 +96,10 @@
     <Compile Include="Editors\Variables\TextVariableEditor.xaml.cs">
       <DependentUpon>TextVariableEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MessageSourceFilterConverter.cs" />
     <Compile Include="Model\FlowDebugger.cs" />
     <Compile Include="OpenFolderDialog.cs" />
+    <Compile Include="VerbosityIconConverter.cs" />
     <Compile Include="Windows\References.xaml.cs">
       <DependentUpon>References.xaml</DependentUpon>
     </Compile>
@@ -271,6 +273,16 @@
     <Resource Include="Resources\Settings.png" />
     <Resource Include="Resources\Start.png" />
     <Resource Include="Resources\StepOver.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Debug.png" />
+    <Resource Include="Resources\Error.png" />
+    <Resource Include="Resources\Info.png" />
+    <Resource Include="Resources\Trace.png" />
+    <Resource Include="Resources\Warning.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Clear.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

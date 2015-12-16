@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FlowTomator.Desktop"
+        xmlns:common="clr-namespace:FlowTomator.Common"
         mc:Ignorable="d"
         Title="FlowTomator" SnapsToDevicePixels="True"
         Width="1024" Height="768" MinWidth="640" MinHeight="480"
@@ -21,6 +22,9 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <local:VerbosityIconConverter x:Key="VerbosityIconConverter" />
+        <local:MessageSourceFilterConverter x:Key="MessageSourceFilterConverter" />
     </Window.Resources>
 
     <Grid>
@@ -234,7 +238,7 @@
                 <GridSplitter Grid.Row="1" ResizeDirection="Rows" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 
                 <!-- Log output -->
-                <Border Grid.Row="2" Margin="4,2,4,4">
+                <Border Grid.Row="2" Margin="4,2,4,4" MinHeight="160">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -242,13 +246,83 @@
                         </Grid.RowDefinitions>
 
                         <Border Grid.Row="0" BorderBrush="DarkGray" BorderThickness="0,0,0,1" Margin="0,0,0,4" Padding="0,0,0,2">
-                            <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Output</TextBlock>
+                            <DockPanel>
+                                <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Output</TextBlock>
+
+                                <Button x:Name="LogMenu" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Background="Transparent" PreviewMouseLeftButtonUp="LogMenu_MouseLeftButtonUp">
+                                    <StackPanel Orientation="Vertical">
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
+                                    </StackPanel>
+
+                                    <Button.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Clear" Click="ClearLogButton_Click">
+                                                <MenuItem.Icon>
+                                                    <Image Source="Resources\Clear.png" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Test" Click="TestLogButton_Click" />
+                                            <Separator />
+                                            <MenuItem Header="Verbosity" />
+                                        </ContextMenu>
+                                    </Button.ContextMenu>
+                                </Button>
+                            </DockPanel>
                         </Border>
 
-                        <Border Grid.Row="1" MinHeight="128">
-                            <TextBox x:Name="LogOutput" Text="{Binding Output, FallbackValue=Output :)}" FontFamily="Consolas" FontSize="11" IsReadOnly="True" BorderThickness="0" Padding="2"
-                                     Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
-                                     Background="White" ScrollViewer.VerticalScrollBarVisibility="Visible" />
+                        <Border Grid.Row="1">
+                            <TabControl x:Name="LogTabs" FontSize="9" ItemsSource="{Binding LogMessages}">
+                                <TabControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Key}" />
+                                    </DataTemplate>
+                                </TabControl.ItemTemplate>
+                                <TabControl.ContentTemplate>
+                                    <DataTemplate>
+                                        <DataGrid IsReadOnly="True" AutoGenerateColumns="False"
+                                                  GridLinesVisibility="None" HeadersVisibility="None" Background="Transparent"
+                                                  BorderBrush="LightGray" EnableRowVirtualization="True" Height="128">
+
+                                            <DataGrid.ItemsSource>
+                                                <MultiBinding Converter="{StaticResource MessageSourceFilterConverter}">
+                                                    <Binding Path="Value" />
+                                                    <Binding Path="LogVerbosity" RelativeSource="{RelativeSource AncestorType={x:Type local:MainWindow}}"/>
+                                                </MultiBinding>
+                                            </DataGrid.ItemsSource>
+                                            
+                                            <DataGrid.Resources>
+                                                <Style TargetType="{x:Type DataGridCell}">
+                                                    <Setter Property="BorderThickness" Value="2" />
+                                                    <Setter Property="BorderBrush" Value="Transparent" />
+                                                    
+                                                    <Style.Triggers>
+                                                        <Trigger Property="DataGridCell.IsSelected" Value="True">
+                                                            <Setter Property="Background" Value="#10000000" />
+                                                            <Setter Property="Foreground" Value="{x:Static SystemColors.ControlTextBrush}" />
+                                                            <Setter Property="BorderBrush" Value="#10000000" />
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </DataGrid.Resources>
+                                            
+                                            <DataGrid.Columns>
+                                                <DataGridTemplateColumn Header="Verbosity" Width="16">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <Image Width="12" Height="12" Source="{Binding Verbosity, Converter={StaticResource VerbosityIconConverter}}" />
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+
+                                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=HH:mm:ss}" />
+                                                <DataGridTextColumn Header="Message" Width="*" Binding="{Binding Message}" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </DataTemplate>
+                                </TabControl.ContentTemplate>
+                            </TabControl>
                         </Border>
                     </Grid>
                 </Border>

@@ -19,26 +19,21 @@ using FlowTomator.Common;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Threading;
+using System.Windows.Data;
 
 namespace FlowTomator.Desktop
 {
-    public class LogTextWriter : TextWriter
+    public class LogMessage
     {
-        public override Encoding Encoding
-        {
-            get
-            {
-                return Encoding.Default;
-            }
-        }
-        public event Action<string> Updated;
+        public DateTime Date { get; private set; }
+        public LogVerbosity Verbosity { get; private set; }
+        public string Message { get; private set; }
 
-        public override void Write(char[] buffer, int index, int count)
+        public LogMessage(DateTime date, LogVerbosity verbosity, string message)
         {
-            string text = new string(buffer, index, count);
-
-            if (Updated != null)
-                Updated(text);
+            Date = date;
+            Verbosity = verbosity;
+            Message = message;
         }
     }
 
@@ -47,6 +42,9 @@ namespace FlowTomator.Desktop
         public ObservableCollection<FlowInfo> Flows { get; } = new ObservableCollection<FlowInfo>();
         public ObservableCollection<NodeCategoryInfo> NodeCategories { get; } = new ObservableCollection<NodeCategoryInfo>();
         public ObservableCollection<VariableInfo> Variables { get; } = new ObservableCollection<VariableInfo>();
+
+        public Dictionary<string, ObservableCollection<LogMessage>> LogMessages { get; } = new Dictionary<string, ObservableCollection<LogMessage>>();
+        public LogVerbosity LogVerbosity => Log.Verbosity;
 
         public DelegateCommand NewFlowCommand { get; private set; }
         public DelegateCommand OpenFlowCommand { get; private set; }
@@ -111,17 +109,6 @@ namespace FlowTomator.Desktop
         }
         private FlowDebugger debugger;
 
-        public string Output
-        {
-            get
-            {
-                return outBuilder.ToString();
-            }
-            set { }
-        }
-        private LogTextWriter outRedirector = new LogTextWriter();
-        private StringBuilder outBuilder = new StringBuilder();
-
         private bool draggingNode;
 
         public MainWindow()
@@ -144,9 +131,9 @@ namespace FlowTomator.Desktop
             ManageNodesCommand = new DelegateCommand(ManageNodesCommandCallback);
 
             // Redirect console output
-            Console.SetOut(outRedirector);
-            outRedirector.Updated += OutRedirector_Updated;
             Log.Verbosity = LogVerbosity.Trace;
+            LogMessages.Add(LogCategory.Common.Name, new ObservableCollection<LogMessage>());
+            Log.Message += Log_Message;
 
             // Analyze loaded assemblies
             AppDomain.CurrentDomain.AssemblyLoad += (s, a) => AnalyzeAssembly(a.LoadedAssembly);
@@ -183,15 +170,18 @@ namespace FlowTomator.Desktop
                 nodeCategory.Nodes.Add(nodeType);
             }
         }
-        private void OutRedirector_Updated(string obj)
+        private void Log_Message(LogVerbosity verbosity, LogCategory category, string message)
         {
-            outBuilder.Append(obj);
-            NotifyPropertyChanged(nameof(Output));
+            ObservableCollection<LogMessage> categoryMessages;
 
-            Dispatcher.Invoke(() =>
+            if (!LogMessages.TryGetValue(category.Name, out categoryMessages))
             {
-                LogOutput.ScrollToEnd();
-            }, DispatcherPriority.Background);
+                LogMessages.Add(category.Name, categoryMessages = new ObservableCollection<LogMessage>());
+                NotifyPropertyChanged(nameof(LogMessages));
+                //LogTabs.GetBindingExpression(TabControl.ItemsSourceProperty).UpdateTarget();
+            }
+
+            categoryMessages.Add(new LogMessage(DateTime.Now, verbosity, message));
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -434,6 +424,34 @@ namespace FlowTomator.Desktop
         private void VariablesMenu_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             VariablesMenu.ContextMenu.IsOpen = true;
+        }
+
+        private void LogMenu_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            LogMenu.ContextMenu.IsOpen = true;
+        }
+        private void ClearLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            while (LogMessages.Count > 1)
+                LogMessages.Remove(LogMessages.Keys.ElementAt(1));
+            NotifyPropertyChanged(nameof(LogMessages));
+
+            LogMessages[LogCategory.Common.Name].Clear();
+        }
+        private void TestLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (LogCategory category in new[] { LogCategory.Common, new LogCategory("Debugger"), new LogCategory("Node") })
+                for (int i = 0; i < 15; i++)
+                {
+                    Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new System.Action(() =>
+                    {
+                        Log.Trace(category, "{0}.Trace", category.Name);
+                        Log.Debug(category, "{0}.Debug", category.Name);
+                        Log.Info(category, "{0}.Info", category.Name);
+                        Log.Warning(category, "{0}.Warning", category.Name);
+                        Log.Error(category, "{0}.Error", category.Name);
+                    }));
+                }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
