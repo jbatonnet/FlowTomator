@@ -38,6 +38,8 @@ namespace FlowTomator.Common
             lock (mutex)
             {
                 actualCount++;
+                Log.Debug("[Wait] {0}/{1}", actualCount, count.Value);
+
                 lastCount = actualCount;
             }
 

@@ -103,6 +103,7 @@
     <Compile Include="Windows\References.xaml.cs">
       <DependentUpon>References.xaml</DependentUpon>
     </Compile>
+    <Compile Include="_WPF_\DataGridBehavior.cs" />
     <Compile Include="_WPF_\DependencyManager.cs" />
     <Compile Include="_WPF_\DependencyModel.cs" />
     <Compile Include="_WPF_\DependsOnAttribute.cs" />
@@ -112,6 +113,7 @@
     </Compile>
     <Compile Include="_WPF_\DelegateCommand.cs" />
     <Compile Include="_WPF_\IPropertyUpdatable.cs" />
+    <Compile Include="_WPF_\ObservableDictionary.cs" />
     <Compile Include="_WPF_\VisualSnapshotConverter.cs" />
     <Page Include="Editors\Variables\DirectoryInfoVariableEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -283,6 +285,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Clear.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Filter.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -185,7 +185,7 @@ namespace FlowTomator.Desktop
                 if (nodeControls.Count == 0)
                     return 0;
 
-                return FlowInfo.Nodes.Max(n => n.X + nodeControls[n].ActualWidth) - FlowInfo.Nodes.Min(n => n.X);
+                return 0;// FlowInfo.Nodes.Max(n => n.X + nodeControls[n].ActualWidth) - FlowInfo.Nodes.Min(n => n.X);
             }
         }
         public double ThumbnailHeight

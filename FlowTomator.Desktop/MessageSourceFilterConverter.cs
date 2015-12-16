@@ -21,7 +21,7 @@ namespace FlowTomator.Desktop
             ObservableCollection<LogMessage> messages = values[0] as ObservableCollection<LogMessage>;
             LogVerbosity? verbosity = values[1] as LogVerbosity?;
             if (messages == null || verbosity == null)
-                throw new NotSupportedException();
+                return null;
             
             CollectionViewSource collectionViewSource = new CollectionViewSource() { Source = messages as ObservableCollection<LogMessage> };
 

@@ -97,7 +97,7 @@
                             <DockPanel>
                                 <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Nodes</TextBlock>
 
-                                <Button x:Name="NodesMenu" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Background="Transparent" PreviewMouseLeftButtonUp="NodesMenu_MouseLeftButtonUp">
+                                <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Background="Transparent" PreviewMouseLeftButtonUp="Menu_MouseLeftButtonUp">
                                     <StackPanel Orientation="Vertical">
                                         <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
                                         <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
@@ -106,12 +106,12 @@
                                     
                                     <Button.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="Reload" Command="{Binding ReloadNodesCommand}">
+                                            <MenuItem Header="Reload" Click="ReloadNodesButton_Click">
                                                 <MenuItem.Icon>
                                                     <Image Source="Resources\Refresh.png" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
-                                            <MenuItem Header="Manage nodes" Command="{Binding ManageNodesCommand}">
+                                            <MenuItem Header="Manage nodes" Click="ManageNodesButton_Click">
                                                 <MenuItem.Icon>
                                                     <Image Source="Resources\Settings.png" />
                                                 </MenuItem.Icon>
@@ -194,7 +194,7 @@
                             <DockPanel>
                                 <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Variables</TextBlock>
 
-                                <Button x:Name="VariablesMenu" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Background="Transparent" PreviewMouseLeftButtonUp="VariablesMenu_MouseLeftButtonUp">
+                                <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Background="Transparent" PreviewMouseLeftButtonUp="Menu_MouseLeftButtonUp">
                                     <StackPanel Orientation="Vertical">
                                         <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
                                         <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
@@ -249,7 +249,7 @@
                             <DockPanel>
                                 <TextBlock Foreground="Gray" FontWeight="DemiBold" FontSize="13">Output</TextBlock>
 
-                                <Button x:Name="LogMenu" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Background="Transparent" PreviewMouseLeftButtonUp="LogMenu_MouseLeftButtonUp">
+                                <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Background="Transparent" PreviewMouseLeftButtonUp="Menu_MouseLeftButtonUp">
                                     <StackPanel Orientation="Vertical">
                                         <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
                                         <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
@@ -258,14 +258,51 @@
 
                                     <Button.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="Clear" Click="ClearLogButton_Click">
+                                            <MenuItem Header="Clear current" Click="ClearCurrentLogButton_Click">
                                                 <MenuItem.Icon>
                                                     <Image Source="Resources\Clear.png" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
-                                            <MenuItem Header="Test" Click="TestLogButton_Click" />
+                                            <MenuItem Header="Clear all" Click="ClearAllLogButton_Click">
+                                                <MenuItem.Icon>
+                                                    <Image Source="Resources\Clear.png" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
                                             <Separator />
-                                            <MenuItem Header="Verbosity" />
+                                            <MenuItem Header="Test" Click="TestLogButton_Click" />
+                                        </ContextMenu>
+                                    </Button.ContextMenu>
+                                </Button>
+                                <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Padding="0" Background="Transparent" PreviewMouseLeftButtonUp="Menu_MouseLeftButtonUp">
+                                    <Image Width="16" Height="16" Source="Resources/Filter.png" />
+
+                                    <Button.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Trace" Click="SetLogVerbosityButton_Click">
+                                                <MenuItem.Icon>
+                                                    <Image Source="Resources\Trace.png" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Debug" Click="SetLogVerbosityButton_Click">
+                                                <MenuItem.Icon>
+                                                    <Image Source="Resources\Debug.png" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Info" Click="SetLogVerbosityButton_Click">
+                                                <MenuItem.Icon>
+                                                    <Image Source="Resources\Info.png" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Warning" Click="SetLogVerbosityButton_Click">
+                                                <MenuItem.Icon>
+                                                    <Image Source="Resources\Warning.png" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Error" Click="SetLogVerbosityButton_Click">
+                                                <MenuItem.Icon>
+                                                    <Image Source="Resources\Error.png" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
                                         </ContextMenu>
                                     </Button.ContextMenu>
                                 </Button>
@@ -273,7 +310,7 @@
                         </Border>
 
                         <Border Grid.Row="1">
-                            <TabControl x:Name="LogTabs" FontSize="9" ItemsSource="{Binding LogMessages}">
+                            <TabControl FontSize="9" ItemsSource="{Binding LogMessages}" SelectedIndex="{Binding LogSelectedCategory}">
                                 <TabControl.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Key}" />
@@ -282,8 +319,9 @@
                                 <TabControl.ContentTemplate>
                                     <DataTemplate>
                                         <DataGrid IsReadOnly="True" AutoGenerateColumns="False"
-                                                  GridLinesVisibility="None" HeadersVisibility="None" Background="Transparent"
-                                                  BorderBrush="LightGray" EnableRowVirtualization="True" Height="128">
+                                                  GridLinesVisibility="None" HeadersVisibility="None" Background="White"
+                                                  BorderBrush="LightGray" EnableRowVirtualization="True" Height="128"
+                                                  local:DataGridBehavior.Autoscroll="{Binding LogAutoscroll, RelativeSource={RelativeSource AncestorType={x:Type local:MainWindow}}}">
 
                                             <DataGrid.ItemsSource>
                                                 <MultiBinding Converter="{StaticResource MessageSourceFilterConverter}">
@@ -291,12 +329,12 @@
                                                     <Binding Path="LogVerbosity" RelativeSource="{RelativeSource AncestorType={x:Type local:MainWindow}}"/>
                                                 </MultiBinding>
                                             </DataGrid.ItemsSource>
-                                            
+
                                             <DataGrid.Resources>
                                                 <Style TargetType="{x:Type DataGridCell}">
                                                     <Setter Property="BorderThickness" Value="2" />
                                                     <Setter Property="BorderBrush" Value="Transparent" />
-                                                    
+
                                                     <Style.Triggers>
                                                         <Trigger Property="DataGridCell.IsSelected" Value="True">
                                                             <Setter Property="Background" Value="#10000000" />
@@ -306,7 +344,7 @@
                                                     </Style.Triggers>
                                                 </Style>
                                             </DataGrid.Resources>
-                                            
+
                                             <DataGrid.Columns>
                                                 <DataGridTemplateColumn Header="Verbosity" Width="16">
                                                     <DataGridTemplateColumn.CellTemplate>
