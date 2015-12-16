@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -24,12 +25,23 @@ namespace FlowTomator.Desktop
             if (targetType != typeof(ImageSource))
                 throw new NotSupportedException();
 
-            // Measure actual element size
-            element.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            Size elementSize;
 
-            Size elementSize = element.DesiredSize;
-            Rect elementRect = new Rect(elementSize);
-            element.Arrange(elementRect);
+            // Measure actual element size
+            if (element is Canvas)
+            {
+                Canvas canvas = element as Canvas;
+
+                elementSize = new Size(canvas.ActualWidth, canvas.ActualHeight);
+            }
+            else
+            {
+                element.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+                elementSize = element.DesiredSize;
+                Rect elementRect = new Rect(elementSize);
+                element.Arrange(elementRect);
+            }
 
             // Compute target bitmap size
             Size targetSize;

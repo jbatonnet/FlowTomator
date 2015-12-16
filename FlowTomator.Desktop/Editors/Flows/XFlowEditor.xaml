@@ -223,8 +223,38 @@
         </Rectangle>
 
         <!-- Thumbnail -->
-        <Border Canvas.Bottom="8" Canvas.Right="8" Width="72" MinHeight="16" BorderBrush="Gray" BorderThickness="1">
-            <Image x:Name="EditorThumbnail"  Source="{Binding ElementName=EditorCanvas, Converter={StaticResource VisualSnapshotConverter}}" />
+        <Border Canvas.Bottom="8" Canvas.Right="8" MaxWidth="96" MaxHeight="480" BorderBrush="Gray" BorderThickness="1" Background="WhiteSmoke">
+
+            <Canvas>
+
+                <Viewbox DataContext="{Binding ElementName=EditorCanvas}" Stretch="Uniform">
+                    <Grid>
+                        <Rectangle Width="{Binding ThumbnailWidth, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                                   Height="{Binding ThumbnailHeight, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}">
+                            <Rectangle.Fill>
+                                <VisualBrush RenderOptions.BitmapScalingMode="NearestNeighbor" Visual="{Binding Content, ElementName=EditorScroller}" />
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        
+                    </Grid>
+                </Viewbox>
+
+                <Border BorderThickness="1" 
+                                BorderBrush="Black" 
+                                Background="#88FFFF00" 
+                                Width="{Binding ThumbnailViewportWidth, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}" 
+                                Height="{Binding ThumbnailViewportHeight, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                                HorizontalAlignment="Left" 
+                                VerticalAlignment="Top">
+                    <Border.RenderTransform>
+                        <TranslateTransform X="{Binding ThumbnailViewportX, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}"
+                                                    Y="{Binding ThumbnailViewportY, RelativeSource={RelativeSource AncestorType={x:Type local:XFlowEditor}}}" />
+                    </Border.RenderTransform>
+                </Border>
+
+            </Canvas>
+
+            <!--<Image x:Name="EditorThumbnail"  Source="{Binding ElementName=EditorCanvas, Converter={StaticResource VisualSnapshotConverter}}" />-->
         </Border>
     </Canvas>
 </UserControl>

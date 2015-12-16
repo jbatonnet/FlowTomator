@@ -177,7 +177,53 @@ namespace FlowTomator.Desktop
                 NotifyPropertyChanged();
             }
         }
-        
+
+        public double ThumbnailWidth
+        {
+            get
+            {
+                if (nodeControls.Count == 0)
+                    return 0;
+
+                return FlowInfo.Nodes.Max(n => n.X + nodeControls[n].ActualWidth) - FlowInfo.Nodes.Min(n => n.X);
+            }
+        }
+        public double ThumbnailHeight
+        {
+            get
+            {
+                return FlowInfo.Nodes.Max(n => n.Y) - FlowInfo.Nodes.Min(n => n.Y);
+            }
+        }
+        public double ThumbnailViewportX
+        {
+            get
+            {
+                return PanX * Scale;
+            }
+        }
+        public double ThumbnailViewportY
+        {
+            get
+            {
+                return PanY * Scale;
+            }
+        }
+        public double ThumbnailViewportWidth
+        {
+            get
+            {
+                return 10;
+            }
+        }
+        public double ThumbnailViewportHeight
+        {
+            get
+            {
+                return 10;
+            }
+        }
+
         [DependsOn(nameof(Panning))]
         public Cursor EditorCursor
         {
@@ -306,7 +352,14 @@ namespace FlowTomator.Desktop
         }
         private void NodeControl_LayoutUpdated(object sender, EventArgs e)
         {
+            //EditorThumbnail.GetBindingExpression(Image.SourceProperty).UpdateTarget();
 
+            NotifyPropertyChanged(nameof(ThumbnailWidth));
+            NotifyPropertyChanged(nameof(ThumbnailHeight));
+            NotifyPropertyChanged(nameof(ThumbnailViewportX));
+            NotifyPropertyChanged(nameof(ThumbnailViewportY));
+            NotifyPropertyChanged(nameof(ThumbnailViewportWidth));
+            NotifyPropertyChanged(nameof(ThumbnailViewportHeight));
         }
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
