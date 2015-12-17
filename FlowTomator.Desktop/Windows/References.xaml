@@ -23,20 +23,26 @@
         
         <TabControl Grid.Row="1" Margin="2">
             <TabItem Header="Assemblies">
-                <Grid Background="#FFE5E5E5">
+                <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    
-                    <ListView Grid.Row="0">
-                        
-                    </ListView>
 
-                    <StackPanel Grid.Row="1">
-                        <Button Command="{Binding OpenFlowCommand}" ToolTip="Add an existing assembly">
-                        </Button>
-                    </StackPanel>
+                    <DataGrid Grid.Row="0">
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn />
+                            <DataGridTextColumn Header="Name" Width="128" />
+                            <DataGridTextColumn Header="Path" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Grid.Row="1" Padding="6">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Command="{Binding OpenFlowCommand}" Content="Add an existing assembly">
+                            </Button>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </TabItem>
             <TabItem Header="Flows">

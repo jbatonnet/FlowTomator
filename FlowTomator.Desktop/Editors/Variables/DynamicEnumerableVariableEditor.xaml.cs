@@ -21,13 +21,7 @@ namespace FlowTomator.Desktop
 {
     public partial class DynamicEnumerableVariableEditor : UserControl
     {
-        public VariableInfo VariableInfo
-        {
-            get
-            {
-                return DataContext as VariableInfo;
-            }
-        }
+        public VariableInfo VariableInfo { get; private set; }
         public Variable Variable
         {
             get
@@ -71,6 +65,14 @@ namespace FlowTomator.Desktop
         public DynamicEnumerableVariableEditor()
         {
             InitializeComponent();
+
+            DataContextChanged += DynamicEnumerableVariableEditor_DataContextChanged;
+        }
+
+        private void DynamicEnumerableVariableEditor_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is VariableInfo)
+                VariableInfo = e.NewValue as VariableInfo;
         }
     }
 }
