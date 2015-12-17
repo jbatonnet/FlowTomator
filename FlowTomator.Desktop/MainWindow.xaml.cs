@@ -26,12 +26,14 @@ namespace FlowTomator.Desktop
     public class LogMessage
     {
         public DateTime Date { get; private set; }
+        public LogCategory Category { get; private set; }
         public LogVerbosity Verbosity { get; private set; }
         public string Message { get; private set; }
 
-        public LogMessage(DateTime date, LogVerbosity verbosity, string message)
+        public LogMessage(DateTime date, LogCategory category, LogVerbosity verbosity, string message)
         {
             Date = date;
+            Category = category;
             Verbosity = verbosity;
             Message = message;
         }
@@ -41,7 +43,6 @@ namespace FlowTomator.Desktop
     {
         public ObservableCollection<FlowInfo> Flows { get; } = new ObservableCollection<FlowInfo>();
         public ObservableCollection<NodeCategoryInfo> NodeCategories { get; } = new ObservableCollection<NodeCategoryInfo>();
-        public ObservableCollection<VariableInfo> Variables { get; } = new ObservableCollection<VariableInfo>();
 
         public ObservableDictionary<string, ObservableCollection<LogMessage>> LogMessages { get; } = new ObservableDictionary<string, ObservableCollection<LogMessage>>();
         public LogVerbosity LogVerbosity => Log.Verbosity;
@@ -92,6 +93,15 @@ namespace FlowTomator.Desktop
             }
         }
 
+        [DependsOn(nameof(CurrentFlow))]
+        public ObservableCollection<VariableInfo> CurrentVariables
+        {
+            get
+            {
+                return CurrentFlow?.Variables;
+            }
+        }
+
         public FlowDebugger Debugger
         {
             get
@@ -120,21 +130,24 @@ namespace FlowTomator.Desktop
         }
         private int logSelectedCategory;
 
-        public bool LogAutoscroll
+        public bool LogFollow
         {
             get
             {
-                return logAutoscroll;
+                return logFollow;
             }
             set
             {
-                logAutoscroll = value;
+                logFollow = value;
                 NotifyPropertyChanged();
             }
         }
-        private bool logAutoscroll = true;
+        private bool logFollow = true;
 
         private bool draggingNode;
+
+        private List<LogMessage> logBuffer = new List<LogMessage>();
+        private DispatcherTimer logTimer;
 
         public MainWindow()
         {
@@ -156,6 +169,8 @@ namespace FlowTomator.Desktop
             // Redirect console output
             Log.Verbosity = LogVerbosity.Trace;
             LogMessages.Add(LogCategory.Common.Name, new ObservableCollection<LogMessage>());
+            LogMessages.Add(FlowDebugger.DebuggerCategory.Name, new ObservableCollection<LogMessage>());
+            logTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.ApplicationIdle, Log_TimerCallback, Dispatcher.CurrentDispatcher);
             Log.Message += Log_Message;
 
             // Analyze loaded assemblies
@@ -195,15 +210,39 @@ namespace FlowTomator.Desktop
                 nodeCategory.Nodes.Add(nodeType);
             }
         }
+
         private void Log_Message(LogVerbosity verbosity, LogCategory category, string message)
         {
-            Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new System.Action(() =>
+            DateTime date = DateTime.Now;
+
+            lock (logBuffer)
+                logBuffer.Add(new LogMessage(date, category, verbosity, message));
+        }
+        private void Log_TimerCallback(object sender, EventArgs e)
+        {
+            if (logBuffer.Count == 0)
+                return;
+
+            LogMessage[] logMessages;
+
+            lock (logBuffer)
+            {
+                logMessages = logBuffer.ToArray();
+                if (logMessages.Length == 0)
+                    return;
+
+                logBuffer.Clear();
+            }
+
+            int newIndex = -1;
+
+            foreach (LogMessage logMessage in logMessages)
             {
                 int i = 0;
                 ObservableCollection<LogMessage> categoryMessages = null;
 
                 for (; i < LogMessages.Count; i++)
-                    if (LogMessages.ElementAt(i).Key == category.Name)
+                    if (LogMessages.ElementAt(i).Key == logMessage.Category.Name)
                     {
                         categoryMessages = LogMessages.ElementAt(i).Value;
                         break;
@@ -211,13 +250,18 @@ namespace FlowTomator.Desktop
 
                 if (i == LogMessages.Count)
                 {
-                    LogMessages.Add(category.Name, categoryMessages = new ObservableCollection<LogMessage>());
+                    LogMessages.Add(logMessage.Category.Name, categoryMessages = new ObservableCollection<LogMessage>());
                     NotifyPropertyChanged(nameof(LogMessages));
                 }
-                
-                categoryMessages.Add(new LogMessage(DateTime.Now, verbosity, message));
-                LogSelectedCategory = i;
-            }));
+
+                if (logMessage.Verbosity >= Log.Verbosity)
+                    newIndex = i;
+
+                categoryMessages.Add(logMessage);
+            }
+
+            if (LogFollow && newIndex >= 0)
+                LogSelectedCategory = newIndex;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -390,12 +434,18 @@ namespace FlowTomator.Desktop
             if (Debugger == null)
                 Debugger = new FlowDebugger(CurrentFlow);
 
+            if (Debugger.State == DebuggerState.Idle)
+                LogMessages.ElementAt(1).Value.Clear();
+
             Debugger.Run();
         }
         private void StepFlowCommandCallback(object parameter)
         {
             if (Debugger == null)
                 Debugger = new FlowDebugger(CurrentFlow);
+
+            if (Debugger.State == DebuggerState.Idle)
+                LogMessages.ElementAt(1).Value.Clear();
 
             Debugger.Step();
         }
@@ -460,13 +510,18 @@ namespace FlowTomator.Desktop
             new References().ShowDialog();
         }
 
+        private void AddVariableButton_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentVariables.Add(VariableInfo.From(new Variable("New")));
+        }
+
         private void ClearCurrentLogButton_Click(object sender, RoutedEventArgs e)
         {
             LogMessages.ElementAt(LogSelectedCategory).Value.Clear();
         }
         private void ClearAllLogButton_Click(object sender, RoutedEventArgs e)
         {
-            while (LogMessages.Count > 1)
+            while (LogMessages.Count > 2)
                 LogMessages.Remove(LogMessages.Keys.ElementAt(1));
             NotifyPropertyChanged(nameof(LogMessages));
 
@@ -475,18 +530,23 @@ namespace FlowTomator.Desktop
         }
         private void TestLogButton_Click(object sender, RoutedEventArgs e)
         {
-            foreach (LogCategory category in new[] { LogCategory.Common, new LogCategory("Debugger"), new LogCategory("Node") })
-                for (int i = 0; i < 15; i++)
+            new Thread(() =>
+            {
+                while (true)
                 {
-                    Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new System.Action(() =>
-                    {
-                        Log.Trace(category, "{0}.Trace", category.Name);
-                        Log.Debug(category, "{0}.Debug", category.Name);
-                        Log.Info(category, "{0}.Info", category.Name);
-                        Log.Warning(category, "{0}.Warning", category.Name);
-                        Log.Error(category, "{0}.Error", category.Name);
-                    }));
+                    Thread.Sleep(10);
+
+                    foreach (LogCategory category in new[] { LogCategory.Common, new LogCategory("Debugger"), new LogCategory("Node") })
+                        for (int i = 0; i < 5; i++)
+                        {
+                            Log.Trace(category, "{0}.Trace", category.Name);
+                            Log.Debug(category, "{0}.Debug", category.Name);
+                            Log.Info(category, "{0}.Info", category.Name);
+                            Log.Warning(category, "{0}.Warning", category.Name);
+                            Log.Error(category, "{0}.Error", category.Name);
+                        }
                 }
+            }).Start();
         }
         private void SetLogVerbosityButton_Click(object sender, RoutedEventArgs e)
         {

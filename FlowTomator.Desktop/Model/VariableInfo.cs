@@ -119,6 +119,10 @@ namespace FlowTomator.Desktop
 
         private bool selected = false;
 
+        private VariableInfo(Variable variable)
+        {
+            Variable = variable;
+        }
         private VariableInfo(NodeInfo nodeInfo, Variable variable)
         {
             Variable = variable;
@@ -130,6 +134,15 @@ namespace FlowTomator.Desktop
             NotifyPropertyChanged(nameof(Value));
         }
 
+        public static VariableInfo From(Variable variable)
+        {
+            VariableInfo variableInfo;
+
+            if (!variableInfos.TryGetValue(variable, out variableInfo))
+                variableInfos.Add(variable, variableInfo = new VariableInfo(variable));
+
+            return variableInfo;
+        }
         public static VariableInfo From(NodeInfo nodeInfo, Variable variable)
         {
             VariableInfo variableInfo;
