@@ -351,7 +351,8 @@
                                                       GridLinesVisibility="None" HeadersVisibility="None" Background="White"
                                                       BorderBrush="LightGray" EnableRowVirtualization="True"
                                                       local:DataGridBehavior.Autoscroll="{Binding LogFollow, RelativeSource={RelativeSource AncestorType={x:Type local:MainWindow}}}"
-                                                      Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}">
+                                                      Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}"
+                                                      CanUserResizeRows="False" HorizontalScrollBarVisibility="Hidden">
 
                                                 <DataGrid.ItemsSource>
                                                     <MultiBinding Converter="{StaticResource MessageSourceFilterConverter}">
@@ -367,9 +368,9 @@
 
                                                         <Style.Triggers>
                                                             <Trigger Property="DataGridCell.IsSelected" Value="True">
-                                                                <Setter Property="Background" Value="#10000000" />
+                                                                <Setter Property="Background" Value="#18000000" />
                                                                 <Setter Property="Foreground" Value="{x:Static SystemColors.ControlTextBrush}" />
-                                                                <Setter Property="BorderBrush" Value="#10000000" />
+                                                                <Setter Property="BorderBrush" Value="#18000000" />
                                                             </Trigger>
                                                         </Style.Triggers>
                                                     </Style>
