@@ -100,8 +100,8 @@
     <Compile Include="Model\FlowDebugger.cs" />
     <Compile Include="OpenFolderDialog.cs" />
     <Compile Include="VerbosityIconConverter.cs" />
-    <Compile Include="Windows\References.xaml.cs">
-      <DependentUpon>References.xaml</DependentUpon>
+    <Compile Include="Windows\ReferencesWindow.xaml.cs">
+      <DependentUpon>ReferencesWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="_WPF_\DataGridBehavior.cs" />
     <Compile Include="_WPF_\DependencyManager.cs" />
@@ -172,7 +172,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Windows\References.xaml">
+    <Page Include="Windows\ReferencesWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

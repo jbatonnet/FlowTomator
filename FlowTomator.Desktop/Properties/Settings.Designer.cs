@@ -36,5 +36,40 @@ namespace FlowTomator.Desktop.Properties {
                 this["Assemblies"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection Flows {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["Flows"]));
+            }
+            set {
+                this["Flows"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool LogAutoscroll {
+            get {
+                return ((bool)(this["LogAutoscroll"]));
+            }
+            set {
+                this["LogAutoscroll"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool LogAutoswitch {
+            get {
+                return ((bool)(this["LogAutoswitch"]));
+            }
+            set {
+                this["LogAutoswitch"] = value;
+            }
+        }
     }
 }

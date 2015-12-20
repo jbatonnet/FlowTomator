@@ -20,6 +20,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Threading;
 using System.Windows.Data;
+using FlowTomator.Desktop.Properties;
 
 namespace FlowTomator.Desktop
 {
@@ -130,19 +131,34 @@ namespace FlowTomator.Desktop
         }
         private int logSelectedCategory;
 
-        public bool LogFollow
+        public bool LogAutoscroll
         {
             get
             {
-                return logFollow;
+                return Settings.Default.LogAutoscroll;
             }
             set
             {
-                logFollow = value;
+                Settings.Default.LogAutoscroll = value;
+                Settings.Default.Save();
+
                 NotifyPropertyChanged();
             }
         }
-        private bool logFollow = true;
+        public bool LogAutoswitch
+        {
+            get
+            {
+                return Settings.Default.LogAutoswitch;
+            }
+            set
+            {
+                Settings.Default.LogAutoswitch = value;
+                Settings.Default.Save();
+
+                NotifyPropertyChanged();
+            }
+        }
 
         private bool draggingNode;
 
@@ -191,11 +207,12 @@ namespace FlowTomator.Desktop
 
         private void AnalyzeAssembly(Assembly assembly)
         {
+            if (assembly.ReflectionOnly)
+                return;
+
             IEnumerable<Type> nodeTypes = Enumerable.Empty<Type>();
-
-            //nodeTypes = assembly.GetModules().SelectMany(m => m.GetTypes());
+            
             nodeTypes = assembly.GetTypes();
-
             nodeTypes = nodeTypes.Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(Node)) && t != typeof(Flow) && !t.IsSubclassOf(typeof(Flow)))
                                  .Where(t => t.GetConstructor(Type.EmptyTypes) != null);
             
@@ -260,8 +277,8 @@ namespace FlowTomator.Desktop
                 categoryMessages.Add(logMessage);
             }
 
-            if (LogFollow && newIndex >= 0)
-                LogSelectedCategory = newIndex;
+            //if (LogAutoswitch && newIndex >= 0)
+            //    LogSelectedCategory = newIndex;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -507,7 +524,10 @@ namespace FlowTomator.Desktop
         }
         private void ManageNodesButton_Click(object sender, EventArgs e)
         {
-            new References().ShowDialog();
+            ReferencesWindow references = new ReferencesWindow();
+
+            references.Owner = this;
+            references.ShowDialog();
         }
 
         private void AddVariableButton_Click(object sender, RoutedEventArgs e)

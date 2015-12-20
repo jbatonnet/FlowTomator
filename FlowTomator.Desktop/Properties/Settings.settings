@@ -8,5 +8,14 @@
   &lt;string&gt;FlowTomator.SmartSync.dll&lt;/string&gt;
 &lt;/ArrayOfString&gt;</Value>
     </Setting>
+    <Setting Name="Flows" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="LogAutoscroll" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="LogAutoswitch" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

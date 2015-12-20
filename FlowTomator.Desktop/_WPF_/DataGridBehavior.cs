@@ -44,7 +44,6 @@ namespace FlowTomator.Desktop
             ((INotifyCollectionChanged)dataGrid.Items).CollectionChanged += handler;
             ScrollToEnd(dataGrid);
         }
-
         private static void Unsubscribe(DataGrid dataGrid)
         {
             NotifyCollectionChangedEventHandler handler;
@@ -65,7 +64,6 @@ namespace FlowTomator.Desktop
                 Subscribe(dataGrid);
             }
         }
-
         private static void DataGridOnUnloaded(object sender, RoutedEventArgs routedEventArgs)
         {
             var dataGrid = (DataGrid)sender;
@@ -78,17 +76,21 @@ namespace FlowTomator.Desktop
         private static void ScrollToEnd(DataGrid datagrid)
         {
             if (datagrid.Items.Count == 0)
-            {
                 return;
-            }
-            datagrid.ScrollIntoView(datagrid.Items[datagrid.Items.Count - 1]);
+
+            int index = datagrid.Items.Count - 1;
+
+            //if (datagrid.SelectedIndex != -1 && datagrid.SelectedIndex != index)
+            //    return;
+
+            datagrid.ScrollIntoView(datagrid.Items[index]);
+            //datagrid.SelectedItem = null;
         }
 
         public static void SetAutoscroll(DependencyObject element, bool value)
         {
             element.SetValue(AutoscrollProperty, value);
         }
-
         public static bool GetAutoscroll(DependencyObject element)
         {
             return (bool)element.GetValue(AutoscrollProperty);
