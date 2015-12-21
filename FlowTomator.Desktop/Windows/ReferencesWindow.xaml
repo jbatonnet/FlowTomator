@@ -59,11 +59,10 @@
                         </DataGrid.Resources>
 
                         <DataGrid.Columns>
-
                             <DataGridTemplateColumn CanUserResize="False">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <CheckBox IsChecked="{Binding Used}" IsEnabled="{Binding Enabled}" />
+                                        <CheckBox IsChecked="{Binding Selected}" IsEnabled="{Binding Enabled}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -75,7 +74,7 @@
 
                     <Border Grid.Row="1" Margin="4,8,4,4">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="Add" Width="56" Height="22" />
+                            <Button Content="Add" Width="56" Height="22" Click="AddAssemblyButton_Click" />
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -108,7 +107,7 @@
 
                     <Border Grid.Row="1" Margin="4,8,4,4">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="Add" Width="56" Height="22" Click="AddAssemblyButton_Click" />
+                            <Button Content="Add" Width="56" Height="22" />
                         </StackPanel>
                     </Border>
                 </Grid>

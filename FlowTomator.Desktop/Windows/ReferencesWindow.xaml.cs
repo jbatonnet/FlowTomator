@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -17,21 +18,22 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using FlowTomator.Common;
+using FlowTomator.Desktop.Properties;
 using Microsoft.Win32;
 
 namespace FlowTomator.Desktop
 {
     public class AssemblyInfo
     {
-        public bool Used { get; set; }
+        public bool Selected { get; set; }
         public bool Enabled { get; set; }
 
         public string Name { get; private set; }
         public string Path { get; private set; }
 
-        public AssemblyInfo(Assembly assembly, bool used, bool enabled = true)
+        public AssemblyInfo(Assembly assembly, bool selected, bool enabled = true)
         {
-            Used = used;
+            Selected = selected;
             Enabled = enabled;
 
             Name = assembly.GetName().Name;
@@ -124,6 +126,7 @@ namespace FlowTomator.Desktop
         {
             OpenFileDialog dialog = new OpenFileDialog();
 
+            dialog.Title = "Open an existing .NET assembly";
             dialog.Filter = ".NET Assemblies|*.dll|All files|*.*";
             dialog.FilterIndex = 1;
 
@@ -134,13 +137,13 @@ namespace FlowTomator.Desktop
 
             if (!fileInfo.Exists)
             {
-                MessageBox.Show("Unable to find the specified file");
+                MessageBox.Show("Unable to find the specified file", App.Name, MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
                     
             if (Assemblies.Any(a => a.Path == fileInfo.FullName))
             {
-                MessageBox.Show("The specified file has already been added");
+                MessageBox.Show("The specified file has already been added", App.Name, MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -151,13 +154,33 @@ namespace FlowTomator.Desktop
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Unable to load the specified assembly. " + ex);
+                MessageBox.Show("Unable to load the specified assembly. " + ex, App.Name, MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
         }
         private void OKButton_Click(object sender, RoutedEventArgs e)
         {
+            AssemblyInfo[] assemblies = Assemblies.Where(a => a.Selected && a.Enabled).ToArray();
 
+            // Load selected assemblies
+            foreach (AssemblyInfo assembly in assemblies)
+            {
+                try
+                {
+                    Assembly.LoadFrom(assembly.Path);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Unable to load the specified assembly. " + ex, App.Name, MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
+
+            // Save settings
+            if (Settings.Default.Assemblies == null)
+                Settings.Default.Assemblies = new StringCollection();
+            Settings.Default.Assemblies.Clear();
+            Settings.Default.Assemblies.AddRange(assemblies.Select(a => a.Path).ToArray());
 
             Close();
         }
