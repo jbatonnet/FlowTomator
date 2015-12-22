@@ -82,5 +82,17 @@ namespace FlowTomator.Desktop
             variableInfo.Variable.Link(null);
             variableInfo.Value = variableInfo.Variable.DefaultValue;
         }
+
+        private void Variable_DragOver(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent("FlowTomator.Variable") || sender == e.Source)
+                e.Effects = DragDropEffects.None;
+        }
+        private void Variable_Drop(object sender, DragEventArgs e)
+        {
+            VariableInfo variableInfo = e.Data.GetData("FlowTomator.Variable") as VariableInfo;
+
+            
+        }
     }
 }

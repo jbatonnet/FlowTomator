@@ -25,6 +25,8 @@
 
         <local:VerbosityIconConverter x:Key="VerbosityIconConverter" />
         <local:MessageSourceFilterConverter x:Key="MessageSourceFilterConverter" />
+
+        <local:VariableEditorTemplateSelector x:Key="ValueTemplateSelector" />
     </Window.Resources>
 
     <Grid>
@@ -217,7 +219,7 @@
                         <ListView Grid.Row="1" Background="White" ItemsSource="{Binding CurrentVariables}" BorderBrush="LightGray" BorderThickness="0">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid>
+                                    <Grid PreviewMouseLeftButtonDown="VariableList_MouseDown" PreviewMouseMove="VariableList_MouseMove">
                                         
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
@@ -225,15 +227,18 @@
                                         </Grid.ColumnDefinitions>
 
                                         <TextBlock Grid.Column="0" FontSize="11" Foreground="Gray" HorizontalAlignment="Stretch" Margin="0,0,4,0"
-                                               Text="{Binding Variable.Name}" ToolTip="{Binding Variable.Description}">
+                                                   Text="{Binding Variable.Name}" ToolTip="{Binding Variable.Description}">
                                         </TextBlock>
 
                                         <TextBlock Grid.Column="1" FontSize="11" HorizontalAlignment="Stretch" Padding="0,0,2,0" TextAlignment="Right"
-                                               Text="{Binding Text}" ToolTip="{Binding Text}" Cursor="Hand">
+                                                   Text="{Binding Text}" ToolTip="{Binding Text}" Cursor="Hand">
                                             <TextBlock.Foreground>
                                                 <SolidColorBrush Color="{Binding EditorColor}" />
                                             </TextBlock.Foreground>
                                         </TextBlock>
+
+                                        <ContentControl Grid.Column="1" HorizontalAlignment="Stretch"
+                                                        Visibility="{Binding EditorVisibility}" Content="{Binding}" ContentTemplateSelector="{StaticResource ValueTemplateSelector}" />
 
                                     </Grid>
                                 </DataTemplate>

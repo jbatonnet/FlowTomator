@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,7 +43,7 @@ namespace FlowTomator.Desktop
         }
     }
 
-    public partial class ReferencesWindow : Window
+    public partial class ReferencesWindow : Window, INotifyPropertyChanged
     {
         [DllImport("user32.dll")]
         private static extern int GetWindowLong(IntPtr hwnd, int index);
@@ -60,12 +62,42 @@ namespace FlowTomator.Desktop
         private const int SWP_FRAMECHANGED = 0x0020;
         private const uint WM_SETICON = 0x0080;
 
-        public ObservableCollection<AssemblyInfo> Assemblies { get; } = new ObservableCollection<AssemblyInfo>();
+        public List<AssemblyInfo> Assemblies { get; } = new List<AssemblyInfo>();
         public ObservableDictionary<FileInfo, bool> Flows { get; } = new ObservableDictionary<FileInfo, bool>();
+
+        private BackgroundWorker assembliesLoader = new BackgroundWorker();
 
         public ReferencesWindow()
         {
             InitializeComponent();
+            DataContext = this;
+
+            AssembliesGrid.Visibility = Visibility.Collapsed;
+            AssembliesProgressBar.Visibility = Visibility.Visible;
+
+            assembliesLoader.DoWork += AssembliesLoader_DoWork;
+            assembliesLoader.RunWorkerCompleted += AssembliesLoader_RunWorkerCompleted;
+        }
+        private void Window_SourceInitialized(object sender, EventArgs e)
+        {
+            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+
+            int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+            SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_DLGMODALFRAME);
+
+            SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+
+            SendMessage(hwnd, WM_SETICON, new IntPtr(1), IntPtr.Zero);
+            SendMessage(hwnd, WM_SETICON, IntPtr.Zero, IntPtr.Zero);
+        }
+
+        private void AssembliesTab_Loaded(object sender, RoutedEventArgs e)
+        {
+            assembliesLoader.RunWorkerAsync();
+        }
+        private void AssembliesLoader_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Assemblies.Clear();
 
             // Add default assembly
             Assemblies.Add(new AssemblyInfo(typeof(Node).Assembly, true, false));
@@ -92,28 +124,29 @@ namespace FlowTomator.Desktop
                     continue;
                 }
             }
-
-            DataContext = this;
         }
-        private void Window_SourceInitialized(object sender, EventArgs e)
+        private void AssembliesLoader_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+            AssembliesGrid.Visibility = Visibility.Visible;
+            AssembliesProgressBar.Visibility = Visibility.Collapsed;
 
-            int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-            SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_DLGMODALFRAME);
-
-            SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-
-            SendMessage(hwnd, WM_SETICON, new IntPtr(1), IntPtr.Zero);
-            SendMessage(hwnd, WM_SETICON, IntPtr.Zero, IntPtr.Zero);
+            NotifyPropertyChanged(nameof(Assemblies));
         }
-
         private void AnalyzeAssembly(Assembly assembly, bool used)
         {
             if (Assemblies.Any(a => a.Path == assembly.Location))
                 return;
 
-            IEnumerable<Type> nodeTypes = assembly.GetTypes();
+            IEnumerable<Type> nodeTypes;
+
+            try
+            {
+                nodeTypes = assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                nodeTypes = e.Types.Where(t => t != null);
+            }
 
             nodeTypes = nodeTypes.Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(Node)) && t != typeof(Flow) && !t.IsSubclassOf(typeof(Flow)))
                                  .Where(t => t.GetConstructor(Type.EmptyTypes) != null);
@@ -187,6 +220,13 @@ namespace FlowTomator.Desktop
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void NotifyPropertyChanged([CallerMemberName]string property = null)
+        {
+            if (property != null && PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(property));
         }
     }
 }

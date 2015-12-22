@@ -160,7 +160,8 @@ namespace FlowTomator.Desktop
             }
         }
 
-        private bool draggingNode;
+        private bool draggingNode = false;
+        private bool draggingVariable = false;
 
         private List<LogMessage> logBuffer = new List<LogMessage>();
         private DispatcherTimer logTimer;
@@ -509,6 +510,29 @@ namespace FlowTomator.Desktop
             DragDrop.DoDragDrop(grid, dragData, DragDropEffects.Move);
 
             draggingNode = false;
+        }
+        private void VariableList_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            draggingVariable = true;
+        }
+        private void VariableList_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!draggingVariable || e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            Grid grid = sender as Grid;
+            ContentPresenter contentPresenter = VisualTreeHelper.GetParent(grid) as ContentPresenter;
+
+            DependencyObject itemsControl = contentPresenter;
+            while (!(itemsControl is ItemsControl))
+                itemsControl = VisualTreeHelper.GetParent(itemsControl);
+
+            object variableInfo = (itemsControl as ItemsControl).ItemContainerGenerator.ItemFromContainer(contentPresenter);
+
+            DataObject dragData = new DataObject("FlowTomator.Variable", variableInfo);
+            DragDrop.DoDragDrop(grid, dragData, DragDropEffects.Move);
+
+            draggingVariable = false;
         }
 
         private void Menu_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)

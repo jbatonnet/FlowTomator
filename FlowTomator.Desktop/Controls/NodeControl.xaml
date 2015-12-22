@@ -63,7 +63,8 @@
 
                                     <TextBlock Grid.Column="1" FontSize="11" HorizontalAlignment="Stretch" Padding="0,0,2,0" TextAlignment="Right"
                                                Text="{Binding Text}" Visibility="{Binding DisplayVisibility}" ToolTip="{Binding Text}" Cursor="Hand"
-                                               MouseLeftButtonDown="VariableValue_MouseLeftButtonDown">
+                                               MouseLeftButtonDown="VariableValue_MouseLeftButtonDown"
+                                               DragOver="Variable_DragOver" Drop="Variable_Drop" AllowDrop="True">
                                         <TextBlock.Foreground>
                                             <SolidColorBrush Color="{Binding EditorColor}" />
                                         </TextBlock.Foreground>

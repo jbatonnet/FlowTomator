@@ -99,14 +99,15 @@ namespace FlowTomator.Common
                     ConsoleColor lastColor = Console.ForegroundColor;
 
                     Console.ForegroundColor = color;
-                    Console.Write("[{0}] ", verbosity);
+                    Console.Write("[{0}] ", verbosity.ToString()[0]);
                     Console.ForegroundColor = lastColor;
 
                     Console.WriteLine(message);
                 }
             }
 
-            Message(verbosity, category, message);
+            if (Message != null)
+                Message(verbosity, category, message);
         }
     }
 }
