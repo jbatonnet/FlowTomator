@@ -67,6 +67,14 @@ namespace FlowTomator.Desktop
 
         private BackgroundWorker assembliesLoader = new BackgroundWorker();
 
+        private static Type reflectionNodeType, reflectionFlowType;
+
+        static ReferencesWindow()
+        {
+            Assembly reflectionAssembly = Assembly.ReflectionOnlyLoad(typeof(Node).Assembly.FullName);
+            reflectionNodeType = reflectionAssembly.GetType(typeof(Node).FullName);
+            reflectionFlowType = reflectionAssembly.GetType(typeof(Flow).FullName);
+        }
         public ReferencesWindow()
         {
             InitializeComponent();
@@ -107,7 +115,7 @@ namespace FlowTomator.Desktop
                 AnalyzeAssembly(assembly, true);
 
             // Load local plugins
-            foreach (string path in Directory.GetFiles(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.dll"))
+            foreach (string path in Directory.GetFiles(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "FlowTomator.*.dll"))
             {
                 FileInfo fileInfo = new FileInfo(path);
 
@@ -132,10 +140,22 @@ namespace FlowTomator.Desktop
 
             NotifyPropertyChanged(nameof(Assemblies));
         }
-        private void AnalyzeAssembly(Assembly assembly, bool used)
+        private void AnalyzeAssembly(Assembly assembly, bool enabled)
         {
-            if (Assemblies.Any(a => a.Path == assembly.Location))
+            if (assembly.IsDynamic || Assemblies.Any(a => a.Path == assembly.Location))
                 return;
+
+            if (assembly.ReflectionOnly)
+            {
+                foreach (AssemblyName assemblyName in assembly.GetReferencedAssemblies())
+                {
+                    try
+                    {
+                        Assembly.ReflectionOnlyLoad(assemblyName.FullName);
+                    }
+                    catch (FileNotFoundException) { }
+                }
+            }
 
             IEnumerable<Type> nodeTypes;
 
@@ -148,11 +168,14 @@ namespace FlowTomator.Desktop
                 nodeTypes = e.Types.Where(t => t != null);
             }
 
-            nodeTypes = nodeTypes.Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(Node)) && t != typeof(Flow) && !t.IsSubclassOf(typeof(Flow)))
+            nodeTypes = nodeTypes.Where(t => !t.IsAbstract)
+                                 .Where(t => t.IsSubclassOf(typeof(Node)) || t.IsSubclassOf(reflectionNodeType))
+                                 .Where(t => t != typeof(Flow) && t != reflectionFlowType)
+                                 .Where(t => !t.IsSubclassOf(typeof(Flow)) && !t.IsSubclassOf(reflectionFlowType))
                                  .Where(t => t.GetConstructor(Type.EmptyTypes) != null);
 
             if (nodeTypes.Any())
-                Assemblies.Add(new AssemblyInfo(assembly, used));
+                Assemblies.Add(new AssemblyInfo(assembly, enabled));
         }
 
         private void AddAssemblyButton_Click(object sender, RoutedEventArgs e)
@@ -212,14 +235,47 @@ namespace FlowTomator.Desktop
             // Save settings
             if (Settings.Default.Assemblies == null)
                 Settings.Default.Assemblies = new StringCollection();
+
             Settings.Default.Assemblies.Clear();
-            Settings.Default.Assemblies.AddRange(assemblies.Select(a => a.Path).ToArray());
+            string executablePath = Assembly.GetExecutingAssembly().Location;
+            foreach (AssemblyInfo assembly in assemblies)
+            {
+                string assemblyPath = assembly.Path;
+                
+                try
+                {
+                    assemblyPath = MakeRelativePath(executablePath, assemblyPath);
+                }
+                catch { }
+                
+                Settings.Default.Assemblies.Add(assemblyPath);
+            }
+            Settings.Default.Save();
 
             Close();
         }
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private static string MakeRelativePath(string from, string to)
+        {
+            if (string.IsNullOrEmpty(from)) throw new ArgumentNullException("fromPath");
+            if (string.IsNullOrEmpty(to)) throw new ArgumentNullException("toPath");
+
+            Uri fromUri = new Uri(from);
+            Uri toUri = new Uri(to);
+
+            if (fromUri.Scheme != toUri.Scheme) { return to; } // path can't be made relative.
+
+            Uri relativeUri = fromUri.MakeRelativeUri(toUri);
+            string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+
+            if (toUri.Scheme.ToUpperInvariant() == "FILE")
+                relativePath = relativePath.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);
+
+            return relativePath;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

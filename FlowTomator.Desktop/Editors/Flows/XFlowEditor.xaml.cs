@@ -192,6 +192,9 @@ namespace FlowTomator.Desktop
         {
             get
             {
+                if (!FlowInfo.Nodes.Any())
+                    return 0;
+
                 return FlowInfo.Nodes.Max(n => n.Y) - FlowInfo.Nodes.Min(n => n.Y);
             }
         }
@@ -528,6 +531,8 @@ namespace FlowTomator.Desktop
         private void Canvas_Drop(object sender, DragEventArgs e)
         {
             Type nodeType = e.Data.GetData("FlowTomator.Node") as Type;
+            if (nodeType == null)
+                return;
 
             Point mousePosition = e.GetPosition(EditorCanvas);
 

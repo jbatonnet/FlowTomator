@@ -195,6 +195,19 @@ namespace FlowTomator.Desktop
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
                 AnalyzeAssembly(assembly);
 
+            // Load referenced assemblies
+            if (Settings.Default.Assemblies != null)
+            {
+                foreach (string path in Settings.Default.Assemblies)
+                {
+                    try
+                    {
+                        Assembly.LoadFrom(path);
+                    }
+                    catch { }
+                }
+            }
+
             DataContext = this;
             InitializeComponent();
 
