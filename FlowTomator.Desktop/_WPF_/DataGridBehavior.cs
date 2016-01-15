@@ -79,11 +79,12 @@ namespace FlowTomator.Desktop
                 return;
 
             int index = datagrid.Items.Count - 1;
+            object item = datagrid.Items[index];
 
             //if (datagrid.SelectedIndex != -1 && datagrid.SelectedIndex != index)
             //    return;
 
-            datagrid.ScrollIntoView(datagrid.Items[index]);
+            datagrid.ScrollIntoView(item);
             //datagrid.SelectedItem = null;
         }
 

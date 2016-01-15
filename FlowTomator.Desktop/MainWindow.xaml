@@ -357,7 +357,8 @@
                                                       BorderBrush="LightGray" EnableRowVirtualization="True"
                                                       local:DataGridBehavior.Autoscroll="True"
                                                       Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}"
-                                                      CanUserResizeRows="False" HorizontalScrollBarVisibility="Hidden">
+                                                      CanUserResizeRows="False" HorizontalScrollBarVisibility="Hidden"
+                                                      RowHeight="16">
 
                                                 <DataGrid.ItemsSource>
                                                     <MultiBinding Converter="{StaticResource MessageSourceFilterConverter}">

@@ -591,7 +591,7 @@ namespace FlowTomator.Desktop
             {
                 while (true)
                 {
-                    Thread.Sleep(10);
+                    Thread.Sleep(1000);
 
                     foreach (LogCategory category in new[] { LogCategory.Common, new LogCategory("Debugger"), new LogCategory("Node") })
                         for (int i = 0; i < 5; i++)
