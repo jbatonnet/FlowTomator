@@ -25,7 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{F21C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowTomator.Data", "FlowTomator.Data\FlowTomator.Data.csproj", "{5DBB54C6-B165-4551-AB90-17185CE97562}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowTomator.Sftp", "FlowTomator.Sftp\FlowTomator.Sftp.csproj", "{F8D5DEB1-1E2C-498F-95C3-948355DD9CAF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowTomator.Ssh", "FlowTomator.Ssh\FlowTomator.Ssh.csproj", "{F8D5DEB1-1E2C-498F-95C3-948355DD9CAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
