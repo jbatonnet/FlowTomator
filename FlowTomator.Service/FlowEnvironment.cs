@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FlowTomator.Common;
@@ -23,6 +24,8 @@ namespace FlowTomator.Service
 
         private AppDomain domain;
         private FileSystemWatcher watcher;
+        private AutoResetEvent watcherResetEvent = new AutoResetEvent(false);
+        private Mutex watcherMutex = new Mutex();
 
         private Flow flow;
         private NodesEvaluator evaluator;
@@ -47,10 +50,9 @@ namespace FlowTomator.Service
             watcher = new FileSystemWatcher();
             watcher.Path = File.DirectoryName;
             watcher.Filter = File.Name;
-            watcher.Changed += (s, e) => Restart(true);
+            watcher.Changed += Watcher_Changed;
             watcher.EnableRaisingEvents = true;
         }
-
         ~FlowEnvironment()
         {
             Dispose();
@@ -84,6 +86,19 @@ namespace FlowTomator.Service
             };
         }
 
+        private void Watcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            new Thread(() =>
+            {
+                if (!watcherMutex.WaitOne(0))
+                    return;
+
+                Thread.Sleep(250);
+
+                Restart(true);
+                watcherMutex.ReleaseMutex();
+            }).Start();
+        }
         private void Reload()
         {
             Log.Trace("{0}oading flow {1}", flow == null ? "L" : "Rel", File.Name);
@@ -138,8 +153,18 @@ namespace FlowTomator.Service
         }
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
-            AppDomain.Unload(domain);
+            try
+            {
+                Stop();
+            }
+            catch { }
+
+            try
+            {
+                GC.SuppressFinalize(this);
+                AppDomain.Unload(domain);
+            }
+            catch { }
         }
 
         private static void PreloadAssemblies()

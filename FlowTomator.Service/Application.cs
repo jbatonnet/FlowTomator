@@ -103,6 +103,9 @@ namespace FlowTomator.Service
                 Service = null;
             }
 
+            if (Service == null && FlowTomatorService.Running)
+                ConnectToService(false);
+
             Menu.MenuItems.Clear();
 
             if (Service != null)
@@ -128,13 +131,13 @@ namespace FlowTomator.Service
 
                     Menu.MenuItems.Add("-");
                 }
-            }
 
-            Menu.MenuItems.AddRange(new[]
-            {
-                new MenuItem("Load flow ...", LoadFlowButton_Click),
-                new MenuItem("-")
-            });
+                Menu.MenuItems.AddRange(new[]
+                {
+                    new MenuItem("Load flow ...", LoadFlowButton_Click),
+                    new MenuItem("-")
+                });
+            }
 
             if (!FlowTomatorService.Installed)
             {
@@ -156,7 +159,7 @@ namespace FlowTomator.Service
                         new MenuItem("-"),
                         new MenuItem("Settings", new[]
                         {
-                            new MenuItem("Open log", OpenLogButton_Click) { Enabled = FlowTomatorService.Running }
+                            new MenuItem("Open log", OpenLogButton_Click)
                         }),
                     })
                 });

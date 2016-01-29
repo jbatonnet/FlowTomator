@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Configuration.Install;
 using System.IO;
@@ -166,7 +167,7 @@ namespace FlowTomator.Service
             if (service == null)
                 throw new Exception("FlowTomator service is not installed on this computer");
 
-            if (service.Status != ServiceControllerStatus.Stopped || service.Status != ServiceControllerStatus.StopPending)
+            if (service.Status != ServiceControllerStatus.Stopped && service.Status != ServiceControllerStatus.StopPending)
                 service.Stop();
         }
 
@@ -223,6 +224,18 @@ namespace FlowTomator.Service
 
             Flows.Add(flow);
             return flow;
+        }
+        private void Flows_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            // Save startup flows
+            if (Settings.Default.StartupFlows == null)
+                Settings.Default.StartupFlows = new StringCollection();
+
+            Settings.Default.StartupFlows.Clear();
+            foreach (FlowEnvironment flowEnvironment in Flows)
+                Settings.Default.StartupFlows.Add(flowEnvironment.File.FullName);
+
+            Settings.Default.Save();
         }
 
         private void TextWriter_Updated(string message)
@@ -306,11 +319,14 @@ namespace FlowTomator.Service
                     FlowEnvironment flow = Load(path);
                     flow.Start();
                 }
+
+            Flows.CollectionChanged += Flows_CollectionChanged;
         }
         protected override void OnStop()
         {
             Log.Info("Stopping FlowTomator service");
 
+            Flows.CollectionChanged -= Flows_CollectionChanged;
             base.OnStop();
 
             Environment.Exit(0);
