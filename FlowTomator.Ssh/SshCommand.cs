@@ -7,10 +7,10 @@ using System.Text;
 using FlowTomator.Common;
 using Renci.SshNet;
 
-namespace FlowTomator.Sftp
+namespace FlowTomator.Ssh
 {
-    [Node(nameof(SshCommandTask), "Ssh", "Dumps the specified data into the specified file")]
-    public class SshCommandTask : Task
+    [Node("Ssh command", "Ssh", "Dumps the specified data into the specified file")]
+    public class SshCommand : Task
     {
         public override IEnumerable<Variable> Inputs
         {
@@ -40,11 +40,13 @@ namespace FlowTomator.Sftp
                 SshClient sshClient = new SshClient(host.Value, port.Value, user.Value, password.Value);
                 sshClient.Connect();
 
-                SshCommand sshCommand = sshClient.RunCommand(command.Value);
+                Renci.SshNet.SshCommand sshCommand = sshClient.RunCommand(command.Value);
                 Log.Info(sshCommand.CommandText);
 
-                if (sshCommand.ExitStatus != 0)
+                if (!string.IsNullOrWhiteSpace(sshCommand.Result))
                     Log.Warning(sshCommand.Result);
+                if (!string.IsNullOrWhiteSpace(sshCommand.Error))
+                    Log.Error(sshCommand.Error);
             }
             catch (Exception e)
             {

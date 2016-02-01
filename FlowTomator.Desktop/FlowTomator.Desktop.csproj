@@ -226,6 +226,10 @@
       <Project>{10ffedc4-b104-49c2-9a4f-79d00743af15}</Project>
       <Name>FlowTomator.SmartSync</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FlowTomator.Ssh\FlowTomator.Ssh.csproj">
+      <Project>{f8d5deb1-1e2c-498f-95c3-948355dd9caf}</Project>
+      <Name>FlowTomator.Ssh</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Add.png" />

@@ -3,11 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace FlowTomator.Sftp
+namespace FlowTomator.Ssh
 {
     internal static class ModuleInitializer
     {
-        private const string resourcePrefix = "FlowTomator.Sftp.Extern";
+        private const string resourcePrefix = "FlowTomator.Ssh.Extern";
         private static string[] assemblyNames =
         {
             "Renci.SshNet.dll",

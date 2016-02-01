@@ -200,9 +200,14 @@ namespace FlowTomator.Desktop
             {
                 foreach (string path in Settings.Default.Assemblies)
                 {
+                    string assemblyPath = path;
+
+                    if (!Path.IsPathRooted(assemblyPath))
+                        assemblyPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), assemblyPath);
+
                     try
                     {
-                        Assembly.LoadFrom(path);
+                        Assembly.LoadFrom(assemblyPath);
                     }
                     catch { }
                 }
