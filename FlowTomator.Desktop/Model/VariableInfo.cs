@@ -36,7 +36,7 @@ namespace FlowTomator.Desktop
                 if (Variable.Value == value)
                     return;
 
-                NodeInfo.FlowInfo.History.Do(new EditVariableAction(this, Variable.Value, value));
+                NodeInfo.FlowInfo.History.Do(new EditVariableAction(this, value));
 
                 Variable.Value = value;
                 NotifyPropertyChanged();

@@ -102,8 +102,9 @@ namespace FlowTomator.Common
 
         public void Link(Variable other)
         {
-            if (other != null && other.Type != type && !other.Type.IsSubclassOf(type))
-                throw new Exception("Unable to link to the specified variable");
+            // FIXME: Check types
+            //if (other != null && other.Type != type && !other.Type.IsSubclassOf(type))
+            //    throw new Exception("Unable to link to the specified variable");
 
             linked = other;
         }

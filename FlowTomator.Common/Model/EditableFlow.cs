@@ -16,7 +16,16 @@ namespace FlowTomator.Common
                 return Nodes.OfType<Origin>();
             }
         }
+        public override IEnumerable<Variable> Inputs
+        {
+            get
+            {
+                return Variables;
+            }
+        }
+
         public virtual IList<Node> Nodes { get; } = new List<Node>();
+        public virtual IList<Variable> Variables { get; } = new List<Variable>();
 
         public override IEnumerable<Node> GetAllNodes()
         {

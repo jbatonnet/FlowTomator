@@ -90,9 +90,13 @@ namespace FlowTomator.Desktop
         }
         private void Variable_Drop(object sender, DragEventArgs e)
         {
-            VariableInfo variableInfo = e.Data.GetData("FlowTomator.Variable") as VariableInfo;
+            VariableInfo dropVariableInfo = e.Data.GetData("FlowTomator.Variable") as VariableInfo;
 
-            
+            FrameworkElement textBox = sender as FrameworkElement;
+            ContentPresenter contentPresenter = textBox.TemplatedParent as ContentPresenter;
+
+            VariableInfo variableInfo = contentPresenter.Content as VariableInfo;
+            NodeInfo.FlowInfo.History.Do(new LinkVariableAction(variableInfo, dropVariableInfo.Variable));
         }
     }
 }
