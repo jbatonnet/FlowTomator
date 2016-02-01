@@ -165,6 +165,7 @@ namespace FlowTomator.Desktop
 
         private List<LogMessage> logBuffer = new List<LogMessage>();
         private DispatcherTimer logTimer;
+        //private Dictionary<>
 
         public MainWindow()
         {
@@ -517,8 +518,7 @@ namespace FlowTomator.Desktop
             while (!(itemsControl is ItemsControl))
                 itemsControl = VisualTreeHelper.GetParent(itemsControl);
 
-            NodeTypeInfo nodeTypeInfo = (itemsControl as ItemsControl).ItemContainerGenerator.ItemFromContainer(contentPresenter) as NodeTypeInfo;
-
+            NodeTypeInfo nodeTypeInfo = contentPresenter.Content as NodeTypeInfo;
             DataObject dragData = new DataObject("FlowTomator.Node", nodeTypeInfo.Type);
             DragDrop.DoDragDrop(grid, dragData, DragDropEffects.Move);
 
@@ -540,8 +540,7 @@ namespace FlowTomator.Desktop
             while (!(itemsControl is ItemsControl))
                 itemsControl = VisualTreeHelper.GetParent(itemsControl);
 
-            object variableInfo = (itemsControl as ItemsControl).ItemContainerGenerator.ItemFromContainer(contentPresenter);
-
+            VariableInfo variableInfo = contentPresenter.Content as VariableInfo;
             DataObject dragData = new DataObject("FlowTomator.Variable", variableInfo);
             DragDrop.DoDragDrop(grid, dragData, DragDropEffects.Move);
 

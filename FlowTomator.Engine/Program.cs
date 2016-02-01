@@ -33,7 +33,7 @@ namespace FlowTomator.Engine
             {
                 LogVerbosity verbosity;
 
-                if (!Enum.TryParse(Options["log"], out verbosity))
+                if (!Enum.TryParse(Options["log"], true, out verbosity))
                 {
                     Log.Error("The specified log verbosity does not exist");
                     Exit(-1);

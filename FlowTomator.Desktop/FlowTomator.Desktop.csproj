@@ -67,6 +67,8 @@
     <Compile Include="Actions\AddNode.cs" />
     <Compile Include="Actions\DeleteLink.cs" />
     <Compile Include="Actions\DeleteNode.cs" />
+    <Compile Include="Actions\RenameVariable.cs" />
+    <Compile Include="Actions\LinkVariable.cs" />
     <Compile Include="Actions\EditVariable.cs" />
     <Compile Include="Actions\HistoryInfo.cs" />
     <Compile Include="Actions\MoveNode.cs" />

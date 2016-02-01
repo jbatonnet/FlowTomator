@@ -8,34 +8,31 @@ using FlowTomator.Common;
 
 namespace FlowTomator.Desktop
 {
-    public class EditVariableAction : Action
+    public class LinkVariableAction : Action
     {
         public VariableInfo VariableInfo { get; private set; }
         public Variable OldLink { get; private set; }
         public object OldValue { get; private set; }
-        public object NewValue { get; private set; }
+        public Variable NewLink { get; private set; }
 
-        public EditVariableAction(VariableInfo variableInfo, object newValue)
+        public LinkVariableAction(VariableInfo variableInfo, Variable linkedVariable)
         {
             VariableInfo = variableInfo;
             OldLink = variableInfo.Variable.Linked;
             OldValue = variableInfo.Value;
-            NewValue = newValue;
+            NewLink = linkedVariable;
         }
 
         public override void Do()
         {
-            VariableInfo.Variable.Link(null);
-            VariableInfo.Variable.Value = NewValue;
+            VariableInfo.Variable.Link(NewLink);
             VariableInfo.Update();
         }
 
         public override void Undo()
         {
-            if (OldLink != null)
-                VariableInfo.Variable.Link(OldLink);
-            else
-                VariableInfo.Variable.Value = OldValue;
+            VariableInfo.Variable.Link(OldLink);
+            VariableInfo.Variable.Value = OldValue;
 
             VariableInfo.Update();
         }

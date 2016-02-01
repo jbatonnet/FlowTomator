@@ -206,11 +206,16 @@ namespace FlowTomator.Service
         }
         private void InstallServiceButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            if (!FlowTomatorService.Installed)
+            {
+                FlowTomatorService.Install();
+                StartServiceButton_Click(sender, e);
+            }
         }
         private void UninstallServiceButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            if (FlowTomatorService.Installed)
+                FlowTomatorService.Uninstall();
         }
         private void ExitButton_Click(object sender, EventArgs e)
         {
@@ -273,7 +278,7 @@ namespace FlowTomator.Service
             if (flow.Running)
                 flow.Stop();
 
-            Service.Flows.Remove(flow);
+            Service.Unload(flow);
         }
         private void OpenLogButton_Click(object sender, EventArgs e)
         {

@@ -107,7 +107,7 @@ namespace FlowTomator.Service
             get
             {
                 ServiceController service = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == Program.ServiceName);
-                return service != null && service.Status == ServiceControllerStatus.Running;
+                return service != null && (service.Status == ServiceControllerStatus.Running || service.Status == ServiceControllerStatus.StartPending);
             }
         }
 
@@ -158,7 +158,7 @@ namespace FlowTomator.Service
             if (service == null)
                 throw new Exception("FlowTomator service is not installed on this computer");
 
-            if (service.Status != ServiceControllerStatus.Running)
+            if (service.Status != ServiceControllerStatus.Running && service.Status != ServiceControllerStatus.StartPending)
                 service.Start();
         }
         public static void Stop()
@@ -225,6 +225,23 @@ namespace FlowTomator.Service
             Flows.Add(flow);
             return flow;
         }
+        public void Unload(FlowEnvironment flow)
+        {
+            Log.Debug("Unloading {0}", flow.File.Name);
+
+            try
+            {
+                flow.Stop();
+                Log.Info("Unloaded {0}", flow.File.Name);
+            }
+            catch (Exception e)
+            {
+                OnNotification(new FlowTomatorNotification(LogVerbosity.Error, "Failed to unload the specified flow : " + flow.File.Name + ". " + e.Message));
+            }
+
+            Flows.Remove(flow);
+        }
+
         private void Flows_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             // Save startup flows
