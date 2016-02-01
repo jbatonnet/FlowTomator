@@ -551,6 +551,16 @@ namespace FlowTomator.Desktop
 
             draggingVariable = false;
         }
+        private void VariableValue_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            TextBlock textBlock = sender as TextBlock;
+            VariableInfo variableInfo = textBlock.DataContext as VariableInfo;
+
+            foreach (VariableInfo variable in CurrentFlow.Variables)
+                variable.Selected = false;
+
+            variableInfo.Selected = true;
+        }
 
         private void Menu_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
@@ -573,7 +583,7 @@ namespace FlowTomator.Desktop
 
         private void AddVariableButton_Click(object sender, RoutedEventArgs e)
         {
-            CurrentVariables.Add(VariableInfo.From(new Variable("New")));
+            CurrentVariables.Add(VariableInfo.From(CurrentFlow, new Variable("New")));
         }
 
         private void ClearCurrentLogButton_Click(object sender, RoutedEventArgs e)

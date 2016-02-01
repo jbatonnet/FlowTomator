@@ -77,11 +77,11 @@ namespace FlowTomator.Desktop
             {
                 foreach (VariableInfo input in node.Inputs)
                     if (input.Variable.Linked != null && !Variables.Any(v => v.Variable == input.Variable.Linked))
-                        Variables.Add(VariableInfo.From(input.Variable.Linked));
+                        Variables.Add(VariableInfo.From(this, input.Variable.Linked));
 
                 foreach (VariableInfo output in node.Outputs)
                     if (output.Variable.Linked != null && !Variables.Any(v => v.Variable == output.Variable.Linked))
-                        Variables.Add(VariableInfo.From(output.Variable.Linked));
+                        Variables.Add(VariableInfo.From(this, output.Variable.Linked));
             }
         }
 

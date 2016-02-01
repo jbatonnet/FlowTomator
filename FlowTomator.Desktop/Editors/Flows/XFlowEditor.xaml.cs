@@ -386,6 +386,8 @@ namespace FlowTomator.Desktop
                 foreach (NodeInfo nodeInfo in FlowInfo.Nodes)
                     foreach (VariableInfo variable in nodeInfo.Inputs)
                         variable.Selected = false;
+                foreach (VariableInfo variable in FlowInfo.Variables)
+                    variable.Selected = false;
 
                 Point mousePosition = e.GetPosition(EditorCanvas);
 

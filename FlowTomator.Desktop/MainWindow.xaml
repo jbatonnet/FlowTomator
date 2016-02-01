@@ -101,9 +101,9 @@
 
                                 <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Background="Transparent" PreviewMouseLeftButtonUp="Menu_MouseLeftButtonUp">
                                     <StackPanel Orientation="Vertical">
-                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
-                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
-                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1" />
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1" />
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1" />
                                     </StackPanel>
                                     
                                     <Button.ContextMenu>
@@ -198,9 +198,9 @@
 
                                 <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="16" BorderThickness="0" Background="Transparent" PreviewMouseLeftButtonUp="Menu_MouseLeftButtonUp">
                                     <StackPanel Orientation="Vertical">
-                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
-                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
-                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1"></Border>
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1" />
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1" />
+                                        <Border Width="2" Height="2" Background="Gray" Margin="0,1" />
                                     </StackPanel>
 
                                     <Button.ContextMenu>
@@ -216,22 +216,36 @@
                             </DockPanel>
                         </Border>
 
-                        <ListView Grid.Row="1" Background="White" ItemsSource="{Binding CurrentVariables}" BorderBrush="LightGray" BorderThickness="0">
-                            <ListView.ItemTemplate>
+                        <ItemsControl Grid.Row="1" Background="White" ItemsSource="{Binding CurrentVariables}" BorderBrush="LightGray" BorderThickness="0">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Margin="0,0,0,1" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid PreviewMouseLeftButtonDown="VariableList_MouseDown" PreviewMouseMove="VariableList_MouseMove">
-                                        
+                                    <Grid Margin="1,1,1,0" Cursor="Hand" PreviewMouseLeftButtonDown="VariableList_MouseDown" PreviewMouseMove="VariableList_MouseMove">
+                                        <Grid.Style>
+                                            <Style TargetType="Grid">
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="AliceBlue" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Grid.Style>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
 
-                                        <TextBlock Grid.Column="0" FontSize="11" Foreground="Gray" HorizontalAlignment="Stretch" Margin="0,0,4,0"
+                                        <TextBlock Grid.Column="0" HorizontalAlignment="Stretch" Margin="4,2"
                                                    Text="{Binding Variable.Name}" ToolTip="{Binding Variable.Description}">
                                         </TextBlock>
 
-                                        <TextBlock Grid.Column="1" FontSize="11" HorizontalAlignment="Stretch" Padding="0,0,2,0" TextAlignment="Right"
-                                                   Text="{Binding Text}" ToolTip="{Binding Text}" Cursor="Hand">
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Stretch" Margin="4,2" TextAlignment="Right"
+                                                   Text="{Binding Text}" ToolTip="{Binding Text}" Cursor="Hand"
+                                                   MouseLeftButtonDown="VariableValue_MouseLeftButtonDown">
                                             <TextBlock.Foreground>
                                                 <SolidColorBrush Color="{Binding EditorColor}" />
                                             </TextBlock.Foreground>
@@ -242,8 +256,8 @@
 
                                     </Grid>
                                 </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </Grid>
                 </Border>
             </Grid>

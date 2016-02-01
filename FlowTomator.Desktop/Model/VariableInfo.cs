@@ -16,6 +16,7 @@ namespace FlowTomator.Desktop
 
         public Variable Variable { get; private set; }
         public NodeInfo NodeInfo { get; private set; }
+        public FlowInfo FlowInfo { get; private set; }
         public Type Type
         {
             get
@@ -36,11 +37,13 @@ namespace FlowTomator.Desktop
                 if (Variable.Value == value)
                     return;
 
-                NodeInfo.FlowInfo.History.Do(new EditVariableAction(this, value));
+                (FlowInfo ?? NodeInfo.FlowInfo).History.Do(new EditVariableAction(this, value));
 
                 Variable.Value = value;
                 NotifyPropertyChanged();
-                NodeInfo.Update();
+
+                if (NodeInfo != null)
+                    NodeInfo.Update();
             }
         }
 
@@ -119,9 +122,10 @@ namespace FlowTomator.Desktop
 
         private bool selected = false;
 
-        private VariableInfo(Variable variable)
+        private VariableInfo(FlowInfo flowInfo, Variable variable)
         {
             Variable = variable;
+            FlowInfo = flowInfo;
         }
         private VariableInfo(NodeInfo nodeInfo, Variable variable)
         {
@@ -134,12 +138,12 @@ namespace FlowTomator.Desktop
             NotifyPropertyChanged(nameof(Value));
         }
 
-        public static VariableInfo From(Variable variable)
+        public static VariableInfo From(FlowInfo flowInfo, Variable variable)
         {
             VariableInfo variableInfo;
 
             if (!variableInfos.TryGetValue(variable, out variableInfo))
-                variableInfos.Add(variable, variableInfo = new VariableInfo(variable));
+                variableInfos.Add(variable, variableInfo = new VariableInfo(flowInfo, variable));
 
             return variableInfo;
         }
