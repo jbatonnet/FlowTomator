@@ -18,7 +18,8 @@ namespace FlowTomator.Common
         {
             Dictionary<int, Node> nodes = new Dictionary<int, Node>();
             Dictionary<Slot, List<int>> slotNodes = new Dictionary<Slot, List<int>>();
-            List<Variable> variables = new List<Variable>();
+            List<Variable> globalVariables = new List<Variable>();
+            List<Variable> localVariables = new List<Variable>();
 
             XElement propertiesElement = document.Root.Element("Properties");
             XElement nodesElement = document.Root.Element("Properties");
@@ -51,6 +52,27 @@ namespace FlowTomator.Common
                         case "Script":
                             throw new NotSupportedException();
                     }
+                }
+            }
+
+            // Load global variables
+            XElement[] variableElements = propertiesElement?.Element("Variables")?.Elements()?.ToArray();
+            if (variableElements != null)
+            {
+                foreach (XElement variableElement in variableElements)
+                {
+                    XAttribute nameAttribute = variableElement.Attribute("Name");
+                    XAttribute valueAttribute = variableElement.Attribute("Value");
+
+                    if (nameAttribute == null || valueAttribute == null)
+                        throw new Exception("Variable name and/or value are missing in variable at line " + (variableElement as IXmlLineInfo).LineNumber);
+
+                    string name = nameAttribute.Value;
+
+                    if (globalVariables.Any(v => v.Name == name))
+                        throw new Exception("There is already a global variable named " + name + " in this flow at line " + (variableElement as IXmlLineInfo).LineNumber);
+
+                    globalVariables.Add(new Variable(name, typeof(object), valueAttribute.Value));
                 }
             }
 
@@ -105,9 +127,9 @@ namespace FlowTomator.Common
                             {
                                 string link = inputAttribute.Value.Substring(1);
 
-                                Variable linkedVariable = variables.FirstOrDefault(v => v.Name == link);
+                                Variable linkedVariable = Enumerable.Concat(localVariables, globalVariables).FirstOrDefault(v => v.Name == link);
                                 if (linkedVariable == null)
-                                    variables.Add(linkedVariable = new Variable(link, variable.Type));
+                                    localVariables.Add(linkedVariable = new Variable(link, variable.Type));
 
                                 variable.Link(linkedVariable);
                             }
@@ -152,9 +174,9 @@ namespace FlowTomator.Common
                             {
                                 string link = outputAttribute.Value.Substring(1);
 
-                                Variable linkedVariable = variables.FirstOrDefault(v => v.Name == link);
+                                Variable linkedVariable = Enumerable.Concat(localVariables, globalVariables).FirstOrDefault(v => v.Name == link);
                                 if (linkedVariable == null)
-                                    variables.Add(linkedVariable = new Variable(link, variable.Type));
+                                    localVariables.Add(linkedVariable = new Variable(link, variable.Type));
 
                                 variable.Link(linkedVariable);
                             }
@@ -243,6 +265,8 @@ namespace FlowTomator.Common
 
             foreach (Node node in nodes.Values)
                 flow.Nodes.Add(node);
+            foreach (Variable variable in globalVariables)
+                flow.Variables.Add(variable);
 
             return flow;
         }
@@ -267,8 +291,15 @@ namespace FlowTomator.Common
                 XElement referencesElement = new XElement("References");
                 propertiesElement.Add(referencesElement);
 
+                string binaryPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+
                 foreach (Assembly assembly in assemblies)
-                    referencesElement.Add(new XElement("Assembly", new XAttribute("Path", assembly.Location)));
+                {
+                    string location = assembly.Location;
+                    location = Utilities.MakeRelativePath(binaryPath, location);
+
+                    referencesElement.Add(new XElement("Assembly", new XAttribute("Path", location)));
+                }
             }
 
             // Save nodes

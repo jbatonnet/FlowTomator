@@ -101,6 +101,7 @@
     <Compile Include="MessageSourceFilterConverter.cs" />
     <Compile Include="Model\FlowDebugger.cs" />
     <Compile Include="OpenFolderDialog.cs" />
+    <Compile Include="Utilities.cs" />
     <Compile Include="VerbosityIconConverter.cs" />
     <Compile Include="Windows\ReferencesWindow.xaml.cs">
       <DependentUpon>ReferencesWindow.xaml</DependentUpon>

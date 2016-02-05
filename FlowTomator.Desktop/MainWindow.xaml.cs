@@ -95,7 +95,7 @@ namespace FlowTomator.Desktop
         }
 
         [DependsOn(nameof(CurrentFlow))]
-        public ObservableCollection<VariableInfo> CurrentVariables
+        public ICollection<VariableInfo> CurrentVariables
         {
             get
             {

@@ -64,7 +64,13 @@ namespace FlowTomator.Desktop
                             yield return LinkInfo.From(NodeInfo.From(this, node), slot, linkedNode);
             }
         }
-        public ObservableCollection<VariableInfo> Variables { get; } = new ObservableCollection<VariableInfo>();
+        public ICollection<VariableInfo> Variables
+        {
+            get
+            {
+                return Flow.Variables.Select(v => VariableInfo.From(this, v)).ToList();
+            }
+        }
 
         private string path;
 
@@ -73,7 +79,7 @@ namespace FlowTomator.Desktop
             Flow = flow;
             this.path = path;
 
-            foreach (NodeInfo node in Nodes)
+            /*foreach (NodeInfo node in Nodes)
             {
                 foreach (VariableInfo input in node.Inputs)
                     if (input.Variable.Linked != null && !Variables.Any(v => v.Variable == input.Variable.Linked))
@@ -82,7 +88,7 @@ namespace FlowTomator.Desktop
                 foreach (VariableInfo output in node.Outputs)
                     if (output.Variable.Linked != null && !Variables.Any(v => v.Variable == output.Variable.Linked))
                         Variables.Add(VariableInfo.From(this, output.Variable.Linked));
-            }
+            }*/
         }
 
         public void Update()

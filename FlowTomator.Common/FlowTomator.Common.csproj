@@ -84,6 +84,7 @@
     <Compile Include="Model\Choice.cs" />
     <Compile Include="Model\Variable.cs" />
     <Compile Include="Model\Task.cs" />
+    <Compile Include="Utilities.cs" />
     <Compile Include="Utils\DeviceEvents.cs" />
     <Compile Include="Storage\XDependencyFlow.cs" />
     <Compile Include="Storage\XFlow.cs" />
