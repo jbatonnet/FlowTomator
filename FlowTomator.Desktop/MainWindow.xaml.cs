@@ -307,6 +307,18 @@ namespace FlowTomator.Desktop
         }
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            // Detect debugger
+            if (debugger != null && debugger.State != DebuggerState.Idle)
+            {
+                System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show("A flow is currently being debugged. Do you really want to exit ?", "FlowTomator", System.Windows.Forms.MessageBoxButtons.YesNoCancel, System.Windows.Forms.MessageBoxIcon.Warning);
+                if (result != System.Windows.Forms.DialogResult.Yes)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
+
+            // Detect unsaved flows
             FlowInfo[] unsavedFlows = Flows.Where(f => f.History.Actions.Any())
                                            .ToArray();
 
