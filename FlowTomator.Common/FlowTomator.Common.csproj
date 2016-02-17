@@ -72,6 +72,7 @@
     <Compile Include="Nodes\System\Clipboard.cs" />
     <Compile Include="Nodes\System\Desktop.cs" />
     <Compile Include="Nodes\System\Device\Lifetime.cs" />
+    <Compile Include="Nodes\System\Device\Login.cs" />
     <Compile Include="Nodes\System\Screenshot.cs" />
     <Compile Include="Nodes\System\Device\Lock.cs" />
     <Compile Include="Nodes\Text\Regex.cs" />

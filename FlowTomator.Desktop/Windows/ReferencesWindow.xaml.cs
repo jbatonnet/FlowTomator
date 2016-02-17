@@ -42,6 +42,20 @@ namespace FlowTomator.Desktop
             Path = assembly.Location;
         }
     }
+    public class FlowReference
+    {
+        public bool Selected { get; set; }
+        public bool Enabled { get; set; }
+
+        public string Path { get; private set; }
+
+        public FlowReference(string flowPath, bool selected, bool enabled = true)
+        {
+            Path = flowPath;
+            Selected = selected;
+            Enabled = enabled;
+        }
+    }
 
     public partial class ReferencesWindow : Window, INotifyPropertyChanged
     {
@@ -63,9 +77,10 @@ namespace FlowTomator.Desktop
         private const uint WM_SETICON = 0x0080;
 
         public List<AssemblyInfo> Assemblies { get; } = new List<AssemblyInfo>();
-        public ObservableDictionary<FileInfo, bool> Flows { get; } = new ObservableDictionary<FileInfo, bool>();
+        public List<FlowReference> Flows { get; } = new List<FlowReference>();
 
         private BackgroundWorker assembliesLoader = new BackgroundWorker();
+        private BackgroundWorker flowsLoader = new BackgroundWorker();
 
         private static Type reflectionNodeType, reflectionFlowType;
 
@@ -85,7 +100,14 @@ namespace FlowTomator.Desktop
 
             assembliesLoader.DoWork += AssembliesLoader_DoWork;
             assembliesLoader.RunWorkerCompleted += AssembliesLoader_RunWorkerCompleted;
+
+            FlowsGrid.Visibility = Visibility.Collapsed;
+            FlowsProgressBar.Visibility = Visibility.Visible;
+
+            flowsLoader.DoWork += FlowsLoader_DoWork;
+            flowsLoader.RunWorkerCompleted += FlowsLoader_RunWorkerCompleted;
         }
+
         private void Window_SourceInitialized(object sender, EventArgs e)
         {
             IntPtr hwnd = new WindowInteropHelper(this).Handle;
@@ -178,6 +200,35 @@ namespace FlowTomator.Desktop
                 Assemblies.Add(new AssemblyInfo(assembly, enabled));
         }
 
+        private void FlowTab_Loaded(object sender, RoutedEventArgs e)
+        {
+            flowsLoader.RunWorkerAsync();
+        }
+        private void FlowsLoader_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Flows.Clear();
+
+            if (Settings.Default.Flows != null)
+            {
+                foreach (string path in Settings.Default.Flows)
+                {
+                    string flowPath = path;
+
+                    if (!System.IO.Path.IsPathRooted(flowPath))
+                        flowPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), flowPath);
+
+                    Flows.Add(new FlowReference(flowPath, true));
+                }
+            }
+        }
+        private void FlowsLoader_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            FlowsGrid.Visibility = Visibility.Visible;
+            FlowsProgressBar.Visibility = Visibility.Collapsed;
+
+            NotifyPropertyChanged(nameof(Flows));
+        }
+
         private void AddAssemblyButton_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
@@ -214,6 +265,44 @@ namespace FlowTomator.Desktop
                 return;
             }
         }
+        private void AddFlowButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+
+            dialog.Title = "Open an existing Flow";
+            dialog.Filter = "FlowTomator flow file|*.xflow";
+            dialog.FilterIndex = 1;
+
+            if (dialog.ShowDialog(this) != true)
+                return;
+
+            FileInfo fileInfo = new FileInfo(dialog.FileName);
+
+            if (!fileInfo.Exists)
+            {
+                MessageBox.Show("Unable to find the specified file", App.Name, MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (Flows.Any(f => f.Path == fileInfo.FullName))
+            {
+                MessageBox.Show("The specified file has already been added", App.Name, MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            try
+            {
+                Flows.Add(new FlowReference(fileInfo.FullName, true));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Unable to load the specified flow. " + ex, App.Name, MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            NotifyPropertyChanged(nameof(Flows));
+        }
+
         private void OKButton_Click(object sender, RoutedEventArgs e)
         {
             AssemblyInfo[] assemblies = Assemblies.Where(a => a.Selected && a.Enabled).ToArray();

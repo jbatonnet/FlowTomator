@@ -80,14 +80,15 @@
                     </Border>
                 </Grid>
             </TabItem>
-            <TabItem Header="Flows">
+            <TabItem Header="Flows" Loaded="FlowTab_Loaded">
                 <Grid Margin="2">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <DataGrid Grid.Row="0" ItemsSource="{Binding Flows}"
+                    <DataGrid x:Name="FlowsGrid"
+                              Grid.Row="0" ItemsSource="{Binding Flows}"
                               AutoGenerateColumns="False" Background="Transparent" GridLinesVisibility="None" CanUserResizeRows="False" RowHeaderWidth="0"
                               BorderBrush="LightGray">
                         <DataGrid.Resources>
@@ -104,11 +105,23 @@
                                 </Style.Triggers>
                             </Style>
                         </DataGrid.Resources>
+
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn CanUserResize="False">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding Selected, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Enabled}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Path" Width="*" Binding="{Binding Path}" IsReadOnly="True" />
+                        </DataGrid.Columns>
                     </DataGrid>
+                    <ProgressBar x:Name="FlowsProgressBar" Grid.Row="0" Height="20" Margin="16" IsIndeterminate="True" />
 
                     <Border Grid.Row="1" Margin="4,8,4,4">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="Add" Width="56" Height="22" />
+                            <Button Content="Add" Width="56" Height="22" Click="AddFlowButton_Click" />
                         </StackPanel>
                     </Border>
                 </Grid>

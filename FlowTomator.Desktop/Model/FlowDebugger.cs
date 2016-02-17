@@ -148,8 +148,9 @@ namespace FlowTomator.Desktop
 
                 Log.Trace(DebuggerCategory, "Exiting node {0} with result {1}", nodeInfo.Type.Name, nodeStep.Result);
             }
-            catch
+            catch (Exception e)
             {
+                Log.Error(DebuggerCategory, "Error while executing node {0}. {1}", nodeInfo.Type.Name, e.Message);
                 nodeStep = new NodeStep(NodeResult.Fail, null);
             }
 
