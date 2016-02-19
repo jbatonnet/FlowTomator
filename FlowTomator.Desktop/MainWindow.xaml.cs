@@ -456,7 +456,7 @@ namespace FlowTomator.Desktop
             }
 
             FlowInfo flowInfo = null;
-            string error = "";
+            Exception exception = "";
 
             try
             {
@@ -507,7 +507,7 @@ namespace FlowTomator.Desktop
             }
             catch (Exception e)
             {
-                MessageBox.Show("An error occurred while saving your flow. " + e);
+                Error.Show(e, "An error occurred while saving your flow", App.Name);
             }
         }
 

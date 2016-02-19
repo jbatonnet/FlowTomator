@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Evaluator\BasicNodesEvaluator.cs" />
+    <Compile Include="Error.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Model\EditableFlow.cs" />
     <Compile Include="Evaluator\NodesEvaluator.cs" />
