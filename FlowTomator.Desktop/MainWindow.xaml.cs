@@ -165,7 +165,6 @@ namespace FlowTomator.Desktop
 
         private List<LogMessage> logBuffer = new List<LogMessage>();
         private DispatcherTimer logTimer;
-        //private Dictionary<>
 
         public MainWindow()
         {
@@ -214,6 +213,9 @@ namespace FlowTomator.Desktop
                 }
             }
 
+            // Load referenced flows
+            RefreshReferencedFlows();
+
             DataContext = this;
             InitializeComponent();
 
@@ -246,6 +248,43 @@ namespace FlowTomator.Desktop
 
                 nodeCategory.Nodes.Add(nodeType);
             }
+        }
+        private void RefreshReferencedFlows()
+        {
+            if (Settings.Default.Flows != null)
+            {
+                /*foreach (string path in Settings.Default.Flows)
+                {
+                    string flowPath = path;
+
+                    if (!Path.IsPathRooted(flowPath))
+                        flowPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), flowPath);
+
+                    EditableFlow flow = null;
+
+                    try
+                    {
+                        flow = EditableFlow.Load(flowPath);
+                    }
+                    catch
+                    {
+                        
+                    }
+
+                    FlowInfo flowInfo = new FlowInfo(flow, flowPath);
+
+                    NodeCategoryInfo nodeCategory = NodeCategories.FirstOrDefault(c => c.Category == nodeType.Category);
+
+                    if (nodeCategory == null)
+                        NodeCategories.Add(nodeCategory = new NodeCategoryInfo(nodeType.Category));
+
+                    nodeCategory.Nodes.Add(nodeType);
+                }*/
+            }
+
+
+
+
         }
 
         private void Log_Message(LogVerbosity verbosity, LogCategory category, string message)
@@ -421,10 +460,8 @@ namespace FlowTomator.Desktop
 
             try
             {
-                switch (fileInfo.Extension)
-                {
-                    case ".xflow": flowInfo = new FlowInfo(XFlow.Load(XDocument.Load(fileInfo.FullName, LoadOptions.SetLineInfo)), fileInfo.FullName); break;
-                }
+                EditableFlow flow = EditableFlow.Load(fileInfo.FullName);
+                flowInfo = new FlowInfo(flow, fileInfo.FullName);
             }
             catch (Exception e)
             {
@@ -446,29 +483,25 @@ namespace FlowTomator.Desktop
         public void Save(FlowInfo flowInfo)
         {
             Type flowType = flowInfo.Flow.GetType();
+            FlowStorageAttribute flowStorage = flowType.GetCustomAttribute<FlowStorageAttribute>();
 
             try
             {
-                if (flowType == typeof(XFlow))
+                if (string.IsNullOrEmpty(flowInfo.Path) || !File.Exists(flowInfo.Path))
                 {
-                    XDocument document = XFlow.Save(flowInfo.Flow as XFlow);
+                    SaveFileDialog saveFileDialog = new SaveFileDialog();
+                    
+                    saveFileDialog.Filter = string.Format("{0} ({1})|{1}", flowStorage.Description, string.Join(";", flowStorage.Extensions.Select(e => "*" + e)));
+                    saveFileDialog.FilterIndex = 1;
 
-                    if (string.IsNullOrEmpty(flowInfo.Path) || !File.Exists(flowInfo.Path))
-                    {
-                        SaveFileDialog saveFileDialog = new SaveFileDialog();
+                    if (saveFileDialog.ShowDialog() != true)
+                        return;
 
-                        saveFileDialog.Filter = "XFlow files (*.xflow)|*.xflow";
-                        saveFileDialog.FilterIndex = 1;
-
-                        if (saveFileDialog.ShowDialog() != true)
-                            return;
-
-                        flowInfo.Path = saveFileDialog.FileName;
-                    }
-
-                    document.Save(flowInfo.Path);
-                    Log.Info("Saved flow to \"{0}\"", flowInfo.Path);
+                    flowInfo.Path = saveFileDialog.FileName;
                 }
+
+                flowInfo.Flow.Save(flowInfo.Path);
+                Log.Info("Saved flow to \"{0}\"", flowInfo.Path);
 
                 flowInfo.History.Clear();
             }

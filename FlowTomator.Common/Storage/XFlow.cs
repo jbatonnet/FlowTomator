@@ -12,6 +12,7 @@ using System.Xml.Linq;
 
 namespace FlowTomator.Common
 {
+    [FlowStorage("FlowTomator automation flow", ".xflow")]
     public class XFlow : EditableFlow
     {
         public static XFlow Load(XDocument document)
@@ -270,6 +271,11 @@ namespace FlowTomator.Common
 
             return flow;
         }
+        public new static XFlow Load(string path)
+        {
+            return Load(XDocument.Load(path, LoadOptions.SetLineInfo));
+        }
+
         public static XDocument Save(XFlow flow)
         {
             XElement propertiesElement, nodesElement;
@@ -369,6 +375,10 @@ namespace FlowTomator.Common
             }
 
             return document;
+        }
+        public override void Save(string path)
+        {
+            Save(this).Save(path);
         }
     }
 }

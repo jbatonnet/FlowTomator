@@ -45,15 +45,20 @@ namespace FlowTomator.Desktop
     public class FlowReference
     {
         public bool Selected { get; set; }
-        public bool Enabled { get; set; }
 
         public string Path { get; private set; }
+        public string Name
+        {
+            get
+            {
+                return System.IO.Path.GetFileNameWithoutExtension(Path);
+            }
+        }
 
-        public FlowReference(string flowPath, bool selected, bool enabled = true)
+        public FlowReference(string flowPath, bool selected)
         {
             Path = flowPath;
             Selected = selected;
-            Enabled = enabled;
         }
     }
 
@@ -77,11 +82,9 @@ namespace FlowTomator.Desktop
         private const uint WM_SETICON = 0x0080;
 
         public List<AssemblyInfo> Assemblies { get; } = new List<AssemblyInfo>();
-        public List<FlowReference> Flows { get; } = new List<FlowReference>();
+        public ObservableCollection<FlowReference> Flows { get; } = new ObservableCollection<FlowReference>();
 
         private BackgroundWorker assembliesLoader = new BackgroundWorker();
-        private BackgroundWorker flowsLoader = new BackgroundWorker();
-
         private static Type reflectionNodeType, reflectionFlowType;
 
         static ReferencesWindow()
@@ -100,12 +103,6 @@ namespace FlowTomator.Desktop
 
             assembliesLoader.DoWork += AssembliesLoader_DoWork;
             assembliesLoader.RunWorkerCompleted += AssembliesLoader_RunWorkerCompleted;
-
-            FlowsGrid.Visibility = Visibility.Collapsed;
-            FlowsProgressBar.Visibility = Visibility.Visible;
-
-            flowsLoader.DoWork += FlowsLoader_DoWork;
-            flowsLoader.RunWorkerCompleted += FlowsLoader_RunWorkerCompleted;
         }
 
         private void Window_SourceInitialized(object sender, EventArgs e)
@@ -202,12 +199,9 @@ namespace FlowTomator.Desktop
 
         private void FlowTab_Loaded(object sender, RoutedEventArgs e)
         {
-            flowsLoader.RunWorkerAsync();
-        }
-        private void FlowsLoader_DoWork(object sender, DoWorkEventArgs e)
-        {
             Flows.Clear();
 
+            // Load default flows
             if (Settings.Default.Flows != null)
             {
                 foreach (string path in Settings.Default.Flows)
@@ -220,11 +214,17 @@ namespace FlowTomator.Desktop
                     Flows.Add(new FlowReference(flowPath, true));
                 }
             }
-        }
-        private void FlowsLoader_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            FlowsGrid.Visibility = Visibility.Visible;
-            FlowsProgressBar.Visibility = Visibility.Collapsed;
+
+            // Load local flows
+            foreach (string path in Directory.GetFiles(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.xflow"))
+            {
+                FileInfo fileInfo = new FileInfo(path);
+
+                if (!fileInfo.Exists || Flows.Any(f => f.Path == fileInfo.FullName))
+                    continue;
+
+                Flows.Add(new FlowReference(fileInfo.FullName, true));
+            }
 
             NotifyPropertyChanged(nameof(Flows));
         }
@@ -292,7 +292,7 @@ namespace FlowTomator.Desktop
 
             try
             {
-                Flows.Add(new FlowReference(fileInfo.FullName, true));
+                Flows.Add(new FlowReference(fileInfo.FullName, false));
             }
             catch (Exception ex)
             {
@@ -306,6 +306,7 @@ namespace FlowTomator.Desktop
         private void OKButton_Click(object sender, RoutedEventArgs e)
         {
             AssemblyInfo[] assemblies = Assemblies.Where(a => a.Selected && a.Enabled).ToArray();
+            FlowReference[] flows = Flows.Where(f => f.Selected).ToArray();
 
             // Load selected assemblies
             foreach (AssemblyInfo assembly in assemblies)
@@ -321,7 +322,7 @@ namespace FlowTomator.Desktop
                 }
             }
 
-            // Save settings
+            // Save selected assemblies
             if (Settings.Default.Assemblies == null)
                 Settings.Default.Assemblies = new StringCollection();
 
@@ -339,6 +340,26 @@ namespace FlowTomator.Desktop
                 
                 Settings.Default.Assemblies.Add(assemblyPath);
             }
+
+            // Save selected flows
+            if (Settings.Default.Flows == null)
+                Settings.Default.Flows = new StringCollection();
+
+            Settings.Default.Flows.Clear();
+            foreach (FlowReference flow in flows)
+            {
+                string flowPath = flow.Path;
+
+                try
+                {
+                    flowPath = Utilities.MakeRelativePath(executablePath, flowPath);
+                }
+                catch { }
+
+                Settings.Default.Flows.Add(flowPath);
+            }
+
+            // Save settings
             Settings.Default.Save();
 
             Close();
