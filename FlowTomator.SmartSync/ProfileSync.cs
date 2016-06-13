@@ -42,6 +42,8 @@ namespace FlowTomator.SmartSync
 
                 try
                 {
+                    Environment.CurrentDirectory = Path.GetDirectoryName(profile.Value.FullName);
+
                     switch (profile.Value.Extension)
                     {
                         case ".xsync": p = XProfile.Load(XDocument.Load(profile.Value.FullName)); break;

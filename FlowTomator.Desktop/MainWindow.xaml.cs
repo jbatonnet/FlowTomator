@@ -456,7 +456,7 @@ namespace FlowTomator.Desktop
             }
 
             FlowInfo flowInfo = null;
-            Exception exception = "";
+            string error = "";
 
             try
             {

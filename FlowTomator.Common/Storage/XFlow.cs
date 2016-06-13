@@ -78,6 +78,7 @@ namespace FlowTomator.Common
             }
 
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
             // Create nodes
             XElement[] nodeElements = document.Root.Element("Nodes")?.Elements("Node")?.ToArray();
@@ -261,7 +262,9 @@ namespace FlowTomator.Common
                     }
                 }
             }
-            
+
+            AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+
             XFlow flow = new XFlow();
 
             foreach (Node node in nodes.Values)
@@ -271,6 +274,21 @@ namespace FlowTomator.Common
 
             return flow;
         }
+
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            string assemblyLocation = args.RequestingAssembly.Location;
+            string assemblyDirectory = Path.GetDirectoryName(assemblyLocation);
+
+            string assemblyName = new AssemblyName(args.Name).Name;
+            string assemblyPath = Path.Combine(assemblyDirectory, assemblyName + ".dll");
+
+            if (!File.Exists(assemblyPath))
+                return null;
+
+            return Assembly.LoadFile(assemblyPath);
+        }
+
         public new static XFlow Load(string path)
         {
             return Load(XDocument.Load(path, LoadOptions.SetLineInfo));
@@ -328,7 +346,17 @@ namespace FlowTomator.Common
                     if (input.Linked != null)
                         inputsElement.Add(new XAttribute(input.Name, "$" + input.Linked.Name));
                     else if (input.Value != input.DefaultValue)
-                        inputsElement.Add(new XAttribute(input.Name, input.Value));
+                    {
+                        TypeConverter typeConverter = TypeDescriptor.GetConverter(input.Type);
+                        string value;
+
+                        if (typeConverter != null && typeConverter.CanConvertTo(typeof(string)))
+                            value = typeConverter.ConvertToString(input.Value);
+                        else
+                            value = input.Value.ToString();
+
+                        inputsElement.Add(new XAttribute(input.Name, value));
+                    }
                 }
 
                 // Outputs

@@ -27,8 +27,8 @@ namespace FlowTomator.Desktop
                 dataTemplate.VisualTree = new FrameworkElementFactory(typeof(EnumerableVariableEditor));
             else
             {
-                Type variableEditorType = Assembly.GetExecutingAssembly().GetTypes()
-                                                                         .FirstOrDefault(t => !t.IsAbstract && t.GetCustomAttribute<VariableEditorAttribute>()?.Types?.Contains(variableInfo.Type) == true);
+                Type variableEditorType = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes())
+                                                                                 .FirstOrDefault(t => !t.IsAbstract && t.GetCustomAttribute<VariableEditorAttribute>()?.Types?.Any(v => v.IsAssignableFrom(variableInfo.Type)) == true);
 
                 dataTemplate.VisualTree = new FrameworkElementFactory(variableEditorType ?? typeof(TextVariableEditor));
             }
