@@ -20,7 +20,7 @@ namespace FlowTomator.Desktop
 
     public class FlowDebugger : DependencyModel
     {
-        public static LogCategory DebuggerCategory { get; } = new LogCategory("Debugger");
+        public static Log.Category DebuggerCategory { get; } = new Log.Category("Debugger");
 
         public FlowInfo FlowInfo { get; private set; }
         public DebuggerState State

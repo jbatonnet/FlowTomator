@@ -277,6 +277,9 @@ namespace FlowTomator.Common
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
+            if (args.RequestingAssembly == null)
+                return null;
+
             string assemblyLocation = args.RequestingAssembly.Location;
             string assemblyDirectory = Path.GetDirectoryName(assemblyLocation);
 

@@ -1,47 +1,86 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Flow>
-  <Properties />
+  <Properties>
+    <References>
+      <Assembly Path="D:\Perforce\silex-playground\jbatonnet\other\FlowTomator\Binaries\FlowTomator.Silex.dll" />
+    </References>
+  </Properties>
   <Nodes>
-    <Node Type="FlowTomator.Common.Message" Id="0">
-      <Inputs Text="Yarp" Title="FlowTomator" />
-      <Metadata Position.X="472" Position.Y="152" />
-    </Node>
-    <Node Type="FlowTomator.Common.DirectoryExists" Id="1">
-      <Inputs Directory="D:\" />
-      <Metadata Position.X="548" Position.Y="64" />
-      <Slot Index="0">
-        <Node Id="0" />
+    <Node Type="FlowTomator.Common.Origin" Id="0">
+      <Metadata Position.X="256" Position.Y="0" />
+      <Slot>
+        <Node Id="1" />
+        <Node Id="4" />
+        <Node Id="10" />
       </Slot>
-      <Slot Index="1">
+    </Node>
+    <Node Type="FlowTomator.Common.DeviceUnlockEvent" Id="1">
+      <Metadata Position.X="352" Position.Y="88" />
+      <Slot>
+        <Node Id="3" />
         <Node Id="2" />
       </Slot>
     </Node>
     <Node Type="FlowTomator.Common.Message" Id="2">
-      <Inputs Text="Narp" Title="FlowTomator" />
-      <Metadata Position.X="624" Position.Y="152" />
+      <Inputs Text="Welcome back :)" Title="FlowTomator" Icon="Asterisk" />
+      <Metadata Position.X="388" Position.Y="192" />
     </Node>
-    <Node Type="FlowTomator.Common.Origin" Id="3">
-      <Metadata Position.X="108" Position.Y="52" />
+    <Node Type="FlowTomator.Common.Nope" Id="3">
+      <Metadata Position.X="508" Position.Y="104" />
       <Slot>
-        <Node Id="4" />
+        <Node Id="1" />
       </Slot>
     </Node>
-    <Node Type="FlowTomator.Common.DeviceUnlockEvent" Id="4">
-      <Metadata Position.X="108" Position.Y="144" />
-      <Slot>
-        <Node Id="6" />
+    <Node Type="FlowTomator.Common.DeviceBootedEvent" Id="4">
+      <Metadata Position.X="168" Position.Y="88" />
+      <Slot Index="0">
         <Node Id="5" />
       </Slot>
-    </Node>
-    <Node Type="FlowTomator.Common.Message" Id="5">
-      <Inputs Text="Welcome back :)" Title="FlowTomator" Icon="Asterisk" />
-      <Metadata Position.X="100" Position.Y="296" />
-    </Node>
-    <Node Type="FlowTomator.Common.Nope" Id="6">
-      <Metadata Position.X="296" Position.Y="200" />
-      <Slot>
-        <Node Id="4" />
+      <Slot Index="1">
+        <Node Id="6" />
       </Slot>
+    </Node>
+    <Node Type="FlowTomator.Common.WriteFile" Id="5">
+      <Inputs File="xflow_booted" Content="test" />
+      <Metadata Position.X="32" Position.Y="184" />
+    </Node>
+    <Node Type="FlowTomator.Common.WriteFile" Id="6">
+      <Inputs File="xflow_not_booted" Content="test" />
+      <Metadata Position.X="192" Position.Y="188" />
+    </Node>
+    <Node Type="FlowTomator.Silex.RunGuildLib" Id="7">
+      <Inputs Workspace="D:\Perforce\silex\main" />
+      <Metadata Position.X="80" Position.Y="328" />
+      <Slot>
+        <Node Id="8" />
+      </Slot>
+    </Node>
+    <Node Type="FlowTomator.Common.Sleep" Id="8">
+      <Inputs Duration="5000" />
+      <Metadata Position.X="288" Position.Y="384" />
+      <Slot>
+        <Node Id="9" />
+      </Slot>
+    </Node>
+    <Node Type="FlowTomator.Silex.SyncData" Id="9">
+      <Metadata Position.X="472" Position.Y="404" />
+    </Node>
+    <Node Type="FlowTomator.Common.DeviceLockEvent" Id="10">
+      <Metadata Position.X="668" Position.Y="88" />
+      <Slot>
+        <Node Id="11" />
+        <Node Id="12" />
+      </Slot>
+    </Node>
+    <Node Type="FlowTomator.Common.Nope" Id="11">
+      <Metadata Position.X="828" Position.Y="100" />
+      <Slot>
+        <Node Id="10" />
+      </Slot>
+    </Node>
+    <Node Type="FlowTomator.Common.Message" Id="12">
+      <Inputs Text="Goodbye !" />
+      <Metadata Position.X="680" Position.Y="196" />
     </Node>
   </Nodes>
 </Flow>

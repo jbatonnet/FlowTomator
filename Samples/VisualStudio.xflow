@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Flow>
+  <Properties>
+    <References>
+      <Assembly Path="FlowTomator.VisualStudio.dll" />
+    </References>
+  </Properties>
+  <Nodes>
+    <Node Type="FlowTomator.Common.Origin" Id="0">
+      <Metadata Position.X="288" Position.Y="80" />
+      <Slot>
+        <Node Id="3" />
+      </Slot>
+    </Node>
+    <Node Type="FlowTomator.Common.Nope" Id="1">
+      <Metadata Position.X="828" Position.Y="100" />
+    </Node>
+    <Node Type="FlowTomator.VisualStudio.OpenSolution" Id="2">
+      <Inputs Solution="C:\Users\jbatonnet\Documents\Visual Studio 2015\Projects\ConsoleApplication1\ConsoleApplication1.sln" />
+      <Metadata Position.X="392" Position.Y="152" />
+    </Node>
+  </Nodes>
+</Flow>
