@@ -193,4 +193,9 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+
 /Binaries
+/Binaries/**
+/FlowTomator.Si**
+/Samples/Si**
+.p4*

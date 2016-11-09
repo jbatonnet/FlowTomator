@@ -98,7 +98,7 @@ namespace FlowTomator.Service
                 if (Service != null)
                     Service.ToString();
             }
-            catch
+            catch (Exception ex)
             {
                 Service = null;
             }

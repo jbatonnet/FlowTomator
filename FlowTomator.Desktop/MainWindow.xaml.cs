@@ -27,11 +27,11 @@ namespace FlowTomator.Desktop
     public class LogMessage
     {
         public DateTime Date { get; private set; }
-        public LogCategory Category { get; private set; }
+        public Log.Category Category { get; private set; }
         public LogVerbosity Verbosity { get; private set; }
         public string Message { get; private set; }
 
-        public LogMessage(DateTime date, LogCategory category, LogVerbosity verbosity, string message)
+        public LogMessage(DateTime date, Log.Category category, LogVerbosity verbosity, string message)
         {
             Date = date;
             Category = category;
@@ -185,7 +185,7 @@ namespace FlowTomator.Desktop
 
             // Redirect console output
             Log.Verbosity = LogVerbosity.Trace;
-            LogMessages.Add(LogCategory.Common.Name, new ObservableCollection<LogMessage>());
+            LogMessages.Add(Log.Category.Common.Name, new ObservableCollection<LogMessage>());
             LogMessages.Add(FlowDebugger.DebuggerCategory.Name, new ObservableCollection<LogMessage>());
             logTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.ApplicationIdle, Log_TimerCallback, Dispatcher.CurrentDispatcher);
             Log.Message += Log_Message;
@@ -287,7 +287,7 @@ namespace FlowTomator.Desktop
 
         }
 
-        private void Log_Message(LogVerbosity verbosity, LogCategory category, string message)
+        private void Log_Message(LogVerbosity verbosity, Log.Category category, string message)
         {
             DateTime date = DateTime.Now;
 
@@ -641,7 +641,7 @@ namespace FlowTomator.Desktop
                 LogMessages.Remove(LogMessages.Keys.ElementAt(1));
             NotifyPropertyChanged(nameof(LogMessages));
 
-            LogMessages[LogCategory.Common.Name].Clear();
+            LogMessages[Log.Category.Common.Name].Clear();
             LogSelectedCategory = 0;
         }
         private void TestLogButton_Click(object sender, RoutedEventArgs e)
@@ -652,7 +652,7 @@ namespace FlowTomator.Desktop
                 {
                     Thread.Sleep(1000);
 
-                    foreach (LogCategory category in new[] { LogCategory.Common, new LogCategory("Debugger"), new LogCategory("Node") })
+                    foreach (Log.Category category in new[] { Log.Category.Common, new Log.Category("Debugger"), new Log.Category("Node") })
                         for (int i = 0; i < 5; i++)
                         {
                             Log.Trace(category, "{0}.Trace", category.Name);
