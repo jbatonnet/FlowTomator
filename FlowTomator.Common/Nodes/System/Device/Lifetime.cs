@@ -66,6 +66,7 @@ namespace FlowTomator.Common
 
         public override NodeResult Run()
         {
+#if DEBUG
             if (simulation.Value == ShutdownSimulationKind.PassThrough)
                 return NodeResult.Success;
 
@@ -74,6 +75,7 @@ namespace FlowTomator.Common
                 ShutdownDevice.FakeShutdown.Set();
                 return NodeResult.Success;
             }
+#endif
 
             ProcessStartInfo processStartInfo = new ProcessStartInfo("shutdown", (force.Value ? "/f " : "") + "/s /t 0");
             processStartInfo.CreateNoWindow = true;
@@ -101,8 +103,10 @@ namespace FlowTomator.Common
 
         public override NodeStep Evaluate()
         {
+#if DEBUG
             if (simulate.Value)
                 return new NodeStep(NodeResult.Success, TrueSlot);
+#endif
 
             int tickCount = Environment.TickCount;
             return new NodeStep(NodeResult.Success, tickCount < 50000 ? TrueSlot : FalseSlot);
@@ -126,6 +130,7 @@ namespace FlowTomator.Common
 
         public override NodeResult Check()
         {
+#if DEBUG
             if (simulation.Value == ShutdownSimulationKind.PassThrough)
                 return NodeResult.Success;
 
@@ -134,6 +139,7 @@ namespace FlowTomator.Common
                 ShutdownDevice.FakeShutdown.WaitOne();
                 return NodeResult.Success;
             }
+#endif
 
             throw new NotImplementedException();
         }
