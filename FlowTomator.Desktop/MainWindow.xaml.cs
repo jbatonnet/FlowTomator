@@ -221,8 +221,16 @@ namespace FlowTomator.Desktop
 
             // Load specified arguments
             string[] args = Environment.GetCommandLineArgs();
-            foreach (string arg in args.Skip(1))
-                Open(arg);
+
+            string[] filesArgs = args.Skip(1).ToArray();
+            
+            if (filesArgs.Length > 1)
+            { 
+                foreach (string arg in filesArgs)
+                    Open(arg);
+            }
+            else
+                NewFlowCommandCallback(null);
 
             Log.Info("FlowTomator is ready");
         }
